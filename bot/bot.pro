@@ -14,7 +14,7 @@ SOURCES += \
     Bot.cpp \
     Food.cpp \
     MyBot.cpp \
-    State.cpp
+    State.cpp \
     Room.cpp
 
 # Add annoying warning disables below, e.g. -Wno-cats-allowed

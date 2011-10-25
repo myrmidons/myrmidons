@@ -33,6 +33,9 @@ struct Pos
 	inline int col() const { return coords[1]; }
 };
 
+typedef sd::set<Pos> PosSet;
+typedef sd::vector<Pos> PosList;
+
 inline bool operator < (Pos const& a, Pos const& b) {
 	return (a[0] < b[0])||((a[0] == b[0]) && (a[1] < b[1]));
 }
@@ -41,5 +44,16 @@ inline std::ostream& operator<<(std::ostream &os, const Pos& pos) {
 	return os << "(" << pos[0] << ", " << pos[1] << ")";
 
 }
+
+//////////////////////////////////////////////////////
+
+// Bounding box
+class BB {
+	Pos topLeft, bottomRight; // [,) style ranges
+
+	int width()  const { return bottomRight.x()-topLeft.x(); }
+	int height() const { return bottomRight.y()-topLeft.y(); }
+};
+
 
 #endif //POS_H_

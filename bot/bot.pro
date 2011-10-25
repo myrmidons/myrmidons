@@ -6,14 +6,18 @@ HEADERS += \
     Pos.hpp \
     Square.hpp \
     State.hpp \
-    Timer.hpp
+    Timer.hpp \
+    Room.hpp
 
 SOURCES += \
     Ant.cpp \
     Bot.cpp \
     Food.cpp \
     MyBot.cpp \
-    State.cpp
+    State.cpp \
+    Room.cpp
+
+
 
 
 

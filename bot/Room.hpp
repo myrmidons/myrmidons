@@ -22,11 +22,21 @@ public:
 // any other part. This means that an ant will see 2-3 rooms at once.
 class Room {
 public:
-	int roomIx; // In the global rooms list.
-	RoomContents* contents;
+	explicit Room(int ix, Pos seed);
+	~Room();
 
-	PosList list; // All positions in this Room (in the order they where added).
+	bool tryExpandWith(Pos pos);
+	void add(Pos pos);
 
+	///////////////////////////////////////////////
+
+	const int m_roomIx; // In the global rooms list.
+	RoomContents* m_contents;
+
+	PosList m_list; // All positions in this Room (in the order they where added).
+	PosList m_open; // Positions on our border (not in m_list).
+
+	/*
 	// for building:
 	PosSet closed; // positions that has no neigbor that is not assigned to a room (or water).
 	PosSet open; // edge positions with non-assigned neighbors.
@@ -55,6 +65,7 @@ public:
 	// Distance between two neighbor rooms:
 	// given two neighbor indices, returns the shortest and longest distance... or something.
 	Range neighborDistance(int na, nb) const;
+	*/
 };
 typedef vector<Room*> RoomPtrVec;
 
@@ -64,10 +75,12 @@ class Rooms
 {
 public:
 	// Called by g_map upon uncovering new grid cells.
-	void Rooms::expandWith(const PosList& pos);
+	void expandWith(const PosList& pos);
+	void expandWith(const Pos& pos);
 
 private:
 	RoomPtrVec m_rooms;
+	RoomPtrVec m_open; // rooms not yet closed/finished
 };
 
 #endif // ROOM_H

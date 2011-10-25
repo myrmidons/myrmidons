@@ -36,8 +36,8 @@ struct Pos
 	inline int col() const { return coords[1]; }
 };
 
-typedef sd::set<Pos> PosSet;
-typedef sd::vector<Pos> PosList;
+typedef std::set<Pos> PosSet;
+typedef std::vector<Pos> PosList;
 
 inline bool operator < (Pos const& a, Pos const& b) {
 	return (a[0] < b[0])||((a[0] == b[0]) && (a[1] < b[1]));

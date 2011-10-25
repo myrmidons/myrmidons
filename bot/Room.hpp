@@ -67,7 +67,7 @@ public:
 	Range neighborDistance(int na, nb) const;
 	*/
 };
-typedef vector<Room*> RoomPtrVec;
+typedef std::vector<Room*> RoomPtrVec;
 
 //////////////////////////////////////////////////////////////////
 

@@ -3,21 +3,25 @@
 
 #include "Pos.hpp"
 
-
 // This class handles the contents of a room.
 // Everything about a room except its connectivity is put into here.
 class RoomContents {
+public:
 	int lastVisitTime; // in time steps. trustworthyness of everything depends on this.
 
+	// indices into room positions list?
 	IntList food;
 	IntList ants;
 	IntList hills;
 };
 
+//////////////////////////////////////////////////////////////////
+
 // This class only contains connectivity data. For contents, see 'contents'.
 // A room shuld be small enough so that an ant in any part of the room can see
 // any other part. This means that an ant will see 2-3 rooms at once.
 class Room {
+public:
 	int roomIx; // In the global rooms list.
 	RoomContents* contents;
 
@@ -36,16 +40,6 @@ class Room {
 	PosList shortestPath;
 
 	/////////////////////////////////////////
-	// Useful functions:
-
-	int size() const {
-		return m_size;
-	}
-
-	void resize(int newSize) const {
-		m_size = newSize;
-		...
-	}
 
 	// Have we reached our limit of growth, and is so done?
 	bool isFinished() const;
@@ -64,14 +58,16 @@ class Room {
 };
 typedef vector<Room*> RoomPtrVec;
 
-class Rooms {
-	RoomPtrVec m_rooms;
+//////////////////////////////////////////////////////////////////
 
+class Rooms
+{
+public:
 	// Called by g_map upon uncovering new grid cells.
 	void Rooms::expandWith(const PosList& pos);
 
-
-	int roomAt(Pos pos) const;
+private:
+	RoomPtrVec m_rooms;
 };
 
 #endif // ROOM_H

@@ -1,6 +1,9 @@
 #ifndef POS_H_
 #define POS_H_
 
+#include <vector>
+#include <set>
+
 /*
 	struct for representing positions in the grid.
 */
@@ -42,7 +45,6 @@ inline bool operator < (Pos const& a, Pos const& b) {
 
 inline std::ostream& operator<<(std::ostream &os, const Pos& pos) {
 	return os << "(" << pos[0] << ", " << pos[1] << ")";
-
 }
 
 //////////////////////////////////////////////////////
@@ -55,5 +57,10 @@ class BB {
 	int height() const { return bottomRight.y()-topLeft.y(); }
 };
 
+//////////////////////////////////////////////////////
+// Bös
+
+typedef std::vector<int> IntList;
+typedef std::set<int> IntSet;
 
 #endif //POS_H_

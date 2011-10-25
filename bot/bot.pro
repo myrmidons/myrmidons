@@ -7,7 +7,8 @@ HEADERS += \
     Square.hpp \
     State.hpp \
     Timer.hpp \
-    Room.hpp
+    Room.hpp \
+    Util.hpp
 
 SOURCES += \
     Ant.cpp \

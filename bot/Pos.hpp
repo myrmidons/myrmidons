@@ -3,6 +3,7 @@
 
 #include <vector>
 #include <set>
+#include <ostream>
 
 /*
 	struct for representing positions in the grid.

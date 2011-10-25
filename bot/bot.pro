@@ -15,44 +15,5 @@ SOURCES += \
     MyBot.cpp \
     State.cpp
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+QMAKE_CXXFLAGS_WARN_ON = \
+    -Wno-unused-parameter

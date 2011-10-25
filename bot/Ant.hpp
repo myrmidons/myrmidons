@@ -58,7 +58,6 @@ public:
 
 // This is a dummy for the future map-class to be created by goff and emilk.
 struct Map {
-
 	std::map<Ant*, Pos> antpos;
 	std::map<Pos, Ant*> posant;
 

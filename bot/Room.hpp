@@ -56,7 +56,7 @@ public:
 	// given two neighbor indices, returns the shortest and longest distance... or something.
 	Range neighborDistance(int na, nb) const;
 };
-typedef vector<Room*> RoomPtrVec;
+typedef std::vector<Room*> RoomPtrVec;
 
 //////////////////////////////////////////////////////////////////
 

@@ -15,5 +15,5 @@ SOURCES += \
     MyBot.cpp \
     State.cpp
 
-QMAKE_CXXFLAGS_WARN_ON = \
-    -Wno-unused-parameter
+# Add annoying warning disables below, e.g. -Wno-cats-allowed
+# QMAKE_CXXFLAGS_WARN_ON = \

@@ -8,7 +8,8 @@ HEADERS += \
     State.hpp \
     Timer.hpp \
     Room.hpp \
-    Util.hpp
+    Util.hpp \
+    General.hpp
 
 SOURCES += \
     Ant.cpp \
@@ -16,7 +17,16 @@ SOURCES += \
     Food.cpp \
     MyBot.cpp \
     State.cpp \
-    Room.cpp
+    Room.cpp \
+    General.cpp
 
 # Add annoying warning disables below, e.g. -Wno-cats-allowed
 # QMAKE_CXXFLAGS_WARN_ON = \
+
+
+
+
+
+
+
+

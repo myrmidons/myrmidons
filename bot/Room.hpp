@@ -28,6 +28,13 @@ public:
 	bool tryExpandWith(Pos pos);
 	void add(Pos pos);
 
+        int getNumMyrmidons(); // The number of enemies in the room this turn.
+        int getNumEnemies(); // The number of enemies in the room this turn.
+        int getNumFallenMyrmidons(); // Give me the number of Myrmidons that has fallen this turn. (See you in valhalla!)
+        int getNumFallenEnemies(); // Give me the number of enemies that have fallen this turn.
+        int getArea(); // Give me the number of Pos the room currently contains.
+
+
 	///////////////////////////////////////////////
 
 	const int m_roomIx; // In the global rooms list.

@@ -1,10 +1,10 @@
 #include "Room.hpp"
 #include "Util.hpp"
 
-////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////
 
 Room::Room(int ix, Pos seed) : m_roomIx(ix) {
-	m_list.push_back(seed);
+	m_cells.push_back(seed);
 	m_open.push_back(seed);
 	m_contents = new RoomContents();
 }
@@ -28,10 +28,10 @@ bool Room::tryExpandWith(Pos pos) {
 }
 
 void Room::add(Pos pos) {
-	m_list.push_back(pos);
+	m_cells.push_back(pos);
 }
 
-////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////
 // Rooms
 
 void Rooms::expandWith(const PosList& pos) {

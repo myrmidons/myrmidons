@@ -7,6 +7,11 @@
 // Everything about a room except its connectivity is put into here.
 class RoomContents {
 public:
+	int getNumMyrmidons(); // The number of enemies in the room this turn.
+	int getNumEnemies(); // The number of enemies in the room this turn.
+	int getNumFallenMyrmidons(); // Give me the number of Myrmidons that has fallen this turn. (See you in valhalla!)
+	int getNumFallenEnemies(); // Give me the number of enemies that have fallen this turn.
+
 	int lastVisitTime; // in time steps. trustworthyness of everything depends on this.
 
 	// indices into room positions list?
@@ -22,26 +27,33 @@ public:
 // any other part. This means that an ant will see 2-3 rooms at once.
 class Room {
 public:
+	///////////////////////////////////////////////
+	// For users:
+
+	RoomContents* contents() { return m_contents; }
+
+	// Give me the number of Pos the room currently contains.
+	int getArea() const { return m_cells.size(); }
+
+	///////////////////////////////////////////////
+
+private:
+	friend class Rooms;
+	// For "Rooms" only:
+
 	explicit Room(int ix, Pos seed);
 	~Room();
 
 	bool tryExpandWith(Pos pos);
 	void add(Pos pos);
 
-        int getNumMyrmidons(); // The number of enemies in the room this turn.
-        int getNumEnemies(); // The number of enemies in the room this turn.
-        int getNumFallenMyrmidons(); // Give me the number of Myrmidons that has fallen this turn. (See you in valhalla!)
-        int getNumFallenEnemies(); // Give me the number of enemies that have fallen this turn.
-        int getArea(); // Give me the number of Pos the room currently contains.
-
-
 	///////////////////////////////////////////////
 
 	const int m_roomIx; // In the global rooms list.
 	RoomContents* m_contents;
 
-	PosList m_list; // All positions in this Room (in the order they where added).
-	PosList m_open; // Positions on our border (not in m_list).
+	PosList m_cells; // All positions in this Room (in the order they where added).
+	PosList m_open; // Positions bordering to unassigned cells.
 
 	/*
 	// for building:

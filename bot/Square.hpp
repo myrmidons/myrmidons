@@ -10,14 +10,14 @@ class Room;
 */
 struct Square
 {
-	bool seen,isVisible, isWater, isHill, isFood;
+	bool discovered,isVisible, isWater, isHill, isFood;
     int ant, hillPlayer;
     std::vector<int> deadAnts;
 	Room* room;
 
 	Square()
 	{
-		seen = isVisible = isWater = isHill = isFood = 0;
+		discovered = isVisible = isWater = isHill = isFood = false;
         ant = hillPlayer = -1;
 	};
 
@@ -34,7 +34,7 @@ struct Square
 
 	// Are we sure this is ground?
 	bool isGround() const {
-		return isVisible && !isWater;
+		return discovered && !isWater;
 	}
 };
 

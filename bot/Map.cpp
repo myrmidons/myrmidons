@@ -2,6 +2,7 @@
 #include "Ant.hpp"
 #include "State.hpp"
 #include "Identifier.hpp"
+#include "Room.hpp"
 
 Map* g_map = NULL;
 
@@ -71,6 +72,9 @@ void Map::moveAnt(Pos const& from, Pos const& to) {
 	}
 }
 
+void Map::water(const Pos &pos) {
+	grid[pos[0]][pos[1]].isWater = 1;
+}
 
 //returns the new location from moving in a given direction with the edges wrapped
 Pos Map::getLocation(const Pos &loc, int direction)
@@ -93,6 +97,8 @@ void Map::updateVisionInformation() {
 	std::queue<Pos> locQueue;
 	Pos sLoc, cLoc, nLoc;
 
+	PosSet discoveries;
+
 	int rows = g_state->rows;
 	int cols = g_state->cols;
 
@@ -114,13 +120,19 @@ void Map::updateVisionInformation() {
 
 				if(!visited[nLoc[0]][nLoc[1]] && g_state->distance(sLoc, nLoc) <= g_state->viewradius) {
 					grid[nLoc[0]][nLoc[1]].isVisible = 1;
-					grid[nLoc[0]][nLoc[1]].seen = true;
+					if(!grid[nLoc[0]][nLoc[1]].discovered) {
+						grid[nLoc[0]][nLoc[1]].discovered = true;
+						discoveries.insert(nLoc);
+
+					}
 					locQueue.push(nLoc);
 				}
 				visited[nLoc[0]][nLoc[1]] = 1;
 			}
 		}
 	}
+
+	g_rooms->expandWith(discoveries);
 }
 
 bool Map::isOccupied(const Pos& loc) {

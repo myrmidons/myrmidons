@@ -19,7 +19,7 @@ void Identifier::turn(int n) {
 }
 
 void Identifier::water(Pos const& pos) {
-//	m_map->water(pos);
+	m_map->water(pos);
 }
 
 void Identifier::food(Pos const& pos) {
@@ -58,12 +58,14 @@ void Identifier::hill(Pos const& pos, int team) {
 
 void Identifier::go() {
 	update();
-
+	m_map->updateVisionInformation();
 	g_state->bug << getLiveAnts().size() << " live ants." << std::endl;
 }
 
 
 void Identifier::update() {
+
+	// Water have already been reported.
 
 	// Find free anthills.
 	g_state->bug << "Looking for free ant hills...";

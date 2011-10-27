@@ -22,6 +22,7 @@ public:
 	void removeAnt(Ant* ant);
 	void addAnt(Ant* ant);
 	Ant* getAnt(Pos const& pos);
+	void water(Pos const& pos);
 	void updateVisionInformation();
 
 	// Not sure if this is up to the Map-class in the end, but probably.

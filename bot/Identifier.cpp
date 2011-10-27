@@ -2,6 +2,8 @@
 #include "Ant.hpp"
 #include "Map.hpp"
 
+typedef enum {TheGoodGuys = 0} Team;
+
 Identifier::Identifier()
 	:m_numAnts(0), m_map(new Map()){
 	m_antStorage.resize(10000); // Taken out of thin air.
@@ -25,7 +27,8 @@ void Identifier::food(Pos const& pos) {
 }
 
 void Identifier::ant(Pos const& pos, int team) {
-	if(team) {
+	g_state->bug << "ant: " << pos << ',' << team << std::endl;
+	if(team != TheGoodGuys) {
 		buf.enemyAnts.push_back(pos);
 		buf.enemyTeams.push_back(team);
 	}
@@ -35,7 +38,7 @@ void Identifier::ant(Pos const& pos, int team) {
 }
 
 void Identifier::deadAnt(Pos const& pos, int team) {
-	if(team) {
+	if(team != TheGoodGuys) {
 		buf.deadEnemies.push_back(pos);
 		buf.deadEnemyTeams.push_back(team);
 	}
@@ -45,24 +48,29 @@ void Identifier::deadAnt(Pos const& pos, int team) {
 }
 
 void Identifier::hill(Pos const& pos, int team) {
-	if(team) {
+	if(team != TheGoodGuys) {
 		buf.enemyHills.push_back(pos);
 		buf.enemyHillTeams.push_back(team);
+	}
+	else {
+		buf.myHills.push_back(pos);
 	}
 }
 
 void Identifier::go() {
-	update(g_state);
+	update();
+
+	g_state->bug << getLiveAnts().size() << " live ants." << std::endl;
 }
 
 
-void Identifier::update(State* state) {
+void Identifier::update() {
 
 	// Find free anthills.
 	g_state->bug << "Looking for free ant hills...";
 	PosSet freeHills;
-	for(size_t i = 0; i < g_state->myHills.size(); ++i) {
-		Pos pos = g_state->myHills[i];
+	for(size_t i = 0; i < buf.myHills.size(); ++i) {
+		Pos pos = buf.myHills[i];
 		if(0 == m_map->getAnt(pos)) {
 			// This hill is not occupied, and may spawn an ant.
 			freeHills.insert(pos);
@@ -71,9 +79,9 @@ void Identifier::update(State* state) {
 	g_state->bug << " Found " << freeHills.size() << std::endl;
 
 	// Remove dead ants.
-	for(size_t i = 0; i < g_state->deadAnts.size(); ++i) {
-		g_state->bug << "Dead ant at " << g_state->deadAnts[i];
-		Ant* pAnt = m_map->getAnt(g_state->deadAnts[i]);
+	for(size_t i = 0; i < buf.deadAnts.size(); ++i) {
+		g_state->bug << "Dead ant at " << buf.deadAnts[i];
+		Ant* pAnt = m_map->getAnt(buf.deadAnts[i]);
 		if(!pAnt) {
 			g_state->bug << "Not found in map :\\" << std::endl;
 			continue;
@@ -103,7 +111,9 @@ void Identifier::update(State* state) {
 				g_state->bug << "Spawning with new index " << i << "." << std::endl;
 			}
 
-			m_map->addAnt(&(m_antStorage[i] = Ant(*hill)));
+			Ant* newAnt = &(m_antStorage[i] = Ant(*hill));
+			m_map->addAnt(newAnt);
+			m_liveAnts.insert(newAnt);
 			g_state->bug << "Ant spawned at " << *hill << std::endl;
 		}
 	}
@@ -120,4 +130,8 @@ void Identifier::StateBuffer::reset() {
 	enemyTeams.clear();
 	deadEnemyTeams.clear();
 	enemyHillTeams.clear();
+}
+
+AntSet const& Identifier::getLiveAnts() {
+	return m_liveAnts;
 }

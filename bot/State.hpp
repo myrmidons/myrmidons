@@ -44,8 +44,8 @@ struct State
     bool gameover;
 
     std::vector<std::vector<Square> > grid;
-	std::vector<Pos> myAnts, enemyAnts, myHills, enemyHills, food, deadAnts, deadEnemies;
-	std::vector<int> enemyTeams, enemyDeadTeams;
+//	std::vector<Pos> myAnts, enemyAnts, myHills, enemyHills, food, deadAnts, deadEnemies;
+//	std::vector<int> enemyTeams, enemyDeadTeams;
 
 	Identifier* identifier;
 

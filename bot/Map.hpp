@@ -22,7 +22,7 @@ public:
 	void removeAnt(Ant* ant);
 	void addAnt(Ant* ant);
 	Ant* getAnt(Pos const& pos);
-	//void updateVisionInformation();
+	void updateVisionInformation();
 
 	// Not sure if this is up to the Map-class in the end, but probably.
 	void moveAnt(Pos const& from, Pos const& to); // Not used by the AntIdentifyer, just by Bot for testing purposes.

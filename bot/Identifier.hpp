@@ -13,9 +13,9 @@ class Map;
 
 typedef std::set<size_t> IndexSet;
 typedef std::set<Pos> PosSet;
+typedef std::vector<Pos> PosVec;
 typedef std::set<Ant*> AntSet;
 typedef std::vector<Ant> AntVec;
-typedef std::vector<Pos> PosVec;
 
 class Identifier {
 
@@ -42,9 +42,11 @@ public:
 
 	void go();
 
+	AntSet const& getLiveAnts();
+
 private:
 
-	void update(State* state);
+	void update();
 
 	struct StateBuffer {
 		std::vector<Pos> myAnts, enemyAnts, myHills, enemyHills, food, deadAnts, deadEnemies;

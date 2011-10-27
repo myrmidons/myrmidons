@@ -8,13 +8,13 @@
 */
 struct Square
 {
-    bool isVisible, isWater, isHill, isFood;
+	bool seen,isVisible, isWater, isHill, isFood;
     int ant, hillPlayer;
     std::vector<int> deadAnts;
 
     Square()
     {
-        isVisible = isWater = isHill = isFood = 0;
+		seen = isVisible = isWater = isHill = isFood = 0;
         ant = hillPlayer = -1;
     };
 

@@ -38,6 +38,7 @@ public:
 	double distance(const Pos &loc1, const Pos &loc2);
 
 	void newTurn(int turn);
+
 	void assertInMap(const Pos& pos) const {
 		ASSERT(0<=pos.x() && pos.x()<m_size.x());
 		ASSERT(0<=pos.y() && pos.y()<m_size.y());

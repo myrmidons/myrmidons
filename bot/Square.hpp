@@ -19,12 +19,12 @@ struct Square
 	{
 		discovered = isVisible = isWater = isHill = isFood = false;
         ant = hillPlayer = -1;
-	};
-
-    //resets the information for the square except water information
-    void reset()
-    {
 		room = NULL;
+	}
+
+	// reset dynamic information
+    void reset()
+	{
         isVisible = 0;
         isHill = 0;
         isFood = 0;

@@ -73,10 +73,15 @@ void Map::moveAnt(Pos const& from, Pos const& to) {
 		ant->pos() = to;
 		addAnt(ant);
 		g_state->bug << ant->pos() << std::endl;
+
+
+		square(to).ant = square(from).ant;
+		square(from).ant = -1;
 	}
 	else {
 		g_state->bug << " without finding it." << std::endl;
 	}
+
 }
 
 void Map::water(const Pos &pos) {
@@ -107,7 +112,6 @@ Square& Map::square(Pos const& pos) {
 
 
 void Map::updateVisionInformation() {
-	return;
 	std::queue<Pos> locQueue;
 	Pos sLoc, cLoc, nLoc;
 
@@ -115,6 +119,8 @@ void Map::updateVisionInformation() {
 
 	AntSet const& ants = g_tracker->getLiveAnts();
 	for(AntSet::const_iterator it = ants.begin(); it != ants.end(); ++it) {
+
+		square(sLoc).ant = 0;
 		sLoc = (*it)->pos();
 		locQueue.push(sLoc);
 
@@ -144,7 +150,7 @@ void Map::updateVisionInformation() {
 		}
 	}
 
-	g_rooms->expandWith(discoveries);
+//	g_rooms->expandWith(discoveries);
 }
 
 bool Map::isOccupied(const Pos& loc) {

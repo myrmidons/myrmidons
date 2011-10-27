@@ -52,7 +52,7 @@ void State::setup() {
 //outputs move information to the engine
 void State::makeMove(const Pos &loc, int direction)
 {
-	output << "o " << loc[0] << " " << loc[1] << " " << CDIRECTIONS[direction] << endl;
+	output << "o " << loc[1] << " " << loc[0] << " " << CDIRECTIONS[direction] << endl;
 
 }
 

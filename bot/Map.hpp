@@ -18,7 +18,7 @@ public:
 	Map();
 	int m_cols, m_rows;
 
-	void initMap(int cols, int rows);
+	void initMap(int rows, int cols);
 	void removeAnt(Ant* ant);
 	void addAnt(Ant* ant);
 	Ant* getAnt(Pos const& pos);
@@ -34,6 +34,8 @@ public:
 	bool isOccupied(const Pos& loc);
 
 	Vec2 size() const { return Vec2(m_cols, m_rows); }
+
+	double distance(const Pos &loc1, const Pos &loc2);
 };
 
 extern Map* g_map;

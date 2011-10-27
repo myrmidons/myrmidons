@@ -48,6 +48,10 @@ inline bool operator < (Pos const& a, Pos const& b) {
 	return (a[0] < b[0])||((a[0] == b[0]) && (a[1] < b[1]));
 }
 
+inline bool operator == (Pos const& a, Pos const& b) {
+	return a.x() == b.x() && a.y() == b.y();
+}
+
 inline std::ostream& operator<<(std::ostream &os, const Pos& pos) {
 	return os << "(" << pos[0] << ", " << pos[1] << ")";
 }

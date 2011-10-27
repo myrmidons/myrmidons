@@ -1,5 +1,6 @@
 #include "State.hpp"
 #include "Identifier.hpp"
+#include "Map.hpp"
 #include <cassert>
 
 using namespace std;
@@ -36,6 +37,7 @@ State::~State()
 void State::setup()
 {
     grid = vector<vector<Square> >(rows, vector<Square>(cols, Square()));
+	g_map->initMap(rows, cols);
 };
 
 //resets all non-water squares to land and clears the bots ant vector
@@ -61,16 +63,6 @@ void State::makeMove(const Pos &loc, int direction)
 	Pos nLoc = getLocation(loc, direction);
 	grid[nLoc[0]][nLoc[1]].ant = grid[loc[0]][loc[1]].ant;
 	grid[loc[0]][loc[1]].ant = -1;
-};
-
-//returns the euclidean distance between two locations with the edges wrapped
- double State::distance(const Pos &loc1, const Pos &loc2)
-{
-	int d1 = abs(loc1[0]-loc2[0]),
-		d2 = abs(loc1[1]-loc2[1]),
-        dr = min(d1, rows-d1),
-        dc = min(d2, cols-d2);
-    return sqrt(dr*dr + dc*dc);
 };
 
 //returns the new location from moving in a given direction with the edges wrapped

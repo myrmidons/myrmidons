@@ -1,5 +1,5 @@
-#ifndef FOOD_H
-#define FOOD_H
+#ifndef FOOD_HPP
+#define FOOD_HPP
 
 class Food
 {

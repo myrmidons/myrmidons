@@ -1,5 +1,6 @@
 #include "Bot.hpp"
 #include "Room.hpp"
+#include "Map.hpp"
 
 using namespace std;
 

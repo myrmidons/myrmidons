@@ -1,5 +1,6 @@
 #include "Map.hpp"
 #include "Ant.hpp"
+#include "State.hpp"
 
 Map* g_map = NULL;
 
@@ -14,16 +15,18 @@ void Map::initMap(int numOfRows, int numOfCols) {
 	grid = std::vector<std::vector<Square> >(rows, std::vector<Square>(cols, Square()));
 }
 
-// Tell the map that a certain ant is dead.
-// the map don't own the ant, and should be prepared for
-// getting the same pointer as a newly spawned ant.
 void Map::removeAnt(Ant* ant) {
-	if(antpos.count(ant)) {
-		posant.erase(antpos[ant]);
-		antpos.erase(ant);
+	if(!antpos.count(ant)) {
+		// FAIL!
+		g_state->bug << "FAIL in Map::removeAnt: Ant already removed! (or never added)" << std::endl;
+	}
+	else if(!posant.count(ant->pos())) {
+		// FAIL!
+		g_state->bug << "FAIL in Map::removeAnt: Ant postion already removed! (or never added)" << std::endl;
 	}
 	else {
-		// FAIL!
+		posant.erase(ant->pos());
+		antpos.erase(ant);
 	}
 }
 
@@ -31,6 +34,11 @@ void Map::removeAnt(Ant* ant) {
 void Map::addAnt(Ant* ant) {
 	if(antpos.count(ant)) {
 		// FAIL!
+		g_state->bug << "FAIL in Map::addAnt: Ant already added!" << std::endl;
+	}
+	else if(posant.count(ant->pos())) {
+		// FAIL!
+		g_state->bug << "FAIL in Map::addAnt: Ant position already added!" << std::endl;
 	}
 	else {
 		antpos[ant] = ant->pos();
@@ -43,8 +51,26 @@ Ant* Map::getAnt(Pos const& pos) {
 	if(posant.count(pos)) {
 		return posant[pos];
 	}
+//		g_state->bug << "In Map::getAnt: Ant does not exist!" << std::endl;
 	return 0;
 }
+
+void Map::moveAnt(Pos const& from, Pos const& to) {
+	g_state->bug << "Looking for ant at " << from << ": ";
+	Ant* ant = getAnt(from);
+	if(ant) {
+		g_state->bug << "and moving it from " <<  ant->pos() << " to ";
+		removeAnt(ant);
+		ant->pos() = to;
+		addAnt(ant);
+		g_state->bug << ant->pos() << std::endl;
+	}
+	else {
+		g_state->bug << " without finding it." << std::endl;
+	}
+}
+
+
 //returns the new location from moving in a given direction with the edges wrapped
 Pos Map::getLocation(const Pos &loc, int direction)
 {
@@ -112,3 +138,4 @@ void Map::reset()
 			if(!grid[row][col].isWater)
 				grid[row][col].reset();
 };
+

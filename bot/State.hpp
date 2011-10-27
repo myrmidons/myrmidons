@@ -1,5 +1,5 @@
-#ifndef STATE_H_
-#define STATE_H_
+#ifndef STATE_HPP
+#define STATE_HPP
 
 #include <iostream>
 #include <stdio.h>
@@ -15,6 +15,8 @@
 #include "Square.hpp"
 #include "Pos.hpp"
 
+
+class Identifier;
 /*
     constants
 */
@@ -42,7 +44,10 @@ struct State
     bool gameover;
 
     std::vector<std::vector<Square> > grid;
-	std::vector<Pos> myAnts, enemyAnts, myHills, enemyHills, food, deadAnts;
+	std::vector<Pos> myAnts, enemyAnts, myHills, enemyHills, food, deadAnts, deadEnemies;
+	std::vector<int> enemyTeams, enemyDeadTeams;
+
+	Identifier* identifier;
 
     Timer timer;
     Bug bug;

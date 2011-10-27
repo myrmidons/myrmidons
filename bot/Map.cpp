@@ -11,9 +11,9 @@ Map::Map()
 }
 
 void Map::initMap(int rows, int cols) {
-	m_cols = cols;
-	m_rows = rows;
-	grid = std::vector<std::vector<Square> >(m_rows, std::vector<Square>(m_cols, Square()));
+	m_size = Vec2(cols, rows);
+	m_grid = std::vector<std::vector<Square> >(m_size.x(),
+											   std::vector<Square>(m_size.y(), Square()));
 }
 
 Path Map::getOptimalPathTo(const Pos &from, const Pos &to) {
@@ -78,11 +78,18 @@ void Map::moveAnt(Pos const& from, Pos const& to) {
 
 
 //returns the new location from moving in a given direction with the edges wrapped
-Pos Map::getLocation(const Pos &loc, int direction)
+Pos Map::getLocation(const Pos &loc, int dir)
 {
-	return Pos( (loc[0] + DIRECTIONS[direction][0] + m_rows) % m_rows,
-				(loc[1] + DIRECTIONS[direction][1] + m_cols) % m_cols );
-};
+	ASSERT(0<=dir && dir<4);
+	return Pos( (loc[0] + DIRECTIONS[dir][0] + m_size[0]) % m_size[0],
+				(loc[1] + DIRECTIONS[dir][1] + m_size[1]) % m_size[1] );
+}
+
+Square& Map::square(Pos const& pos) {
+	ASSERT(0<=pos.x() && pos.x()<m_size.x());
+	ASSERT(0<=pos.y() && pos.y()<m_size.y());
+	return m_grid[pos[0]][pos[1]];
+}
 /*
 	This function will update update the lastSeen value for any squares currently
 	visible by one of your live ants.
@@ -106,8 +113,8 @@ void Map::updateVisionInformation() {
 		sLoc = (*it)->pos();
 		locQueue.push(sLoc);
 
-		std::vector<std::vector<bool> > visited(rows, std::vector<bool>(cols, 0));
-		grid[sLoc[0]][sLoc[1]].isVisible = 1;
+		std::vector<std::vector<bool> > visited(cols, std::vector<bool>(rows, 0));
+		m_grid[sLoc[0]][sLoc[1]].isVisible = 1;
 		visited[sLoc[0]][sLoc[1]] = 1;
 
 		while(!locQueue.empty()) {
@@ -118,8 +125,8 @@ void Map::updateVisionInformation() {
 				nLoc = getLocation(cLoc, d);
 
 				if(!visited[nLoc[0]][nLoc[1]] && distance(sLoc, nLoc) <= g_state->viewradius) {
-					grid[nLoc[0]][nLoc[1]].isVisible = 1;
-					grid[nLoc[0]][nLoc[1]].seen = true;
+					m_grid[nLoc[0]][nLoc[1]].isVisible = 1;
+					m_grid[nLoc[0]][nLoc[1]].seen = true;
 					locQueue.push(nLoc);
 				}
 				visited[nLoc[0]][nLoc[1]] = 1;
@@ -129,9 +136,10 @@ void Map::updateVisionInformation() {
 }
 
 bool Map::isOccupied(const Pos& loc) {
-	return grid[loc[0]][loc[1]].ant != -1;
+	return square(loc).ant != -1;
 }
 
+/*
 //resets all non-water squares to land and clears the bots ant vector
 void Map::reset()
 {
@@ -146,14 +154,14 @@ void Map::reset()
 			if(!grid[row][col].isWater)
 				grid[row][col].reset();
 }
+*/
 
 //returns the euclidean distance between two locations with the edges wrapped
  double Map::distance(const Pos &loc1, const Pos &loc2)
 {
-	int d1 = std::abs(loc1[0]-loc2[0]),
-		d2 = std::abs(loc1[1]-loc2[1]),
-		dr = std::min(d1, m_rows-d1),
-		dc = std::min(d2, m_cols-d2);
-	return sqrt(dr*dr + dc*dc);
+	int d0 = std::abs(loc1[0]-loc2[0]),
+		d1 = std::abs(loc1[1]-loc2[1]),
+		dx = std::min(d0, m_size.x()-d0),
+		dy = std::min(d1, m_size.y()-d1);
+	return sqrt(dx*dx + dy*dy);
 }
-

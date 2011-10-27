@@ -67,8 +67,6 @@ struct State
 
 	bool isOccupied(const Pos& loc);
 
-    void updateVisionInformation();
-
 	Square& square(Pos const& pos) { return grid[pos[0]][pos[1]]; }
 };
 

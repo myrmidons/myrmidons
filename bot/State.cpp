@@ -17,7 +17,7 @@ State::State(std::ostream& output)
 	identifier = new Identifier();
     gameover = 0;
 	turn = 0;
-	assert(!g_state && "more than one State constructed");
+	ASSERT(!g_state && "more than one State constructed");
 	bug.open("debug.txt");
 };
 
@@ -47,10 +47,6 @@ void State::reset()
 void State::makeMove(const Pos &loc, int direction)
 {
 	output << "o " << loc[0] << " " << loc[1] << " " << CDIRECTIONS[direction] << endl;
-
-	Pos nLoc = getLocation(loc, direction);
-	grid[nLoc[0]][nLoc[1]].ant = grid[loc[0]][loc[1]].ant;
-	grid[loc[0]][loc[1]].ant = -1;
 }
 
 /*

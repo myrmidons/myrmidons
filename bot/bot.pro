@@ -12,7 +12,8 @@ HEADERS += \
     Util.hpp \
     General.hpp \
     Map.hpp \
-    AntStar.hpp
+    AntStar.hpp \
+    Assert.hpp
 
 SOURCES += \
     Ant.cpp \
@@ -24,7 +25,8 @@ SOURCES += \
     Room.cpp \
     General.cpp \
     Map.cpp \
-    AntStar.cpp
+    AntStar.cpp \
+    Assert.cpp
 
 # Add annoying warning disables below, e.g. -Wno-cats-allowed
 # QMAKE_CXXFLAGS_WARN_ON = \
@@ -38,3 +40,5 @@ unix {
     QMAKE_MAC_SDK = /Developer/SDKs/MacOSX10.6.sdk
     QMAKE_MACOSX_DEPLOYMENT_TARGET = 10.6
 }
+
+

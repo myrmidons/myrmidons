@@ -1,6 +1,6 @@
 #include "AntStar.hpp"
 #include "Map.hpp"
-
+#include "Assert.hpp"
 AntStar::AntStar()
 {
 
@@ -15,17 +15,17 @@ double AntStar::heuristics(StarAnt* current, StarAnt* goal){
 }
 
 Path AntStar::findPath(Pos from, Pos to) {
-	assert(from.x() > -1 && from.x() < g_map->m_cols);
-	assert(from.y() > -1 && from.y() < g_map->m_rows);
 
-	m_grid = StarGrid(g_map->m_rows);
-	for(int r=0;r < g_map->m_rows;r++){
-		m_grid[r].reserve(g_map->m_cols);
-		for(int c=0;c< g_map->m_cols;c++){
-			m_grid[r].push_back( StarAnt(r,c) );
-		}
+	Vec2 mapSize = g_map->size();
+	ASSERT(from.x() > -1 && from.x() < mapSize.x());
+	ASSERT(from.y() > -1 && from.y() < mapSize.y());
+
+	m_grid = StarGrid(mapSize.x());
+	for(int x=0;x < mapSize.x(); x++){
+		m_grid[x].reserve(mapSize.x());
+		for(int y=0; y< mapSize.x(); y++)
+			m_grid[x].push_back( StarAnt(x,y) );
 	}
-
 	StarAnt start = m_grid[from.x()][from.y()];
 	StarAnt goal = m_grid[to.x()][to.y()];
 	m_openList.insert(start);

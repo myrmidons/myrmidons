@@ -23,12 +23,15 @@ public:
 	void addAnt(Ant* ant);
 	Ant* getAnt(Pos const& pos);
 	//void updateVisionInformation();
+
+	// Take one (wrapped) step into one of four directions.
 	Pos getLocation(const Pos &loc, int direction);
+
 	Square& square(Pos const& pos) { return grid[pos[0]][pos[1]]; }
 	bool isOccupied(const Pos& loc);
 
 };
 
-extern Map g_map;
+extern Map* g_map;
 
 #endif // MAP_HPP

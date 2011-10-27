@@ -1,6 +1,7 @@
 #include "Map.hpp"
 #include "Ant.hpp"
-Map g_map;
+
+Map* g_map = NULL;
 
 Map::Map()
 {

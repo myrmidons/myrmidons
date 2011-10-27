@@ -1,11 +1,13 @@
 #include "Room.hpp"
 #include "Util.hpp"
+#include "Map.hpp"
 
 ///////////////////////////////////////////////////////////////////////
 
 Room::Room(int ix, Pos seed) : m_roomIx(ix) {
-	m_cells.push_back(seed);
-	m_open.push_back(seed);
+	m_cells.insert(seed);
+	m_open.insert(seed);
+	m_bb.m_min = m_bb.m_max = seed;
 	m_contents = new RoomContents();
 }
 
@@ -21,11 +23,12 @@ void Room::calcInterests(const PosSet& unassigned) {
 	   This is the requirement for keeping us Manhattan Convex.
 	*/
 
-	map<Pos, int> neighs; // all neighbor cells
+	typedef std::map<Pos, int> NeighMap;
+	NeighMap neighs; // all neighbor cells
 
 	ITC(PosSet, pit, m_open) {
 		for (int i=0; i<4; ++i) { // All four directions
-			Pos p = g_map.getNeighbor(*pit, i);
+			Pos p = g_map->getLocation(*pit, i);
 			if (unassigned.count(p)) {
 				// This is a candidate!
 				neighs[p]++;
@@ -35,7 +38,7 @@ void Room::calcInterests(const PosSet& unassigned) {
 
 	m_interests.clear();
 
-	ITC(map<Pos,int>, nit, neighs) {
+	ITC(NeighMap, nit, neighs) {
 		if (nit->second==2 || !m_bb.contains(nit->first)) {
 			// TODO: limit with maxwidth
 			// We may expand here
@@ -43,7 +46,7 @@ void Room::calcInterests(const PosSet& unassigned) {
 			intr.room = this;
 			intr.pos = nit->first;
 			intr.neighbors = nit->second;
-			m_interests.push_back(intr);
+			m_interests.insert(intr);
 		}
 	}
 }
@@ -63,7 +66,7 @@ bool Room::tryExpandWith(Pos pos) {
 }
 
 void Room::add(Pos pos) {
-	m_cells.push_back(pos);
+	// TODO
 }
 
 ///////////////////////////////////////////////////////////////////////
@@ -74,8 +77,8 @@ bool isInRange(const BB& bb, const Pos& pos, const Vec2& mapSize, int maxRoomWid
 	return std::min(r.x(), r.y()) < maxRoomWidth;
 }
 
-bool areAnyInRange(Room* room, const PosList& pos, const Vec2& mapSize, int maxRoomWidth) {
-	ITC(PosList, pit, pos)
+bool areAnyInRange(Room* room, const PosSet& pos, const Vec2& mapSize, int maxRoomWidth) {
+	ITC(PosSet, pit, pos)
 		if (isInRange(room->getBB(), *pit, mapSize, maxRoomWidth))
 			return true;
 	return false;

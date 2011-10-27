@@ -47,6 +47,9 @@ int main(int, char *[])
 	State state(io.output());
 	g_state = &state;
 
+	Map map;
+	g_map = &map;
+
 	Rooms rooms;
 	g_rooms = &rooms;
 

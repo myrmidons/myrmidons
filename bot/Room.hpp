@@ -22,6 +22,8 @@ public:
 
 //////////////////////////////////////////////////////////////////
 
+class Room;
+
 // Rooms volenteer interest in unassigned cells.
 // This interest is kept track of using this:
 struct Interest

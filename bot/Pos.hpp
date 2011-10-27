@@ -62,26 +62,26 @@ inline int wrappedDist(int a, int b, int size) {
 // Bounding box
 class BB {
 public:
-	/* remember that topLeft.x CAN be greater than bottomRight.x
+	/* remember that m_min.x CAN be greater than m_max.x
 	   if the room is wrapped! */
-	Pos topLeft, bottomRight; // [,) style ranges
+	Pos m_min, m_max; // [,] style ranges! INCLUSIVE!
 
 	/*
 	wont work when wrapped...
-	int width()  const { return bottomRight.x()-topLeft.x(); }
-	int height() const { return bottomRight.y()-topLeft.y(); }
+	int width()  const { return m_max.x()-m_min.x()+1; }
+	int height() const { return m_max.y()-m_min.y()+2; }
 	*/
 
 	// pos must be inside map!
 	bool contains(const Pos& pos) const {
 		for (int a=0; a<2; ++a) {
-			if (topLeft[a] <= bottomRight[a]) {
+			if (m_min[a] <= m_max[a]) {
 				// Non-wrapped
-				if (pos[a]<topLeft[a]) return false;
-				if (pos[a]>=bottomRight[a]) return false;
+				if (pos[a]<m_min[a]) return false;
+				if (pos[a]>m_max[a]) return false;
 			} else {
 				// Wrapped
-				if (bottomRight[a]<=pos[a] && pos[a]<topLeft[a])
+				if (m_max[a]<pos[a] && pos[a]<m_min[a])
 					return false;
 			}
 		}
@@ -95,22 +95,22 @@ public:
 	Vec2 distance(const Pos& pos, const Vec2& size) const {
 		Pos ret;
 		for (int a=0; a<2; ++a) {
-			if (topLeft[a] <= bottomRight[a]) {
+			if (m_min[a] <= m_max[a]) {
 				// Non-wrapped
-				if (topLeft[a] <= pos[a] && pos[a] < bottomRight[a])
+				if (m_min[a] <= pos[a] && pos[a] <= m_max[a])
 					ret[a] = 0; // Inside
 				else
 					ret[a] = std::min(
-								wrappedDist(pos[a], topLeft[a],       size[a]),
-								wrappedDist(pos[a], bottomRight[a]-1, size[a])); // -1 for distance to inclusive
+								wrappedDist(pos[a], m_min[a], size[a]),
+								wrappedDist(pos[a], m_max[a], size[a]));
 			} else {
 				// Wrapped
-				if (pos[a] < bottomRight[a] || pos[a] >= topLeft[a])
+				if (pos[a] <= m_max[a] || m_min[a] <= pos[a])
 					ret[a] = 0; // inside
 				else
 					ret[a] = std::min(
-								wrappedDist(pos[a], topLeft[a],       size[a]),
-								wrappedDist(pos[a], bottomRight[a]-1, size[a])); // -1 for distance to inclusive
+								wrappedDist(pos[a], m_min[a], size[a]),
+								wrappedDist(pos[a], m_max[a], size[a]));
 			}
 		}
 		return ret;

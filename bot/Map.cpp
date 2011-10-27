@@ -8,10 +8,9 @@ Map::Map()
 
 }
 
-void Map::initMap(int numOfRows, int numOfCols) {
-	rows = numOfRows;
-	cols = numOfCols;
-	grid = std::vector<std::vector<Square> >(rows, std::vector<Square>(cols, Square()));
+void Map::initMap(Vec2 size) {
+	m_size = size;
+	grid = std::vector<std::vector<Square> >(size[0], std::vector<Square>(size[1], Square()));
 }
 
 // Tell the map that a certain ant is dead.
@@ -48,8 +47,8 @@ Ant* Map::getAnt(Pos const& pos) {
 //returns the new location from moving in a given direction with the edges wrapped
 Pos Map::getLocation(const Pos &loc, int direction)
 {
-	return Pos( (loc[0] + DIRECTIONS[direction][0] + rows) % rows,
-					 (loc[1] + DIRECTIONS[direction][1] + cols) % cols );
+	return Pos( (loc[0] + DIRECTIONS[direction][0] + m_size[0]) % m_size[0],
+				(loc[1] + DIRECTIONS[direction][1] + m_size[1]) % m_size[1] );
 };
 /*
 	This function will update update the lastSeen value for any squares currently
@@ -107,8 +106,8 @@ void Map::reset()
 	//enemyHills.clear();
 	//food.clear();
 	//deadAnts.clear();
-	for(int row=0; row<rows; row++)
-		for(int col=0; col<cols; col++)
+	for(int row=0; row<m_size[0]; row++)
+		for(int col=0; col<m_size[1]; col++)
 			if(!grid[row][col].isWater)
 				grid[row][col].reset();
 };

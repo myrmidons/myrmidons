@@ -10,15 +10,13 @@ class Map
 	std::vector<std::vector<Square> > grid;
 	std::map<Ant*, Pos> antpos;
 	std::map<Pos, Ant*> posant;
-
-	int rows;
-	int cols;
-
 	//resets all non-water squares to land and clears the bots ant vector
 	void reset();
 public:
 	Map();
-	void initMap(int rows, int cols);
+	Vec2 m_size;
+
+	void initMap(Vec2 size);
 	void removeAnt(Ant* ant);
 	void addAnt(Ant* ant);
 	Ant* getAnt(Pos const& pos);

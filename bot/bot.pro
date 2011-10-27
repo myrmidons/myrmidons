@@ -11,7 +11,8 @@ HEADERS += \
     Room.hpp \
     Util.hpp \
     General.hpp \
-    Map.hpp
+    Map.hpp \
+    AntStar.hpp
 
 SOURCES += \
     Ant.cpp \
@@ -22,7 +23,8 @@ SOURCES += \
     Identifier.cpp \
     Room.cpp \
     General.cpp \
-    Map.cpp
+    Map.cpp \
+    AntStar.cpp
 
 # Add annoying warning disables below, e.g. -Wno-cats-allowed
 # QMAKE_CXXFLAGS_WARN_ON = \

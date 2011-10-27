@@ -4,7 +4,9 @@
 #include <map>
 #include <vector>
 #include "Square.hpp"
+
 class Ant;
+
 class Map
 {
 	std::vector<std::vector<Square> > grid;
@@ -30,6 +32,7 @@ public:
 	Square& square(Pos const& pos) { return grid[pos[0]][pos[1]]; }
 	bool isOccupied(const Pos& loc);
 
+	Vec2 size() const { return Vec2(cols, rows); }
 };
 
 extern Map* g_map;

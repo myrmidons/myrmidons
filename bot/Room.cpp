@@ -49,8 +49,8 @@ void Room::add(Pos pos) {
 	assert(s.room==NULL);
 	s.room = this;
 
-	// TODO: Expand boundingbox
-
+	// Expand boundingbox
+	m_bb.expandTo(pos, g_map->size());
 
 	// Check to see if we can close anything in m_open
 	PosSet closeThese;

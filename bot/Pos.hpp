@@ -73,19 +73,21 @@ public:
 	int height() const { return m_max.y()-m_min.y()+2; }
 	*/
 
+	bool containsOnAxis(int a, int pos) const {
+		if (m_min[a] <= m_max[a]) {
+			// Non-wrapped
+			return m_min[a] <= pos && pos <= m_max[a];
+		} else {
+			// Wrapped
+			return pos <= m_max[a] || m_min[a] <= pos;
+		}
+	}
+
 	// pos must be inside map!
 	bool contains(const Pos& pos) const {
-		for (int a=0; a<2; ++a) {
-			if (m_min[a] <= m_max[a]) {
-				// Non-wrapped
-				if (pos[a]<m_min[a]) return false;
-				if (pos[a]>m_max[a]) return false;
-			} else {
-				// Wrapped
-				if (m_max[a]<pos[a] && pos[a]<m_min[a])
-					return false;
-			}
-		}
+		for (int a=0; a<2; ++a)
+			if (!containsOnAxis(a, pos[a]))
+				return false;
 		return true;
 	}
 
@@ -96,22 +98,14 @@ public:
 	Vec2 distance(const Pos& pos, const Vec2& size) const {
 		Pos ret;
 		for (int a=0; a<2; ++a) {
-			if (m_min[a] <= m_max[a]) {
-				// Non-wrapped
-				if (m_min[a] <= pos[a] && pos[a] <= m_max[a])
-					ret[a] = 0; // Inside
-				else
-					ret[a] = std::min(
-								wrappedDist(pos[a], m_min[a], size[a]),
-								wrappedDist(pos[a], m_max[a], size[a]));
+			if (containsOnAxis(a, pos[a])) {
+				ret[a] = 0; // inside
+				continue;
 			} else {
-				// Wrapped
-				if (pos[a] <= m_max[a] || m_min[a] <= pos[a])
-					ret[a] = 0; // inside
-				else
-					ret[a] = std::min(
-								wrappedDist(pos[a], m_min[a], size[a]),
-								wrappedDist(pos[a], m_max[a], size[a]));
+				// Non-wrapped
+				ret[a] = std::min(
+							wrappedDist(pos[a], m_min[a], size[a]),
+							wrappedDist(pos[a], m_max[a], size[a]));
 			}
 		}
 		return ret;
@@ -123,6 +117,19 @@ public:
 		assert(r.x() >= 0);
 		assert(r.y() >= 0);
 		return r.x() + r.y();
+	}
+
+	// "pos" is close (or inside) bounding box. Expand bounding box to include it.
+	void expandTo(const Pos& pos, const Vec2& size) {
+		for (int a=0; a<2; ++a) {
+			if (containsOnAxis(a, pos[a]))
+				continue;
+
+			if (wrappedDist(pos[a], m_min[a], size[a]) < wrappedDist(pos[a], m_max[a], size[a]))
+				m_min[a] = pos[a];
+			else
+				m_max[a] = pos[a];
+		}
 	}
 };
 

@@ -6,14 +6,30 @@ HEADERS += \
     Pos.hpp \
     Square.hpp \
     State.hpp \
-    Timer.hpp
+    Timer.hpp \
+    chixdummymap.hpp \
+    Identifier.hpp
 
 SOURCES += \
     Ant.cpp \
     Bot.cpp \
     Food.cpp \
     MyBot.cpp \
-    State.cpp
+    State.cpp \
+    chixdummymap.cpp \
+    Identifier.cpp
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

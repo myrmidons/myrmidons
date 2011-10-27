@@ -18,6 +18,7 @@
         bug << "testing" << 2.0 << '%' << endl;
         bug.close();
 */
+
 struct Bug
 {
     std::ofstream file;

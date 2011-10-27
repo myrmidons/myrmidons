@@ -1,6 +1,8 @@
 #ifndef POS_H_
 #define POS_H_
 
+#include <iostream>
+
 /*
 	struct for representing positions in the grid.
 */

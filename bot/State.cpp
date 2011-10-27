@@ -1,4 +1,5 @@
 #include "State.hpp"
+#include "Identifier.hpp"
 
 using namespace std;
 
@@ -15,6 +16,7 @@ bool State::isOccupied(const Pos& loc) {
 //constructor
 State::State()
 {
+	identifier = new Identifier();
     gameover = 0;
     turn = 0;
 	bug.open("debug.txt");
@@ -165,6 +167,7 @@ istream& operator>>(istream &is, State &state)
         else if(inputType == "turn")
         {
             is >> state.turn;
+			state.identifier->turn(state.turn);
             break;
         }
         else //unknown line
@@ -218,35 +221,50 @@ istream& operator>>(istream &is, State &state)
             if(inputType == "w") //water square
             {
                 is >> row >> col;
-                state.grid[row][col].isWater = 1;
+				state.identifier->water(Pos(row, col));
+				state.grid[row][col].isWater = 1;
             }
             else if(inputType == "f") //food square
             {
                 is >> row >> col;
+				state.identifier->food(Pos(row, col));
                 state.grid[row][col].isFood = 1;
 				state.food.push_back(Pos(row, col));
             }
             else if(inputType == "a") //live ant square
             {
                 is >> row >> col >> player;
-                state.grid[row][col].ant = player;
-                if(player == 0)
+				state.identifier->ant(Pos(row,col),player);
+				state.grid[row][col].ant = player;
+				if(player == 0) {
 					state.myAnts.push_back(Pos(row, col));
-                else
+				}
+				else {
 					state.enemyAnts.push_back(Pos(row, col));
+					state.enemyTeams.push_back(player);
+
+				}
             }
             else if(inputType == "d") //dead ant square
             {
                 is >> row >> col >> player;
-                state.grid[row][col].deadAnts.push_back(player);
-				if(player == 0)
+				state.identifier->deadAnt(Pos(row,col),player);
+				state.grid[row][col].deadAnts.push_back(player);
+				if(player == 0) {
 					state.deadAnts.push_back(Pos(row, col));
+				}
+				else {
+					state.deadEnemies.push_back(Pos(row, col));
+					state.enemyDeadTeams.push_back(player);
+
+				}
             }
             else if(inputType == "h")
             {
                 is >> row >> col >> player;
+				state.identifier->hill(Pos(row,col),player);
                 state.grid[row][col].isHill = 1;
-                state.grid[row][col].hillPlayer = player;
+				state.grid[row][col].hillPlayer = player;
                 if(player == 0)
 					state.myHills.push_back(Pos(row, col));
                 else
@@ -263,6 +281,7 @@ istream& operator>>(istream &is, State &state)
             }
             else if(inputType == "go") //end of turn input
             {
+				state.identifier->go();
                 if(state.gameover)
                     is.setstate(std::ios::failbit);
                 else

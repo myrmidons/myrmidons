@@ -3,16 +3,12 @@
 
 #include "State.hpp"
 #include "Ant.hpp"
-#include <vector>
-/*
-    This struct represents your bot in the game of Ants
-*/
 
+#include <vector>
 
 struct Bot
 {
 	State& state;
-	AntIdentifier antID;
 
 	// Used for random ordering of directions.
 	std::vector<DirVec> dirVecs;

@@ -91,34 +91,6 @@ private:
 	/////////////////////////////////////////
 	// Derived:
 	BB m_bb;
-
-	/*
-	// for building:
-	PosSet closed; // positions that has no neigbor that is not assigned to a room (or water).
-	PosSet open; // edge positions with non-assigned neighbors.
-
-
-	// n^2, where n is the number of cells. symmetric, with zero diagonal.
-	// shortestPath[i + j*n] is the length of the shortest path between cells i and j.
-	PosList shortestPath;
-
-	/////////////////////////////////////////
-
-	// Have we reached our limit of growth, and is so done?
-	bool isFinished() const;
-
-	// Indices of neighboring rooms, if any.
-	const IntList& neighborRooms() const;
-
-	// cells inside this room, that borders to neighbor nr "nix" (global index neighborRooms[nix]).
-	// from a these border cells there is only one step to the other room.
-	// returns indices into our list of positions.
-	IntList borderCellsTo(int nix) const;
-
-	// Distance between two neighbor rooms:
-	// given two neighbor indices, returns the shortest and longest distance... or something.
-	Range neighborDistance(int na, nb) const;
-	*/
 };
 typedef std::vector<Room*> RoomList;
 typedef std::set<Room*> RoomSet;
@@ -133,6 +105,11 @@ public:
 
 	// Called by g_map upon uncovering new grid cells.
 	void expandWith(const PosSet& pos);
+
+#ifdef DEBUG
+	// Dump a png of the room colorings.
+	void dumpImage() const;
+#endif
 
 private:
 	RoomList m_rooms;

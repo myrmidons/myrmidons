@@ -2,6 +2,12 @@
 #include "Util.hpp"
 #include "Map.hpp"
 
+#ifdef DEBUG
+#	include <QImage>
+#endif
+
+Rooms* g_rooms = NULL;
+
 ///////////////////////////////////////////////////////////////////////
 
 bool operator<(const Interest& a, const Interest& b) {
@@ -186,4 +192,32 @@ void Rooms::expandWith(const PosSet& posArg) {
 	}
 }
 
-Rooms* g_rooms = NULL;
+#ifdef DEBUG
+QRgb randomColor(Room* r) {
+	srand(reinterpret_cast<long>(r));
+	return qRgb(rand()%255, rand()%255, rand()%255);
+}
+
+// Dump a png of the room colorings.
+void Rooms::dumpImage() const {
+	Vec2 size = g_map->size();
+	//int Mult = 1; // Pixels per grid cell.
+	QImage img(size.x(), size.y(), QImage::Format_ARGB32);
+	img.fill(0);
+
+	std::map<Room*, QRgb> colorMap;
+	ITC(RoomList, rit, m_rooms)
+		colorMap[*rit] = randomColor(*rit);
+
+	for (int y=0; y<size.y(); ++y) {
+		for (int x=0; x<size.x(); ++x) {
+			Square& s = g_map->square(Pos(x,y));
+			if (s.room) {
+				img.setPixel(x, y, colorMap[s.room]);
+			}
+		}
+	}
+
+	img.save("rooms.png");
+}
+#endif

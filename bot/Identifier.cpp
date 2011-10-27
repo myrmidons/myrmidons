@@ -27,7 +27,6 @@ void Identifier::food(Pos const& pos) {
 }
 
 void Identifier::ant(Pos const& pos, int team) {
-	g_state->bug << "ant: " << pos << ',' << team << std::endl;
 	if(team != TheGoodGuys) {
 		buf.enemyAnts.push_back(pos);
 		buf.enemyTeams.push_back(team);

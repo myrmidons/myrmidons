@@ -86,8 +86,7 @@ Pos Map::getLocation(const Pos &loc, int dir)
 }
 
 Square& Map::square(Pos const& pos) {
-	ASSERT(0<=pos.x() && pos.x()<m_size.x());
-	ASSERT(0<=pos.y() && pos.y()<m_size.y());
+	assertInMap(pos);
 	return m_grid[pos[0]][pos[1]];
 }
 /*

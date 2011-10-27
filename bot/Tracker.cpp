@@ -33,6 +33,7 @@ void Tracker::food(Pos const& pos) {
 }
 
 void Tracker::ant(Pos const& pos, int team) {
+	g_map->square(pos).ant = team;
 	if(team != TheGoodGuys) {
 		buf.enemyAnts.push_back(pos);
 		buf.enemyTeams.push_back(team);
@@ -43,6 +44,7 @@ void Tracker::ant(Pos const& pos, int team) {
 }
 
 void Tracker::deadAnt(Pos const& pos, int team) {
+	g_state->bug << "deadAnt(" << pos << ',' << team << ")" << std::endl;
 	if(team != TheGoodGuys) {
 		buf.deadEnemies.push_back(pos);
 		buf.deadEnemyTeams.push_back(team);
@@ -101,7 +103,6 @@ void Tracker::update() {
 
 	// Spawn new ants.
 	for(PosSet::iterator hill = freeHills.begin(); hill != freeHills.end(); ++hill) {
-		g_state->bug << "Trying to check square " << *hill << " in map of dimensions " << g_map->size() << std::endl;
 		if(g_map->square(*hill).ant == 0) {
 			// There is a new ant on this hill!! Horray!
 			IndexSet::iterator it = m_deadIndices.begin();

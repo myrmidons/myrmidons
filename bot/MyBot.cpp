@@ -65,5 +65,6 @@ int main(int, char *[])
 	g_rooms->dumpImage();
 #endif
 
+	g_state->bug << "Reached the end." << std::endl;
     return 0;
 }

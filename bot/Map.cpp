@@ -9,9 +9,10 @@ Map::Map()
 
 }
 
-void Map::initMap(Vec2 size) {
-	m_size = size;
-	grid = std::vector<std::vector<Square> >(size[0], std::vector<Square>(size[1], Square()));
+void Map::initMap(int cols, int rows) {
+	m_cols = cols;
+	m_rows = rows;
+	grid = std::vector<std::vector<Square> >(m_rows, std::vector<Square>(m_cols, Square()));
 }
 
 void Map::removeAnt(Ant* ant) {
@@ -73,8 +74,8 @@ void Map::moveAnt(Pos const& from, Pos const& to) {
 //returns the new location from moving in a given direction with the edges wrapped
 Pos Map::getLocation(const Pos &loc, int direction)
 {
-	return Pos( (loc[0] + DIRECTIONS[direction][0] + m_size[0]) % m_size[0],
-				(loc[1] + DIRECTIONS[direction][1] + m_size[1]) % m_size[1] );
+	return Pos( (loc[0] + DIRECTIONS[direction][0] + m_rows) % m_rows,
+				(loc[1] + DIRECTIONS[direction][1] + m_cols) % m_cols );
 };
 /*
 	This function will update update the lastSeen value for any squares currently
@@ -132,8 +133,8 @@ void Map::reset()
 	//enemyHills.clear();
 	//food.clear();
 	//deadAnts.clear();
-	for(int row=0; row<m_size[0]; row++)
-		for(int col=0; col<m_size[1]; col++)
+	for(int row=0; row<m_rows; row++)
+		for(int col=0; col<m_cols; col++)
 			if(!grid[row][col].isWater)
 				grid[row][col].reset();
 };

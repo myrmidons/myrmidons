@@ -16,9 +16,9 @@ class Map
 	void reset();
 public:
 	Map();
-	Vec2 m_size;
+	int m_cols, m_rows;
 
-	void initMap(Vec2 size);
+	void initMap(int cols, int rows);
 	void removeAnt(Ant* ant);
 	void addAnt(Ant* ant);
 	Ant* getAnt(Pos const& pos);
@@ -33,7 +33,7 @@ public:
 	Square& square(Pos const& pos) { return grid[pos[0]][pos[1]]; }
 	bool isOccupied(const Pos& loc);
 
-	Vec2 size() const { return Vec2(cols, rows); }
+	Vec2 size() const { return Vec2(m_cols, m_rows); }
 };
 
 extern Map* g_map;

@@ -8,7 +8,7 @@ AntStar::AntStar()
 
 
 Path AntStar::findPath(Map* m, Pos from, Pos to) {
-	m_grid = StarGrid(m->m_size[0], std::vector<StarAnt>(m->m_size[1], StarAnt()));
+	m_grid = StarGrid(m->m_rows, std::vector<StarAnt>(m->m_cols, StarAnt()));
 	StarAnt start = m_grid[from.x()][from.y()];
 	StarAnt goal = m_grid[to.x()][to.y()];
 	m_openList.insert(start);

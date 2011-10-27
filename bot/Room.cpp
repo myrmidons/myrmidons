@@ -272,7 +272,9 @@ void Rooms::expandWith(const PosSet& posArg) {
 
 	LOG_DEBUG("Rooms::expandWith DONE");
 
-	dumpImage();
+#ifdef DEBUG
+	g_rooms->dumpImage();
+#endif
 }
 
 #ifdef DEBUG

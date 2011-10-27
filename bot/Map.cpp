@@ -107,7 +107,6 @@ Square& Map::square(Pos const& pos) {
 
 
 void Map::updateVisionInformation() {
-	return;
 	std::queue<Pos> locQueue;
 	Pos sLoc, cLoc, nLoc;
 

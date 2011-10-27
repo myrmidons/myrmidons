@@ -160,19 +160,19 @@ void Map::newTurn(int turn) {
 //resets all non-water squares to land and clears the bots ant vector
 void Map::reset()
 {
-	for(int row=0; row<size().x(); row++)
-		for(int col=0; col<size().y(); col++)
-			if(!m_grid[row][col].isWater)
-				m_grid[row][col].reset();
+	for (int x=0; x<size().x(); ++x)
+		for (int y=0; y<size().y(); ++y)
+			if(!m_grid[x][y].isWater)
+				m_grid[x][y].reset();
 }
 
 
 //returns the euclidean distance between two locations with the edges wrapped
- double Map::distance(const Pos &loc1, const Pos &loc2)
+double Map::distance(const Pos &loc1, const Pos &loc2)
 {
-	int d0 = std::abs(loc1[0]-loc2[0]),
-		d1 = std::abs(loc1[1]-loc2[1]),
-		dx = std::min(d0, m_size.x()-d0),
-		dy = std::min(d1, m_size.y()-d1);
+	int d0 = std::abs(loc1[0]-loc2[0]);
+	int d1 = std::abs(loc1[1]-loc2[1]);
+	int dx = std::min(d0, m_size.x()-d0);
+	int dy = std::min(d1, m_size.y()-d1);
 	return sqrt(dx*dx + dy*dy);
 }

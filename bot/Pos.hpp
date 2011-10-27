@@ -31,12 +31,6 @@ struct Pos
 
 	inline int& y() { return coords[1]; }
 	inline int y() const { return coords[1]; }
-
-	inline int& row() { return coords[0]; }
-	inline int row() const { return coords[0]; }
-
-	inline int& col() { return coords[1]; }
-	inline int col() const { return coords[1]; }
 };
 
 typedef Pos Vec2;

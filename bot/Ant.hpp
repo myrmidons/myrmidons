@@ -3,12 +3,10 @@
 
 #include "Pos.hpp"
 
-
 class Ant {
 	Pos m_position;
 
 public:
-
 	Ant(Pos const& loc = Pos());
 	Ant(Ant const& ant);
 	Ant& operator=(Ant const& ant);

@@ -44,7 +44,7 @@ public:
 
 private:
 
-	void update(State& state);
+	void update(State* state);
 
 	struct StateBuffer {
 		std::vector<Pos> myAnts, enemyAnts, myHills, enemyHills, food, deadAnts, deadEnemies;

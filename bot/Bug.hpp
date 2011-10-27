@@ -1,5 +1,5 @@
-#ifndef BUG_H_
-#define BUG_H_
+#ifndef BUG_HPP
+#define BUG_HPP
 
 #include <fstream>
 

@@ -1,6 +1,30 @@
 #include "Bot.hpp"
+#include "Room.hpp"
+#include "Map.hpp"
 
 using namespace std;
+
+#ifdef NETWORK_DEBUGGING
+#include <QNetwork>
+#endif
+
+struct StandardIODevice : IODevice
+{
+	StandardIODevice()
+	{
+		cout.sync_with_stdio(0); //this line makes your bot faster
+	}
+
+	std::istream& input()
+	{
+		return std::cin;
+	}
+
+	std::ostream& output()
+	{
+		return std::cout;
+	}
+};
 
 /*
     This program will play a single game of Ants while communicating with
@@ -13,12 +37,25 @@ using namespace std;
     outlined on the specifications page at:
         http://www.ai-contest.com
 */
-int main(int argc, char *argv[])
+int main(int, char *[])
 {
-    cout.sync_with_stdio(0); //this line makes your bot faster
+#ifdef NETWORK_DEBUGGING
+	// TODO: implement a network-based device for debugging
+#else
+	StandardIODevice io;
+#endif
 
-    Bot bot;
-    bot.playGame();
+	State state(io.output());
+	g_state = &state;
+
+	Map map;
+	g_map = &map;
+
+	Rooms rooms;
+	g_rooms = &rooms;
+
+	Bot bot(io);
+	bot.playGame();
 
     return 0;
 }

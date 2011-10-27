@@ -1,17 +1,21 @@
 #include "Bot.hpp"
 #include "Ant.hpp"
-
-// Just replace with Map.hpp when the time is ripe. (Also in Ant.cpp)
-#include "chixdummymap.hpp"
+#include "Map.hpp"
 #include "Identifier.hpp"
 
 #include <algorithm>
 #include <iostream>
 
+/// Kc testar
+
+
 using namespace std;
 
 //constructor
-Bot::Bot() : state(g_state) {
+Bot::Bot(IODevice& io_device)
+	: io(io_device)
+	, state(*g_state)
+{
 	setupRandomDirections();
 }
 
@@ -66,16 +70,18 @@ DirVec const& Bot::randomDirVec() const {
 //plays a single game of Ants.
 void Bot::playGame() {
 	//reads the game parameters and sets up
-    cin >> state;
+	io.bufferInputChunk();
+	io.input() >> state;
     state.setup();
     endTurn();
 
 	// continues making moves while the game is not over
-    while(cin >> state)
+	while(io.bufferInputChunk() && io.input() >> state)
     {
 		state.updateVisionInformation();
 		makeMoves();
         endTurn();
+		io.flushOutputChunk();
     }
 };
 
@@ -117,7 +123,7 @@ void Bot::makeMoves()
 		}
 		if(bestRank > -100) {
 			// This will not be needed. Just for testing the identifyer as things stand at the moment.
-			state.identifier->m_map->moveAnt(antLoc, state.getLocation(antLoc, bestMove));
+			g_state->identifier->m_map->moveAnt(antLoc, state.getLocation(antLoc, bestMove));
 
 			state.makeMove(antLoc, bestMove); // Needed because the map is still just a dummy.
 		}
@@ -133,8 +139,8 @@ void Bot::endTurn()
         state.reset();
     state.turn++;
 
-    cout << "go" << endl;
-};
+	io.output() << "go" << endl;
+}
 
 bool Bot::safeLocation(const Pos &loc) {
 	return !(state.grid[loc[0]][loc[1]].isWater || state.grid[loc[0]][loc[1]].isFood);

@@ -7,8 +7,11 @@ HEADERS += \
     Square.hpp \
     State.hpp \
     Timer.hpp \
-    chixdummymap.hpp \
-    Identifier.hpp
+    Identifier.hpp \
+    Room.hpp \
+    Util.hpp \
+    General.hpp \
+    Map.hpp
 
 SOURCES += \
     Ant.cpp \
@@ -16,50 +19,13 @@ SOURCES += \
     Food.cpp \
     MyBot.cpp \
     State.cpp \
-    chixdummymap.cpp \
-    Identifier.cpp
+    Identifier.cpp \
+    Room.cpp \
+    General.cpp \
+    Map.cpp
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+# Add annoying warning disables below, e.g. -Wno-cats-allowed
+# QMAKE_CXXFLAGS_WARN_ON = \
 
 
 

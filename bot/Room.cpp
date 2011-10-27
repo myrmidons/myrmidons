@@ -2,12 +2,22 @@
 #include "Util.hpp"
 #include "Map.hpp"
 
+#ifdef DEBUG
+#	include <QImage>
+#endif
+
+Rooms* g_rooms = NULL;
+
 ///////////////////////////////////////////////////////////////////////
 
 bool operator<(const Interest& a, const Interest& b) {
 	// Expand into where we have many neighbors first
 	if (a.neighbors > b.neighbors) return true;
 	if (a.neighbors < b.neighbors) return false;
+
+	// Try to keep squareness:
+	if (a.prio > b.prio) return true;
+	if (a.prio < b.prio) return false;
 
 	// Exapand smallest room first
 	if (a.room->getArea() < b.room->getArea()) return true;
@@ -49,19 +59,26 @@ void Room::add(Pos pos) {
 	assert(s.room==NULL);
 	s.room = this;
 
-	// TODO: Expand boundingbox
-
+	// Expand boundingbox
+	m_bb.expandTo(pos, g_map->size());
 
 	// Check to see if we can close anything in m_open
 	PosSet closeThese;
 	ITC(PosSet, pit, m_open)
 		if (isClosable(*pit))
 			closeThese.insert(*pit);
+
 	m_open.erase(closeThese.begin(), closeThese.end());
 }
 
 bool Room::isFinished() const {
-	return getArea() >= g_rooms->maxRoomArea();
+	if (getArea() >= g_rooms->maxRoomArea())
+		return true;
+	Vec2 bbSize = m_bb.size(g_map->size());
+	int maxWidth = g_rooms->maxRoomWidth();
+	if (bbSize.x() >= maxWidth) return true;
+	if (bbSize.y() >= maxWidth) return true;
+	return false;
 }
 
 
@@ -103,6 +120,18 @@ void Room::calcInterests(const PosSet& unassigned) {
 			intr.pos = nit->first;
 			intr.neighbors = nit->second;
 
+			if (intr.neighbors==2) {
+				intr.prio=0;
+			} else {
+				Vec2 bbSize = m_bb.size(g_map->size());
+				// We're expanding bb - check on wich side.
+				Vec2 d = m_bb.distance(nit->first, g_map->size());
+				assert(d.x()==0 || d.y()==0);
+				assert(d.x()==1 || d.y()==1);
+				int axis = (d.x() > d.y() ? 0 : 1);
+				intr.prio = bbSize[1-axis] - bbSize[axis]; // larger on other axis is good
+			}
+
 			m_interests.insert(intr);
 			m_interestPos.insert(intr.pos);
 		}
@@ -128,10 +157,14 @@ int Rooms::maxRoomArea() const {
 	return 100; // FIXME
 }
 
+int Rooms::maxRoomWidth() const {
+	return 10; // TODO: base on g-state view distance.
+}
+
 void Rooms::expandWith(const PosSet& posArg) {
 	PosSet unassigned = posArg; // Copy so we can take away one at the time.
 
-	int maxRoomWidth = 10; // FIXME
+	int maxRoomWidth = this->maxRoomWidth();
 	Vec2 mapSize = g_map->size();
 
 	RoomSet rooms; // Affected rooms
@@ -186,4 +219,32 @@ void Rooms::expandWith(const PosSet& posArg) {
 	}
 }
 
-Rooms* g_rooms = NULL;
+#ifdef DEBUG
+QRgb randomColor(Room* r) {
+	srand(reinterpret_cast<long>(r));
+	return qRgb(rand()%255, rand()%255, rand()%255);
+}
+
+// Dump a png of the room colorings.
+void Rooms::dumpImage() const {
+	Vec2 size = g_map->size();
+	//int Mult = 1; // Pixels per grid cell.
+	QImage img(size.x(), size.y(), QImage::Format_ARGB32);
+	img.fill(0);
+
+	std::map<Room*, QRgb> colorMap;
+	ITC(RoomList, rit, m_rooms)
+		colorMap[*rit] = randomColor(*rit);
+
+	for (int y=0; y<size.y(); ++y) {
+		for (int x=0; x<size.x(); ++x) {
+			Square& s = g_map->square(Pos(x,y));
+			if (s.room) {
+				img.setPixel(x, y, colorMap[s.room]);
+			}
+		}
+	}
+
+	img.save("rooms.png");
+}
+#endif

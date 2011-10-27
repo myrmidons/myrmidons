@@ -57,5 +57,9 @@ int main(int, char *[])
 	Bot bot(io);
 	bot.playGame();
 
+#ifdef DEBUG
+	g_rooms->dumpImage();
+#endif
+
     return 0;
 }

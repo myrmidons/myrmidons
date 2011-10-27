@@ -2,6 +2,7 @@
 #include "Identifier.hpp"
 #include "Map.hpp"
 #include <cassert>
+#include "Ant.hpp"
 
 using namespace std;
 
@@ -43,12 +44,6 @@ void State::setup()
 //resets all non-water squares to land and clears the bots ant vector
 void State::reset()
 {
-    myAnts.clear();
-    enemyAnts.clear();
-    myHills.clear();
-    enemyHills.clear();
-    food.clear();
-	deadAnts.clear();
     for(int row=0; row<rows; row++)
         for(int col=0; col<cols; col++)
             if(!grid[row][col].isWater)
@@ -86,9 +81,9 @@ void State::updateVisionInformation()
 	std::queue<Pos> locQueue;
 	Pos sLoc, cLoc, nLoc;
 
-    for(int a=0; a<(int) myAnts.size(); a++)
-    {
-        sLoc = myAnts[a];
+	AntSet const& ants = g_state->identifier->getLiveAnts();
+	for(AntSet::const_iterator it = ants.begin(); it != ants.end(); ++it) {
+		sLoc = (*it)->pos();
         locQueue.push(sLoc);
 
         std::vector<std::vector<bool> > visited(rows, std::vector<bool>(cols, 0));
@@ -104,7 +99,7 @@ void State::updateVisionInformation()
             {
                 nLoc = getLocation(cLoc, d);
 
-				if(!visited[nLoc[0]][nLoc[1]] && distance(sLoc, nLoc) <= viewradius)
+				if(!visited[nLoc[0]][nLoc[1]] && g_map->distance(sLoc, nLoc) <= viewradius)
                 {
 					grid[nLoc[0]][nLoc[1]].isVisible = 1;
                     locQueue.push(nLoc);
@@ -225,14 +220,14 @@ istream& operator>>(istream &is, State &state)
                 is >> row >> col;
 				state.identifier->food(Pos(row, col));
                 state.grid[row][col].isFood = 1;
-				state.food.push_back(Pos(row, col));
+//				state.food.push_back(Pos(row, col));
             }
             else if(inputType == "a") //live ant square
             {
                 is >> row >> col >> player;
 				state.identifier->ant(Pos(row,col),player);
 				state.grid[row][col].ant = player;
-				if(player == 0) {
+/*				if(player == 0) {
 					state.myAnts.push_back(Pos(row, col));
 				}
 				else {
@@ -240,20 +235,21 @@ istream& operator>>(istream &is, State &state)
 					state.enemyTeams.push_back(player);
 
 				}
+				*/
             }
             else if(inputType == "d") //dead ant square
             {
                 is >> row >> col >> player;
 				state.identifier->deadAnt(Pos(row,col),player);
 				state.grid[row][col].deadAnts.push_back(player);
-				if(player == 0) {
+				/*if(player == 0) {
 					state.deadAnts.push_back(Pos(row, col));
 				}
 				else {
 					state.deadEnemies.push_back(Pos(row, col));
 					state.enemyDeadTeams.push_back(player);
 
-				}
+				}*/
             }
             else if(inputType == "h")
             {
@@ -261,10 +257,10 @@ istream& operator>>(istream &is, State &state)
 				state.identifier->hill(Pos(row,col),player);
                 state.grid[row][col].isHill = 1;
 				state.grid[row][col].hillPlayer = player;
-                if(player == 0)
+				/*if(player == 0)
 					state.myHills.push_back(Pos(row, col));
                 else
-					state.enemyHills.push_back(Pos(row, col));
+					state.enemyHills.push_back(Pos(row, col));*/
 
             }
             else if(inputType == "players") //player information

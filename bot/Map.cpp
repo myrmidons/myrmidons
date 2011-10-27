@@ -1,6 +1,7 @@
 #include "Map.hpp"
 #include "Ant.hpp"
 #include "State.hpp"
+#include "Identifier.hpp"
 
 Map* g_map = NULL;
 
@@ -85,40 +86,39 @@ Pos Map::getLocation(const Pos &loc, int direction)
 	THE OBVIOUS WAY OF TRYING TO IMPROVE IT BREAKS USING THE EUCLIDEAN METRIC, FOR
 	A CORRECT MORE EFFICIENT IMPLEMENTATION, TAKE A LOOK AT THE GET_VISION FUNCTION
 	IN ANTS.PY ON THE CONTESTS GITHUB PAGE.
-*/ /*
-void Map::updateVisionInformation()
-{
+*/
+
+
+void Map::updateVisionInformation() {
 	std::queue<Pos> locQueue;
 	Pos sLoc, cLoc, nLoc;
 
-	for(int a=0; a<(int) myAnts.size(); a++)
-	{
-		sLoc = myAnts[a];
+	AntSet const& ants = g_state->identifier->getLiveAnts();
+	for(AntSet::const_iterator it = ants.begin(); it != ants.end(); ++it) {
+		sLoc = (*it)->pos();
 		locQueue.push(sLoc);
 
 		std::vector<std::vector<bool> > visited(rows, std::vector<bool>(cols, 0));
 		grid[sLoc[0]][sLoc[1]].isVisible = 1;
 		visited[sLoc[0]][sLoc[1]] = 1;
 
-		while(!locQueue.empty())
-		{
+		while(!locQueue.empty()) {
 			cLoc = locQueue.front();
 			locQueue.pop();
 
-			for(int d=0; d<TDIRECTIONS; d++)
-			{
+			for(int d=0; d<TDIRECTIONS; d++) {
 				nLoc = getLocation(cLoc, d);
 
-				if(!visited[nLoc[0]][nLoc[1]] && distance(sLoc, nLoc) <= viewradius)
-				{
+				if(!visited[nLoc[0]][nLoc[1]] && distance(sLoc, nLoc) <= g_state->viewradius) {
 					grid[nLoc[0]][nLoc[1]].isVisible = 1;
+					grid[nLoc[0]][nLoc[1]].seen = true;
 					locQueue.push(nLoc);
 				}
 				visited[nLoc[0]][nLoc[1]] = 1;
 			}
 		}
 	}
-}; */
+}
 
 bool Map::isOccupied(const Pos& loc) {
 	return grid[loc[0]][loc[1]].ant != -1;

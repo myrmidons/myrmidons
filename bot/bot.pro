@@ -29,14 +29,12 @@ SOURCES += \
 # Add annoying warning disables below, e.g. -Wno-cats-allowed
 # QMAKE_CXXFLAGS_WARN_ON = \
 
+debug {
+    DEFINES += DEBUG
+}
 
-
-
-
-
-
-
-
-
-
-
+unix {
+    # 10.7==Lion not yet supported
+    QMAKE_MAC_SDK = /Developer/SDKs/MacOSX10.6.sdk
+    QMAKE_MACOSX_DEPLOYMENT_TARGET = 10.6
+}

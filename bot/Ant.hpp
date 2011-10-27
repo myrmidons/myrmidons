@@ -1,59 +1,17 @@
-#ifndef ANT_H
-#define ANT_H
+#ifndef ANT_HPP
+#define ANT_HPP
 
-#include "State.hpp"
 #include "Pos.hpp"
-#include "Map.hpp"
-#include <map>
-#include <set>
 
-class Food;
-class Ant;
+class Ant {
+	Pos m_position;
 
-typedef std::set<size_t> IndexSet;
-typedef std::set<Pos> LocSet, PosSet;
-typedef std::set<Ant*> AntSet;
-typedef std::vector<Ant> AntVec;
-typedef std::vector<Pos> PosVec;
-
-class Ant
-{
 public:
 	Ant(Pos const& loc = Pos());
-	Ant(Ant const& ant)
-		: m_position(ant.m_position){
-
-	}
-	Ant& operator=(Ant const& ant) {
-		m_position = ant.m_position;
-		return *this;
-	}
+	Ant(Ant const& ant);
+	Ant& operator=(Ant const& ant);
 
 	Pos& pos();
-
-private:
-	Pos m_position;
 };
 
-
-struct AntIdentifier {
-
-
-	size_t m_numAnts;
-	AntVec m_antStorage;
-	AntSet m_liveAnts;
-	IndexSet m_deadIndices;
-
-public:
-
-	AntIdentifier();
-
-	void update(State& state);
-
-	inline size_t indexOf(Ant* ant) { return (ant - &m_antStorage[0])/sizeof(Ant*); }
-	Map* m_map;
-};
-
-
-
-#endif // ANT_H
+#endif // ANT_HPP

@@ -33,15 +33,11 @@ struct Interest
 	/* 1 or 2: how many neighbors the cell has to the room
 		(3,4 impossible by constraint ofmanhattan-concavity). */
 	int neighbors;
-
-	// Less = priority. i.e.: "should a be assigned before b"?
-	friend bool operator<(const Interest& a, const Interest& b) {
-		if (a.neighbors > b.neighbors) return true;
-		if (b.neighbors > a.neighbors) return false;
-
-		return a.room < b.room; // Unrelated tie-breaker.
-	}
 };
+
+
+// Less = priority. i.e.: "should a be assigned before b"?
+bool operator<(const Interest& a, const Interest& b);
 
 typedef std::set<Interest> InterestSet;
 
@@ -68,15 +64,18 @@ private:
 	friend class Rooms;
 	// For "Rooms" only:
 
-	explicit Room(int ix, Pos seed);
+	explicit Room(Pos seed);
 	~Room();
 
-	bool tryExpandWith(Pos pos);
 	void add(Pos pos);
+
+	// At maximum size, or otherwise "unexpandable".
+	bool isFinished() const;
+
+	bool isClosable(Pos pos) const;
 
 	///////////////////////////////////////////////
 
-	const int m_roomIx; // In the global rooms list.
 	RoomContents* m_contents;
 
 	PosSet m_cells; // All positions in this Room.
@@ -84,6 +83,7 @@ private:
 
 	// For building:
 	InterestSet m_interests; // Cells we want to occupy.
+	PosSet m_interestPos; // the positions of the above set
 
 	// Calculate m_interests that coincides with givens positions.
 	void calcInterests(const PosSet& pos);
@@ -121,18 +121,22 @@ private:
 	*/
 };
 typedef std::vector<Room*> RoomList;
+typedef std::set<Room*> RoomSet;
 
 //////////////////////////////////////////////////////////////////
 
 class Rooms
 {
 public:
+	// Room constraints
+	int maxRoomArea() const;
+
 	// Called by g_map upon uncovering new grid cells.
 	void expandWith(const PosSet& pos);
 
 private:
 	RoomList m_rooms;
-	RoomList m_open; // rooms not yet closed/finished
+	RoomSet m_open; // rooms not yet closed/finished
 };
 
 extern Rooms* g_rooms;

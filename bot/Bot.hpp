@@ -1,5 +1,5 @@
-#ifndef BOT_H_
-#define BOT_H_
+#ifndef BOT_HPP
+#define BOT_HPP
 
 #include "State.hpp"
 #include "Ant.hpp"
@@ -21,7 +21,6 @@ class Bot
 {
 	IODevice& io;
 	State& state;
-	AntIdentifier antID;
 
 public:
 	// Used for random ordering of directions.

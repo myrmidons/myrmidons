@@ -1,5 +1,8 @@
 #include "Bot.hpp"
 #include "Ant.hpp"
+#include "Map.hpp"
+#include "Identifier.hpp"
+
 #include <algorithm>
 #include <iostream>
 
@@ -75,8 +78,7 @@ void Bot::playGame() {
 	// continues making moves while the game is not over
 	while(io.bufferInputChunk() && io.input() >> state)
     {
-        state.updateVisionInformation();
-		antID.update(state);
+		state.updateVisionInformation();
 		makeMoves();
         endTurn();
 		io.flushOutputChunk();
@@ -102,9 +104,6 @@ int Bot::closestLocation(const Pos& loc, const vector<Pos>& location) {
 //makes the bots moves for the turn
 void Bot::makeMoves()
 {
-	state.bug << "turn " << state.turn << ":" << endl << "----------------" << endl;
-	//state.bug << state << endl;
-
 	size_t nAnts = state.myAnts.size();
 
 	for(size_t ant = 0; ant< nAnts; ant++) {
@@ -123,19 +122,10 @@ void Bot::makeMoves()
 			}
 		}
 		if(bestRank > -100) {
+			// This will not be needed. Just for testing the identifyer as things stand at the moment.
+			g_state->identifier->m_map->moveAnt(antLoc, state.getLocation(antLoc, bestMove));
 
-			// WARNING! Ugliness below this line, close your eyes!
-			Ant* a = antID.m_map->getAnt(antLoc);
-			if(a) {
-				state.bug << "Moving ant from [" << antLoc << " [" << a->pos() << "]" << "to ";
-				antID.m_map->removeAnt(a);
-				a->pos() = state.getLocation(antLoc, bestMove);
-				state.bug << a->pos() << std::endl;
-				antID.m_map->addAnt(a);
-			}
-			// OK, you can look again.
-
-			state.makeMove(antLoc, bestMove);
+			state.makeMove(antLoc, bestMove); // Needed because the map is still just a dummy.
 		}
 	}
 
@@ -153,5 +143,5 @@ void Bot::endTurn()
 }
 
 bool Bot::safeLocation(const Pos &loc) {
-	return !state.grid[loc[0]][loc[1]].isWater;
+	return !(state.grid[loc[0]][loc[1]].isWater || state.grid[loc[0]][loc[1]].isFood);
 }

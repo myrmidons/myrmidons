@@ -66,6 +66,5 @@ int main(int, char *[])
 #endif
 
 	g_state->bug << "Reached the end." << std::endl;
-
     return 0;
 }

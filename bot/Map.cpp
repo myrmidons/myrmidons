@@ -150,7 +150,7 @@ void Map::updateVisionInformation() {
 		}
 	}
 
-//	g_rooms->expandWith(discoveries);
+	g_rooms->expandWith(discoveries);
 }
 
 bool Map::isOccupied(const Pos& loc) {

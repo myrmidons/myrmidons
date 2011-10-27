@@ -29,14 +29,6 @@ SOURCES += \
 # Add annoying warning disables below, e.g. -Wno-cats-allowed
 # QMAKE_CXXFLAGS_WARN_ON = \
 
-
-
-
-
-
-
-
-
-
-
-
+debug {
+    DEFINES += DEBUG
+}

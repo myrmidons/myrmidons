@@ -13,6 +13,41 @@ Room::~Room() {
 	delete m_contents;
 }
 
+// Calculate m_interests that coincides with givens positions.
+void Room::calcInterests(const PosSet& unassigned) {
+	/* Primary interests are corner cases, positions with two neighbors into our open set.
+	   Beyond these the only positions we are alowed to expand too
+	   are positions that push out our bounding box.
+	   This is the requirement for keeping us Manhattan Convex.
+	*/
+
+	map<Pos, int> neighs; // all neighbor cells
+
+	ITC(PosSet, pit, m_open) {
+		for (int i=0; i<4; ++i) { // All four directions
+			Pos p = g_map.getNeighbor(*pit, i);
+			if (unassigned.count(p)) {
+				// This is a candidate!
+				neighs[p]++;
+			}
+		}
+	}
+
+	m_interests.clear();
+
+	ITC(map<Pos,int>, nit, neighs) {
+		if (nit->second==2 || !m_bb.contains(nit->first)) {
+			// TODO: limit with maxwidth
+			// We may expand here
+			Interest intr;
+			intr.room = this;
+			intr.pos = nit->first;
+			intr.neighbors = nit->second;
+			m_interests.push_back(intr);
+		}
+	}
+}
+
 bool Room::tryExpandWith(Pos pos) {
 	/*
 	// OPTIMIZE: bb early out
@@ -34,25 +69,6 @@ void Room::add(Pos pos) {
 ///////////////////////////////////////////////////////////////////////
 // Rooms
 
-// Rooms volenteer interest in unassigned cells.
-// This interest is kept track of using this:
-struct Interest
-{
-	Pos pos;
-	Room* room;
-	/* 1 or 2: how many neighbors the cell has to the room
-		(3,4 impossible by constraint ofmanhattan-concavity). */
-	int neighbors;
-
-	// Less = priority. i.e.: "should a be assigned before b"?
-	friend bool operator<(const Interest& a, const Interest& b) {
-		if (a.neighbors > b.neighbors) return true;
-		if (b.neighbors > a.neighbors) return false;
-
-		return a.room < b.room; // Unrelated tie-breaker.
-	}
-};
-
 bool isInRange(const BB& bb, const Pos& pos, const Vec2& mapSize, int maxRoomWidth) {
 	Vec2 r =  bb.distance(pos, mapSize);
 	return std::min(r.x(), r.y()) < maxRoomWidth;
@@ -65,7 +81,7 @@ bool areAnyInRange(Room* room, const PosList& pos, const Vec2& mapSize, int maxR
 	return false;
 }
 
-void Rooms::expandWith(const PosList& pos) {
+void Rooms::expandWith(const PosSet& pos) {
 	int maxRoomWidth = 10; // FIXME
 	Vec2 mapSize = Vec2(200,200); // FIXME
 

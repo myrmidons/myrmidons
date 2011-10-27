@@ -16,6 +16,11 @@ void Map::initMap(int rows, int cols) {
 											   std::vector<Square>(m_size.y(), Square()));
 }
 
+Path Map::getOptimalPathTo(const Pos &from, const Pos &to) {
+	AntStar star = AntStar();
+	return star.findPath(from, to);
+}
+
 void Map::removeAnt(Ant* ant) {
 	if(!antpos.count(ant)) {
 		// FAIL!

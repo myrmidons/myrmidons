@@ -4,6 +4,7 @@
 #include <map>
 #include <vector>
 #include "Square.hpp"
+#include "AntStar.hpp"
 #include "Assert.hpp"
 
 class Ant;
@@ -25,7 +26,10 @@ public:
 	// Take one (wrapped) step into one of four directions.
 	Pos getLocation(const Pos &loc, int direction);
 
+	Path getOptimalPathTo(const Pos &from, const Pos &to);
+
 	Square& square(Pos const& pos);
+
 	bool isOccupied(const Pos& loc);
 
 	const Vec2& size() const { return m_size; }

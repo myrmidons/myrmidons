@@ -38,7 +38,7 @@ int Bot::rankMove(Pos const& currentLoc, int dir) {
 	int rank = 0;
 
 
-	if(!safeLocation(newLoc) || g_state->isOccupied(newLoc))
+	if(!safeLocation(newLoc) || g_map->isOccupied(newLoc))
 		return -1000; // Absolutley not, it would be suicide!
 
 /*
@@ -77,7 +77,6 @@ void Bot::playGame() {
 	// continues making moves while the game is not over
 	while(io.bufferInputChunk() && io.input() >> state)
     {
-		state.updateVisionInformation();
 		makeMoves();
         endTurn();
 		io.flushOutputChunk();
@@ -122,7 +121,7 @@ void Bot::makeMoves()
 		}
 		if(bestRank > -100) {
 			// This will not be needed. Just for testing the identifyer as things stand at the moment.
-			g_state->identifier->m_map->moveAnt(antLoc, state.getLocation(antLoc, bestMove));
+			g_state->identifier->m_map->moveAnt(antLoc, g_map->getLocation(antLoc, bestMove));
 
 			state.makeMove(antLoc, bestMove); // Needed because the map is still just a dummy.
 		}

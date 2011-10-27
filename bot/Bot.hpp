@@ -29,10 +29,10 @@ public:
 
 	explicit Bot(IODevice& io_device);
 
-    void playGame();    //plays a single game of Ants
+	void playGame();  //plays a single game of Ants
 
-    void makeMoves();   //makes moves for a single turn
-    void endTurn();     //indicates to the engine that it has made its moves
+	void makeMoves(); //makes moves for a single turn
+	void endTurn();	  //indicates to the engine that it has made its moves
 
 	bool safeLocation(Pos const& loc);
 	int closestLocation(const Pos& loc, const std::vector<Pos>& location);

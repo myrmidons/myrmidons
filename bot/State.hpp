@@ -63,7 +63,6 @@ struct State
 
 	void makeMove(const Pos &loc, int direction);
 
-	double distance(const Pos &loc1, const Pos &loc2);
 	Pos getLocation(const Pos &startLoc, int direction);
 
 	bool isOccupied(const Pos& loc);

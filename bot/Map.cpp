@@ -2,7 +2,7 @@
 #include "Ant.hpp"
 #include "State.hpp"
 #include "Identifier.hpp"
-
+#include <cmath>
 Map* g_map = NULL;
 
 Map::Map()
@@ -10,7 +10,7 @@ Map::Map()
 
 }
 
-void Map::initMap(int cols, int rows) {
+void Map::initMap(int rows, int cols) {
 	m_cols = cols;
 	m_rows = rows;
 	grid = std::vector<std::vector<Square> >(m_rows, std::vector<Square>(m_cols, Square()));
@@ -112,7 +112,7 @@ void Map::updateVisionInformation() {
 			for(int d=0; d<TDIRECTIONS; d++) {
 				nLoc = getLocation(cLoc, d);
 
-				if(!visited[nLoc[0]][nLoc[1]] && g_state->distance(sLoc, nLoc) <= g_state->viewradius) {
+				if(!visited[nLoc[0]][nLoc[1]] && distance(sLoc, nLoc) <= g_state->viewradius) {
 					grid[nLoc[0]][nLoc[1]].isVisible = 1;
 					grid[nLoc[0]][nLoc[1]].seen = true;
 					locQueue.push(nLoc);
@@ -140,5 +140,15 @@ void Map::reset()
 		for(int col=0; col<m_cols; col++)
 			if(!grid[row][col].isWater)
 				grid[row][col].reset();
-};
+}
+
+//returns the euclidean distance between two locations with the edges wrapped
+ double Map::distance(const Pos &loc1, const Pos &loc2)
+{
+	int d1 = std::abs(loc1[0]-loc2[0]),
+		d2 = std::abs(loc1[1]-loc2[1]),
+		dr = std::min(d1, m_rows-d1),
+		dc = std::min(d2, m_cols-d2);
+	return sqrt(dr*dr + dc*dc);
+}
 

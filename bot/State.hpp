@@ -29,6 +29,7 @@ typedef std::vector<int> DirVec;
 */
 struct State
 {
+	std::ostream& output; // sinks simulation commands for the turn
     /*
         Variables
     */
@@ -49,7 +50,7 @@ struct State
     /*
         Functions
     */
-    State();
+	explicit State(std::ostream& output_stream);
     ~State();
 
     void setup();
@@ -70,5 +71,5 @@ struct State
 std::ostream& operator<<(std::ostream &os, const State &state);
 std::istream& operator>>(std::istream &is, State &state);
 
-extern State g_state;
+extern State* g_state;
 #endif //STATE_H_

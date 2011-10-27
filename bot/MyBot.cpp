@@ -3,6 +3,28 @@
 
 using namespace std;
 
+#ifdef NETWORK_DEBUGGING
+#include <QNetwork>
+#endif
+
+struct StandardIODevice : IODevice
+{
+	StandardIODevice()
+	{
+		cout.sync_with_stdio(0); //this line makes your bot faster
+	}
+
+	std::istream& input()
+	{
+		return std::cin;
+	}
+
+	std::ostream& output()
+	{
+		return std::cout;
+	}
+};
+
 /*
     This program will play a single game of Ants while communicating with
     the engine via standard input and output.
@@ -16,14 +38,20 @@ using namespace std;
 */
 int main(int, char *[])
 {
-    cout.sync_with_stdio(0); //this line makes your bot faster
+#ifdef NETWORK_DEBUGGING
+	// TODO: implement a network-based device for debugging
+#else
+	StandardIODevice io;
+#endif
 
-	g_rooms = new Rooms();
+	State state(io.output());
+	g_state = &state;
 
-    Bot bot;
-    bot.playGame();
+	Rooms rooms;
+	g_rooms = &rooms;
 
-	delete g_rooms; // Play nice
+	Bot bot(io);
+	bot.playGame();
 
     return 0;
 }

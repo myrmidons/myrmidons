@@ -1,8 +1,10 @@
 #include "State.hpp"
+#include <cassert>
 
 using namespace std;
 
-State g_state;
+// initialized in main
+State* g_state = NULL;
 
 //////////////////////////
 
@@ -13,10 +15,12 @@ bool State::isOccupied(const Pos& loc) {
 //////////////////////////
 
 //constructor
-State::State()
+State::State(std::ostream& output)
+	: output(output)
 {
-    gameover = 0;
-    turn = 0;
+	assert(!g_state && "more than one State constructed");
+       gameover = 0;
+       turn = 0;
 	bug.open("debug.txt");
 };
 
@@ -50,7 +54,7 @@ void State::reset()
 //outputs move information to the engine
 void State::makeMove(const Pos &loc, int direction)
 {
-	cout << "o " << loc[0] << " " << loc[1] << " " << CDIRECTIONS[direction] << endl;
+	output << "o " << loc[0] << " " << loc[1] << " " << CDIRECTIONS[direction] << endl;
 
 	Pos nLoc = getLocation(loc, direction);
 	grid[nLoc[0]][nLoc[1]].ant = grid[loc[0]][loc[1]].ant;
@@ -146,7 +150,7 @@ ostream& operator<<(ostream &os, const State &state)
     }
 
     return os;
-};
+}
 
 //input function
 istream& operator>>(istream &is, State &state)
@@ -275,6 +279,6 @@ istream& operator>>(istream &is, State &state)
     }
 
     return is;
-};
+}
 
 

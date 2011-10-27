@@ -34,7 +34,7 @@ Room::Room(Pos seed) {
 	m_bb.m_min = m_bb.m_max = seed;
 	m_contents = new RoomContents();
 	Square& s = g_map->square(seed);
-	assert(s.room==NULL);
+	ASSERT(s.room==NULL);
 	s.room = this;
 }
 
@@ -56,7 +56,7 @@ void Room::add(Pos pos) {
 	m_cells.insert(pos);
 	m_open.insert(pos);
 	Square& s = g_map->square(pos);
-	assert(s.room==NULL);
+	ASSERT(s.room==NULL);
 	s.room = this;
 
 	// Expand boundingbox
@@ -96,7 +96,7 @@ void Room::calcInterests(const PosSet& unassigned) {
 	ITC(PosSet, pit, m_open) {
 		if (g_map->square(*pit).isWater)
 			continue; // We cant have water in rooms
-		assert(g_map->square(*pit).isGround());
+		ASSERT(g_map->square(*pit).isGround());
 
 		for (int i=0; i<4; ++i) { // All four directions
 			Pos p = g_map->getLocation(*pit, i);
@@ -108,7 +108,7 @@ void Room::calcInterests(const PosSet& unassigned) {
 	}
 
 	ITC(NeighMap, nit, neighs) {
-		assert(1 <= nit->second && nit->second <= 2);
+		ASSERT(1 <= nit->second && nit->second <= 2);
 
 		/* Primary interests are corner cases, positions with two neighbors into our open set.
 		   Beyond these the only positions we are alowed to expand too
@@ -129,8 +129,8 @@ void Room::calcInterests(const PosSet& unassigned) {
 				Vec2 bbSize = m_bb.size(g_map->size());
 				// We're expanding bb - check on wich side.
 				Vec2 d = m_bb.distance(nit->first, g_map->size());
-				assert(d.x()==0 || d.y()==0);
-				assert(d.x()==1 || d.y()==1);
+				ASSERT(d.x()==0 || d.y()==0);
+				ASSERT(d.x()==1 || d.y()==1);
 				int axis = (d.x() > d.y() ? 0 : 1);
 
 				if (bbSize[axis] >= g_rooms->maxRoomWidth())

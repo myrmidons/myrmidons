@@ -4,8 +4,8 @@
 #include <vector>
 #include <set>
 #include <ostream>
-#include <cassert>
 #include <cstdlib>
+#include "Assert.hpp"
 
 /*
 	struct for representing positions in the grid.
@@ -134,8 +134,8 @@ public:
 	// 0 iff inside
 	int distanceManhattan(const Pos& pos, const Vec2& size) const {
 		Vec2 r = this->distance(pos, size);
-		assert(r.x() >= 0);
-		assert(r.y() >= 0);
+		ASSERT(r.x() >= 0);
+		ASSERT(r.y() >= 0);
 		return r.x() + r.y();
 	}
 

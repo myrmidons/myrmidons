@@ -4,6 +4,8 @@
 #include <cassert>
 #include "Ant.hpp"
 
+#include <sstream>
+
 using namespace std;
 
 // initialized in main
@@ -18,7 +20,11 @@ State::State(std::ostream& output)
     gameover = 0;
 	turn = 0;
 	ASSERT(!g_state && "more than one State constructed");
-	bug.open("debug.txt");
+
+	// Random logfile name....
+	std::stringstream ss;
+	ss << "debug_" << rand() << ".txt";
+	bug.open(ss.str());
 };
 
 //deconstructor

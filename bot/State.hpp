@@ -74,4 +74,11 @@ std::ostream& operator<<(std::ostream &os, const State &state);
 std::istream& operator>>(std::istream &is, State &state);
 
 extern State* g_state;
+
+#ifdef DEBUG
+#	define LOG_DEBUG(msg) g_state->bug << msg << std::flush;
+#else
+#	define LOG_DEBUG(msg)
+#endif
+
 #endif //STATE_H_

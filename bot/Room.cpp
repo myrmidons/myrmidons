@@ -1,6 +1,7 @@
 #include "Room.hpp"
 #include "Util.hpp"
 #include "Map.hpp"
+#include "State.hpp" // LOG_DEBUG
 
 #ifdef DEBUG
 #	include <QImage>
@@ -192,6 +193,8 @@ int Rooms::maxRoomWidth() const {
 }
 
 void Rooms::expandWith(const PosSet& posArg) {
+	LOG_DEBUG("Rooms::expandWith");
+
 	PosSet unassigned = posArg; // Copy so we can take away one at the time.
 
 	int maxRoomWidth = this->maxRoomWidth();
@@ -253,6 +256,8 @@ void Rooms::expandWith(const PosSet& posArg) {
 			rooms.erase(room); // No longer intersting for us
 		}
 	}
+
+	LOG_DEBUG("Rooms::expandWith DONE");
 }
 
 #ifdef DEBUG
@@ -263,6 +268,8 @@ QRgb randomColor(Room* r) {
 
 // Dump a png of the room colorings.
 void Rooms::dumpImage() const {
+	LOG_DEBUG("Rooms::dumpImage");
+
 	Vec2 size = g_map->size();
 	//int Mult = 1; // Pixels per grid cell.
 	QImage img(size.x(), size.y(), QImage::Format_ARGB32);

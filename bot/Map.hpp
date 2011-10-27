@@ -38,6 +38,8 @@ public:
 	Vec2 size() const { return Vec2(m_cols, m_rows); }
 
 	double distance(const Pos &loc1, const Pos &loc2);
+
+	void newTurn(int turn);
 };
 
 extern Map* g_map;

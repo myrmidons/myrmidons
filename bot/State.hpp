@@ -16,7 +16,7 @@
 #include "Pos.hpp"
 
 
-class Identifier;
+class Tracker;
 /*
     constants
 */
@@ -43,11 +43,8 @@ struct State
     std::vector<double> scores;
     bool gameover;
 
-    std::vector<std::vector<Square> > grid;
-//	std::vector<Pos> myAnts, enemyAnts, myHills, enemyHills, food, deadAnts, deadEnemies;
-//	std::vector<int> enemyTeams, enemyDeadTeams;
 
-	Identifier* identifier;
+	Tracker* identifier;
 
     Timer timer;
     Bug bug;
@@ -58,18 +55,9 @@ struct State
 	explicit State(std::ostream& output_stream);
     ~State();
 
-    void setup();
-    void reset();
+	void setup();
 
 	void makeMove(const Pos &loc, int direction);
-
-	Pos getLocation(const Pos &startLoc, int direction);
-
-	bool isOccupied(const Pos& loc);
-
-    void updateVisionInformation();
-
-	Square& square(Pos const& pos) { return grid[pos[0]][pos[1]]; }
 };
 
 std::ostream& operator<<(std::ostream &os, const State &state);

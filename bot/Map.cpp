@@ -1,20 +1,21 @@
 #include "Map.hpp"
 #include "Ant.hpp"
 #include "State.hpp"
-#include "Identifier.hpp"
+#include "Tracker.hpp"
 #include "Room.hpp"
 #include <cmath>
 
 Map* g_map = NULL;
 
-Map::Map()
-{
+Map::Map() {
 
 }
 
 void Map::initMap(int rows, int cols) {
 	m_cols = cols;
 	m_rows = rows;
+	ASSERT(cols > 0);
+	ASSERT(rows > 0);
 	grid = std::vector<std::vector<Square> >(m_rows, std::vector<Square>(m_cols, Square()));
 }
 
@@ -95,6 +96,7 @@ Pos Map::getLocation(const Pos &loc, int direction)
 
 
 void Map::updateVisionInformation() {
+	return;
 	std::queue<Pos> locQueue;
 	Pos sLoc, cLoc, nLoc;
 
@@ -138,6 +140,10 @@ void Map::updateVisionInformation() {
 
 bool Map::isOccupied(const Pos& loc) {
 	return grid[loc[0]][loc[1]].ant != -1;
+}
+
+void Map::newTurn(int turn) {
+	reset();
 }
 
 //resets all non-water squares to land and clears the bots ant vector

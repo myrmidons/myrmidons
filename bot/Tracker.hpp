@@ -17,7 +17,7 @@ typedef std::vector<Pos> PosVec;
 typedef std::set<Ant*> AntSet;
 typedef std::vector<Ant> AntVec;
 
-class Identifier {
+class Tracker {
 
 	size_t m_numAnts;
 	AntVec m_antStorage;
@@ -28,10 +28,9 @@ class Identifier {
 
 public:
 
-	Identifier();
+	Tracker();
 
 	inline size_t indexOf(Ant* ant) const;
-	Map* m_map;
 
 	void turn(int n);
 	void water(Pos const& pos);

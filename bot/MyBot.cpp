@@ -42,6 +42,8 @@ int main(int, char *[])
 #else
 	StandardIODevice io;
 #endif
+	State state;
+	g_state = &state;
 	Bot bot;
 	bot.playGame();
     return 0;

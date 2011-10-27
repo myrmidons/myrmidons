@@ -70,5 +70,5 @@ struct State
 std::ostream& operator<<(std::ostream &os, const State &state);
 std::istream& operator>>(std::istream &is, State &state);
 
-extern State g_state;
+extern State* g_state;
 #endif //STATE_H_

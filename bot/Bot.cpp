@@ -9,7 +9,9 @@
 using namespace std;
 
 //constructor
-Bot::Bot() : state(g_state) {
+Bot::Bot()
+	: state(*g_state)
+{
 	setupRandomDirections();
 }
 

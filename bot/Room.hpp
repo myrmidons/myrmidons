@@ -33,15 +33,12 @@ struct Interest
 	/* 1 or 2: how many neighbors the cell has to the room
 		(3,4 impossible by constraint ofmanhattan-concavity). */
 	int neighbors;
-
-	// Less = priority. i.e.: "should a be assigned before b"?
-	friend bool operator<(const Interest& a, const Interest& b) {
-		if (a.neighbors > b.neighbors) return true;
-		if (b.neighbors > a.neighbors) return false;
-
-		return a.room < b.room; // Unrelated tie-breaker.
-	}
+	float prio; // Based on wether or not we are expanding the bb to make it more square.
 };
+
+
+// Less = priority. i.e.: "should a be assigned before b"?
+bool operator<(const Interest& a, const Interest& b);
 
 typedef std::set<Interest> InterestSet;
 
@@ -68,15 +65,18 @@ private:
 	friend class Rooms;
 	// For "Rooms" only:
 
-	explicit Room(int ix, Pos seed);
+	explicit Room(Pos seed);
 	~Room();
 
-	bool tryExpandWith(Pos pos);
 	void add(Pos pos);
+
+	// At maximum size, or otherwise "unexpandable".
+	bool isFinished() const;
+
+	bool isClosable(Pos pos) const;
 
 	///////////////////////////////////////////////
 
-	const int m_roomIx; // In the global rooms list.
 	RoomContents* m_contents;
 
 	PosSet m_cells; // All positions in this Room.
@@ -84,6 +84,7 @@ private:
 
 	// For building:
 	InterestSet m_interests; // Cells we want to occupy.
+	PosSet m_interestPos; // the positions of the above set
 
 	// Calculate m_interests that coincides with givens positions.
 	void calcInterests(const PosSet& pos);
@@ -91,48 +92,30 @@ private:
 	/////////////////////////////////////////
 	// Derived:
 	BB m_bb;
-
-	/*
-	// for building:
-	PosSet closed; // positions that has no neigbor that is not assigned to a room (or water).
-	PosSet open; // edge positions with non-assigned neighbors.
-
-
-	// n^2, where n is the number of cells. symmetric, with zero diagonal.
-	// shortestPath[i + j*n] is the length of the shortest path between cells i and j.
-	PosList shortestPath;
-
-	/////////////////////////////////////////
-
-	// Have we reached our limit of growth, and is so done?
-	bool isFinished() const;
-
-	// Indices of neighboring rooms, if any.
-	const IntList& neighborRooms() const;
-
-	// cells inside this room, that borders to neighbor nr "nix" (global index neighborRooms[nix]).
-	// from a these border cells there is only one step to the other room.
-	// returns indices into our list of positions.
-	IntList borderCellsTo(int nix) const;
-
-	// Distance between two neighbor rooms:
-	// given two neighbor indices, returns the shortest and longest distance... or something.
-	Range neighborDistance(int na, nb) const;
-	*/
 };
 typedef std::vector<Room*> RoomList;
+typedef std::set<Room*> RoomSet;
 
 //////////////////////////////////////////////////////////////////
 
 class Rooms
 {
 public:
+	// Room constraints
+	int maxRoomArea() const;
+	int maxRoomWidth() const;
+
 	// Called by g_map upon uncovering new grid cells.
 	void expandWith(const PosSet& pos);
 
+#ifdef DEBUG
+	// Dump a png of the room colorings.
+	void dumpImage() const;
+#endif
+
 private:
 	RoomList m_rooms;
-	RoomList m_open; // rooms not yet closed/finished
+	RoomSet m_open; // rooms not yet closed/finished
 };
 
 extern Rooms* g_rooms;

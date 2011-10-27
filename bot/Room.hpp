@@ -33,6 +33,7 @@ struct Interest
 	/* 1 or 2: how many neighbors the cell has to the room
 		(3,4 impossible by constraint ofmanhattan-concavity). */
 	int neighbors;
+	float prio; // Based on wether or not we are expanding the bb to make it more square.
 };
 
 
@@ -102,6 +103,7 @@ class Rooms
 public:
 	// Room constraints
 	int maxRoomArea() const;
+	int maxRoomWidth() const;
 
 	// Called by g_map upon uncovering new grid cells.
 	void expandWith(const PosSet& pos);

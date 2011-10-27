@@ -67,6 +67,22 @@ public:
 	   if the room is wrapped! */
 	Pos m_min, m_max; // [,] style ranges! INCLUSIVE!
 
+	int sizeAxis(int a, int size) const {
+		if (m_min[a] <= m_max[a]) {
+			// Non-wrapped
+			return m_max[a] - m_min[a] + 1;
+		} else {
+			return size + m_max[a] - m_min[a] - 1;
+		}
+	}
+
+	Vec2 size(const Vec2& mapSize) const {
+		return Vec2(
+					sizeAxis(0, mapSize[0]),
+					sizeAxis(1, mapSize[1])
+					);
+	}
+
 	/*
 	wont work when wrapped...
 	int width()  const { return m_max.x()-m_min.x()+1; }

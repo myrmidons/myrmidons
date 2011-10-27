@@ -4,7 +4,7 @@
 #include <map>
 #include <vector>
 #include "Square.hpp"
-
+#include "Assert.hpp"
 
 class Ant;
 
@@ -31,6 +31,11 @@ public:
 	const Vec2& size() const { return m_size; }
 
 	double distance(const Pos &loc1, const Pos &loc2);
+
+	void assertInMap(const Pos& pos) const {
+		ASSERT(0<=pos.x() && pos.x()<m_size.x());
+		ASSERT(0<=pos.y() && pos.y()<m_size.y());
+	}
 
 private:
 	std::vector<std::vector<Square> > m_grid; // x/y

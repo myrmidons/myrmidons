@@ -13,7 +13,7 @@ class Map
 {
 public:
 	Map();
-	void initMap(int rows, int cols);
+	void initMap(Vec2 const& dim);
 
 	void removeAnt(Ant* ant);
 	void addAnt(Ant* ant);

@@ -101,6 +101,7 @@ void Tracker::update() {
 
 	// Spawn new ants.
 	for(PosSet::iterator hill = freeHills.begin(); hill != freeHills.end(); ++hill) {
+		g_state->bug << "Trying to check square " << *hill << " in map of dimensions " << g_map->size() << std::endl;
 		if(g_map->square(*hill).ant == 0) {
 			// There is a new ant on this hill!! Horray!
 			IndexSet::iterator it = m_deadIndices.begin();

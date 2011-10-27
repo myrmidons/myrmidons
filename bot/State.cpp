@@ -43,7 +43,7 @@ State::~State()
 
 //sets the state up
 void State::setup() {
-	g_map->initMap(rows, cols);
+	g_map->initMap(m_size);
 }
 
 //resets all non-water squares to land and clears the bots ant vector
@@ -65,11 +65,11 @@ void State::makeMove(const Pos &loc, int direction)
 */
 ostream& operator<<(ostream &os, const State &state)
 {
-    for(int row=0; row<state.rows; row++)
+	for(int y=0; y<state.m_size.y(); y++)
     {
-        for(int col=0; col<state.cols; col++)
+		for(int x=0; x<state.m_size.x(); x++)
         {
-			Pos pos(row,col);
+			Pos pos(x,y);
 
 			if(g_map->square(pos).isWater)
                 os << '%';
@@ -124,9 +124,9 @@ istream& operator>>(istream &is, State &state)
             else if(inputType == "turntime")
                 is >> state.turntime;
             else if(inputType == "rows")
-                is >> state.rows;
+				is >> state.m_size.y();
             else if(inputType == "cols")
-                is >> state.cols;
+				is >> state.m_size.x();
             else if(inputType == "turns")
                 is >> state.turns;
             else if(inputType == "viewradius2")
@@ -157,8 +157,8 @@ istream& operator>>(istream &is, State &state)
     {
         //reads information about the current turn
         while(is >> inputType)
-        {
-            if(inputType == "w") //water square
+		{
+			if(inputType == "w") //water square
             {
                 is >> row >> col;
 				g_tracker->water(Pos(row, col));

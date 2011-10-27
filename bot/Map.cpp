@@ -11,9 +11,10 @@ Map::Map() {
 
 }
 
-void Map::initMap(int rows, int cols) {
+void Map::initMap(Vec2 const& dim) {
 
-	m_size = Vec2(cols, rows);
+	m_size = dim;
+	g_state->bug << "Map size: " << m_size << std::endl;
 	m_grid = std::vector<std::vector<Square> >(m_size.x(),
 											   std::vector<Square>(m_size.y(), Square()));
 }
@@ -112,15 +113,12 @@ void Map::updateVisionInformation() {
 
 	PosSet discoveries;
 
-	int rows = g_state->rows;
-	int cols = g_state->cols;
-
 	AntSet const& ants = g_tracker->getLiveAnts();
 	for(AntSet::const_iterator it = ants.begin(); it != ants.end(); ++it) {
 		sLoc = (*it)->pos();
 		locQueue.push(sLoc);
 
-		std::vector<std::vector<bool> > visited(cols, std::vector<bool>(rows, 0));
+		std::vector<std::vector<bool> > visited(size().x(), std::vector<bool>(size().y(), 0));
 		m_grid[sLoc[0]][sLoc[1]].isVisible = 1;
 		visited[sLoc[0]][sLoc[1]] = 1;
 

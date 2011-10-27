@@ -71,15 +71,12 @@ void Bot::playGame() {
 	//reads the game parameters and sets up
 	io.bufferInputChunk();
 	io.input() >> state;
-    state.setup();
+	state.setup();
     endTurn();
 
 	// continues making moves while the game is not over
 	while(io.bufferInputChunk() && io.input() >> state)
     {
-
-		//state.updateVisionInformation();
-
 		makeMoves();
         endTurn();
 		io.flushOutputChunk();

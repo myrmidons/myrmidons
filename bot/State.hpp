@@ -35,7 +35,8 @@ struct State
     /*
         Variables
     */
-    int rows, cols,
+	Vec2 m_size;
+	int
         turn, turns,
         noPlayers;
     double attackradius, spawnradius, viewradius;

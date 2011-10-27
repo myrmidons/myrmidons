@@ -28,14 +28,10 @@ bool operator<(const Interest& a, const Interest& b) {
 
 ///////////////////////////////////////////////////////////////////////
 
-Room::Room(Pos seed) {
-	m_cells.insert(seed);
-	m_open.insert(seed);
+Room::Room(Pos seed) : m_dirty(true) {
 	m_bb.m_min = m_bb.m_max = seed;
 	m_contents = new RoomContents();
-	Square& s = g_map->square(seed);
-	ASSERT(s.room==NULL);
-	s.room = this;
+	add(seed);
 }
 
 Room::~Room() {
@@ -69,6 +65,12 @@ void Room::add(Pos pos) {
 			closeThese.insert(*pit);
 
 	m_open.erase(closeThese.begin(), closeThese.end());
+
+	// We are now unsure of room-connection - dirty up affected rooms:
+	this->m_dirty = true;
+	for (int i=0; i<4; ++i)
+		if (Room* r = g_map->square(g_map->getLocation(pos, i)).room)
+			r->m_dirty = true;
 }
 
 bool Room::isFinished() const {

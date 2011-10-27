@@ -44,6 +44,10 @@ typedef std::set<Interest> InterestSet;
 
 //////////////////////////////////////////////////////////////////
 
+class Room;
+typedef std::vector<Room*> RoomList;
+typedef std::set<Room*> RoomSet;
+
 // This class only contains connectivity data. For contents, see 'contents'.
 // A room shuld be small enough so that an ant in any part of the room can see
 // any other part. This means that an ant will see 2-3 rooms at once.
@@ -92,9 +96,11 @@ private:
 	/////////////////////////////////////////
 	// Derived:
 	BB m_bb;
+
+	bool m_dirty; // For everything below this:
+
+	//RoomSet m_neighbors;
 };
-typedef std::vector<Room*> RoomList;
-typedef std::set<Room*> RoomSet;
 
 //////////////////////////////////////////////////////////////////
 

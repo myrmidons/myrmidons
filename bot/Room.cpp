@@ -33,12 +33,16 @@ void Room::makeClean() const {
 	if (!m_dirty) return;
 
 	m_neighbors.clear();
+	m_neighborInfos.clear();
 
 	ITC(PosSet, pit, m_cells) {
 		for (int dir=0; dir<4; ++dir) {
-			if (Room* r = g_map->square(g_map->getLocation(*pit, dir)).room) {
-				if (r != this)
+			Pos cell = g_map->getLocation(*pit, dir);
+			if (Room* r = g_map->square(cell).room) {
+				if (r != this) {
 					m_neighbors.insert(r);
+					m_neighborInfos[r].cells.insert(cell);
+				}
 			}
 		}
 	}
@@ -49,6 +53,11 @@ const RoomSet& Room::neighborRooms() const {
 	return m_neighbors;
 }
 
+const Room::NeighborInfo* Room::neighborInfo(Room* room) const {
+	makeClean();
+	ASSERT(m_neighborInfos.count(room));
+	return &m_neighborInfos[room];
+}
 
 Room::Room(Pos seed) : m_dirty(true) {
 	m_bb.m_min = m_bb.m_max = seed;

@@ -2,6 +2,7 @@
 #define ROOM_HPP
 
 #include "Pos.hpp"
+#include <map>
 
 // This class handles the contents of a room.
 // Everything about a room except its connectivity is put into here.
@@ -56,6 +57,12 @@ public:
 	///////////////////////////////////////////////
 	// For users:
 
+	class NeighborInfo {
+	public:
+		// Cells in this room, that is one manhattan step away from the neighbor room.
+		PosSet cells;
+	};
+
 	RoomContents* contents() { return m_contents; }
 
 	// Give me the number of Pos the room currently contains.
@@ -64,6 +71,9 @@ public:
 	const BB& getBB() const { return m_bb; }
 
 	const RoomSet& neighborRooms() const;
+
+	// give info about our connection to this room.
+	const NeighborInfo* neighborInfo(Room* room) const;
 
 	///////////////////////////////////////////////
 
@@ -103,7 +113,10 @@ private:
 
 	bool m_dirty; // For everything below this:
 
+	typedef std::map<Room*, NeighborInfo> Neighbors;
+
 	mutable RoomSet m_neighbors;
+	mutable Neighbors m_neighborInfos;
 };
 
 //////////////////////////////////////////////////////////////////

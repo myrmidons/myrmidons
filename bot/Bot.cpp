@@ -33,7 +33,7 @@ void Bot::setupRandomDirections() {
 
 int Bot::rankMove(Pos const& currentLoc, int dir) {
 	// The new location to try to get to.
-	Pos newLoc = state.getLocation(currentLoc, dir);
+	Pos newLoc = g_map->getLocation(currentLoc, dir);
 
 	int rank = 0;
 
@@ -41,18 +41,17 @@ int Bot::rankMove(Pos const& currentLoc, int dir) {
 	if(!safeLocation(newLoc) || g_state->isOccupied(newLoc))
 		return -1000; // Absolutley not, it would be suicide!
 
-/*	for(int j = 0; j < (int)state.enemyAnts.size(); ++j) {
-		double d = state.distance(newLoc,state.enemyAnts[j]);
+/*
+	for(int j = 0; j < (int)state.enemyAnts.size(); ++j) {
+		double d = g_map->distance(newLoc,state.enemyAnts[j]);
 		if(int(d*d + 0.5) < 13)
 			rank -= 20;
 	}
-*/
 
-
-/*	int foodLocationIndex = closestLocation(currentLoc, state.food);
+	int foodLocationIndex = closestLocation(currentLoc, state.food);
 	if(foodLocationIndex >= 0) {
 			Pos foodLoc = state.food[foodLocationIndex];
-			if(state.distance(newLoc, foodLoc) >= state.distance(currentLoc, foodLoc)) {
+			if(g_map->distance(newLoc, foodLoc) >= g_map->distance(currentLoc, foodLoc)) {
 				//rank -= 10; // this move would take us further away from the nearest food item.
 			}
 			else {
@@ -89,7 +88,7 @@ int Bot::closestLocation(const Pos& loc, const vector<Pos>& location) {
 	int result = -1;
 	double minDist = 10000000;
 	for(size_t i = 0; i < location.size(); ++i) {
-		double dist = state.distance(location[i], loc);
+		double dist = g_map->distance(location[i], loc);
 		if(dist < minDist) {
 			minDist = dist;
 			result = (int)i;

@@ -15,11 +15,15 @@ bool operator<(const Interest& a, const Interest& b) {
 	if (a.neighbors > b.neighbors) return true;
 	if (a.neighbors < b.neighbors) return false;
 
+	// Try to keep squareness:
+	if (a.prio > b.prio) return true;
+	if (a.prio < b.prio) return false;
+
 	// Exapand smallest room first
 	if (a.room->getArea() < b.room->getArea()) return true;
 	if (a.room->getArea() > b.room->getArea()) return false;
 
-	return a.room < b.room; // Unrelated tie-breaker.
+	return a.room < b.room; // tie-breaker.
 }
 
 ///////////////////////////////////////////////////////////////////////
@@ -63,27 +67,28 @@ void Room::add(Pos pos) {
 	ITC(PosSet, pit, m_open)
 		if (isClosable(*pit))
 			closeThese.insert(*pit);
+
 	m_open.erase(closeThese.begin(), closeThese.end());
 }
 
 bool Room::isFinished() const {
-	return getArea() >= g_rooms->maxRoomArea();
+	if (getArea() >= g_rooms->maxRoomArea())
+		return true;
+	Vec2 bbSize = m_bb.size(g_map->size());
+	int maxWidth = g_rooms->maxRoomWidth();
+	if (bbSize.x() >= maxWidth) return true;
+	if (bbSize.y() >= maxWidth) return true;
+	return false;
 }
 
 
-// Calculate m_interests that coincides with givens positions.
+// Calculate m_interests that coincides with given positions.
 void Room::calcInterests(const PosSet& unassigned) {
 	m_interests.clear();
 	m_interestPos.clear();
 
 	if (isFinished())
 		return; // We have no interests - we are content.
-
-	/* Primary interests are corner cases, positions with two neighbors into our open set.
-	   Beyond these the only positions we are alowed to expand too
-	   are positions that push out our bounding box.
-	   This is the requirement for keeping us Manhattan Convex.
-	*/
 
 	typedef std::map<Pos, int> NeighMap;
 	NeighMap neighs; // all neighbor cells
@@ -101,13 +106,34 @@ void Room::calcInterests(const PosSet& unassigned) {
 	ITC(NeighMap, nit, neighs) {
 		assert(1 <= nit->second && nit->second <= 2);
 
+		/* Primary interests are corner cases, positions with two neighbors into our open set.
+		   Beyond these the only positions we are alowed to expand too
+		   are positions that push out our bounding box.
+		   This is the requirement for keeping us Manhattan Convex.
+		*/
+
 		if (nit->second==2 || !m_bb.contains(nit->first)) {
-			// TODO: limit with maxWidth
 			// We may expand here
 			Interest intr;
 			intr.room = this;
 			intr.pos = nit->first;
 			intr.neighbors = nit->second;
+
+			if (intr.neighbors==2) {
+				intr.prio=0;
+			} else {
+				Vec2 bbSize = m_bb.size(g_map->size());
+				// We're expanding bb - check on wich side.
+				Vec2 d = m_bb.distance(nit->first, g_map->size());
+				assert(d.x()==0 || d.y()==0);
+				assert(d.x()==1 || d.y()==1);
+				int axis = (d.x() > d.y() ? 0 : 1);
+
+				if (bbSize[axis] >= g_rooms->maxRoomWidth())
+					continue; // We may not expand this way!
+
+				intr.prio = bbSize[1-axis] - bbSize[axis]; // larger on other axis is good
+			}
 
 			m_interests.insert(intr);
 			m_interestPos.insert(intr.pos);
@@ -134,20 +160,24 @@ int Rooms::maxRoomArea() const {
 	return 100; // FIXME
 }
 
+int Rooms::maxRoomWidth() const {
+	return 10; // TODO: base on g-state view distance.
+}
+
 void Rooms::expandWith(const PosSet& posArg) {
 	PosSet unassigned = posArg; // Copy so we can take away one at the time.
 
-	int maxRoomWidth = 10; // FIXME
+	int maxRoomWidth = this->maxRoomWidth();
 	Vec2 mapSize = g_map->size();
 
-	RoomSet rooms; // Affected rooms
+	RoomSet rooms; // Rooms in range of new positions (optimization)
 	ITC(RoomSet, rit, m_open) // Go through open rooms
 		if (areAnyInRange(*rit, unassigned, mapSize, maxRoomWidth))
 			rooms.insert(*rit);
 
 	InterestSet interests;
 
-	// Find intrested parties:
+	// Query interest in specific positions
 	ITC(RoomSet, rit, rooms) {
 		Room* r = *rit;
 		r->calcInterests(unassigned);
@@ -182,13 +212,16 @@ void Rooms::expandWith(const PosSet& posArg) {
 			room = new Room(pos);
 			m_rooms.push_back(room);
 			m_open.insert(room);
+			rooms.insert(room);
 
 			room->calcInterests(unassigned);
 			interests.insert(room->m_interests.begin(), room->m_interests.end());
 		}
 
-		if (room->isFinished())
+		if (room->isFinished()) {
 			m_open.erase(room);
+			rooms.erase(room); // No longer intersting for us
+		}
 	}
 }
 

@@ -31,9 +31,9 @@ State::State(std::ostream& output)
 
 	// Random logfile name....
 	std::stringstream ss;
-	ss << "debug_" << rand() << ".txt";
+	ss << "debug_" << (rand()+clock()) << ".txt";
 	bug.open(ss.str());
-};
+}
 
 //deconstructor
 State::~State()

@@ -93,6 +93,9 @@ void Map::updateVisionInformation() {
 	std::queue<Pos> locQueue;
 	Pos sLoc, cLoc, nLoc;
 
+	int rows = g_state->rows;
+	int cols = g_state->cols;
+
 	AntSet const& ants = g_state->identifier->getLiveAnts();
 	for(AntSet::const_iterator it = ants.begin(); it != ants.end(); ++it) {
 		sLoc = (*it)->pos();

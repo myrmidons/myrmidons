@@ -6,31 +6,46 @@
 
 #endif // GENERAL_H
 
+
+enum FightType {unknown, small, medium, large};
+
 class HQ {
 
 public:
-    HQ();
-    ~HQ();
-    void ScanForBattles();
+	HQ();
+	~HQ();
+	void ScanForBattles();
 private:
 
 };
+
+///////////////////
+/// BATTLESCENE ///
+///////////////////
 
 class BattleScene {
-
 public:
-    BattleScene(std::vector<Room *> *rooms);
-    int battlehistory;  // Enemy death increases history by 1, allied death decreases history by 1.
-    double proportions; // numEnemigos/numAmigos
-    double crowdedness; // total room area divided by total battle participants.
-    void Update(); // Run each turn.
-private:
-    std::vector<Room*> rooms;
-    int updateBattleHistory();
-    double calculateProportions();
-    double calculateCrowdedness();
+	BattleScene(std::vector<Room *> *rooms);
+	void update(); // Run each turn.
+	void addRoom(Room* room);
 
+private:
+	std::vector<Room*> m_rooms;
+	void classifyFight();
+
+	int m_battlehistory;  // Enemy death increases history by 1, allied death decreases history by 1.
+	double m_proportions; // numEnemigos/numAmigos
+	double m_crowdedness; // total room area divided by total battle participants
+	int m_area;
+	int m_numMyrmidons;
+	int m_numEnemies;
+	FightType m_fighttype;
 };
+
+
+///////////////
+/// GENERAL ///
+///////////////
 
 class General {
 

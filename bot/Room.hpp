@@ -22,6 +22,31 @@ public:
 
 //////////////////////////////////////////////////////////////////
 
+class Room;
+
+// Rooms volenteer interest in unassigned cells.
+// This interest is kept track of using this:
+struct Interest
+{
+	Pos pos;
+	Room* room;
+	/* 1 or 2: how many neighbors the cell has to the room
+		(3,4 impossible by constraint ofmanhattan-concavity). */
+	int neighbors;
+
+	// Less = priority. i.e.: "should a be assigned before b"?
+	friend bool operator<(const Interest& a, const Interest& b) {
+		if (a.neighbors > b.neighbors) return true;
+		if (b.neighbors > a.neighbors) return false;
+
+		return a.room < b.room; // Unrelated tie-breaker.
+	}
+};
+
+typedef std::set<Interest> InterestSet;
+
+//////////////////////////////////////////////////////////////////
+
 // This class only contains connectivity data. For contents, see 'contents'.
 // A room shuld be small enough so that an ant in any part of the room can see
 // any other part. This means that an ant will see 2-3 rooms at once.
@@ -34,6 +59,8 @@ public:
 
 	// Give me the number of Pos the room currently contains.
 	int getArea() const { return m_cells.size(); }
+
+	const BB& getBB() const { return m_bb; }
 
 	///////////////////////////////////////////////
 
@@ -52,17 +79,24 @@ private:
 	const int m_roomIx; // In the global rooms list.
 	RoomContents* m_contents;
 
-	PosList m_cells; // All positions in this Room (in the order they where added).
-	PosList m_open; // Positions bordering to unassigned cells.
+	PosSet m_cells; // All positions in this Room.
+	PosSet m_open; // Positions bordering to unassigned cells.
+
+	// For building:
+	InterestSet m_interests; // Cells we want to occupy.
+
+	// Calculate m_interests that coincides with givens positions.
+	void calcInterests(const PosSet& pos);
+
+	/////////////////////////////////////////
+	// Derived:
+	BB m_bb;
 
 	/*
 	// for building:
 	PosSet closed; // positions that has no neigbor that is not assigned to a room (or water).
 	PosSet open; // edge positions with non-assigned neighbors.
 
-	/////////////////////////////////////////
-	// Derived:
-	BB bound;
 
 	// n^2, where n is the number of cells. symmetric, with zero diagonal.
 	// shortestPath[i + j*n] is the length of the shortest path between cells i and j.
@@ -86,7 +120,7 @@ private:
 	Range neighborDistance(int na, nb) const;
 	*/
 };
-typedef std::vector<Room*> RoomPtrVec;
+typedef std::vector<Room*> RoomList;
 
 //////////////////////////////////////////////////////////////////
 
@@ -94,12 +128,13 @@ class Rooms
 {
 public:
 	// Called by g_map upon uncovering new grid cells.
-	void expandWith(const PosList& pos);
-	void expandWith(const Pos& pos);
+	void expandWith(const PosSet& pos);
 
 private:
-	RoomPtrVec m_rooms;
-	RoomPtrVec m_open; // rooms not yet closed/finished
+	RoomList m_rooms;
+	RoomList m_open; // rooms not yet closed/finished
 };
+
+extern Rooms* g_rooms;
 
 #endif // ROOM_H

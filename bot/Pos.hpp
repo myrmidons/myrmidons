@@ -4,6 +4,7 @@
 #include <vector>
 #include <set>
 #include <ostream>
+#include <cassert>
 
 /*
 	struct for representing positions in the grid.
@@ -21,7 +22,7 @@ struct Pos
 		coords[1] = c;
 	}
 
-	inline int& operator[] (int const& i) { return coords[i]; }
+	inline int& operator[] (int const& i)       { return coords[i]; }
 	inline int  operator[] (int const& i) const { return coords[i]; }
 
 	inline int& x() { return coords[0]; }
@@ -37,6 +38,8 @@ struct Pos
 	inline int col() const { return coords[1]; }
 };
 
+typedef Pos Vec2;
+
 typedef std::set<Pos> PosSet;
 typedef std::vector<Pos> PosList;
 
@@ -50,12 +53,76 @@ inline std::ostream& operator<<(std::ostream &os, const Pos& pos) {
 
 //////////////////////////////////////////////////////
 
+// Wrapped postivie distance between points a,b both on [0,size)
+inline int wrappedDist(int a, int b, int size) {
+	int d = abs(a-b);
+	return std::min(d, size-d);
+}
+
 // Bounding box
 class BB {
-	Pos topLeft, bottomRight; // [,) style ranges
+public:
+	/* remember that m_min.x CAN be greater than m_max.x
+	   if the room is wrapped! */
+	Pos m_min, m_max; // [,] style ranges! INCLUSIVE!
 
-	int width()  const { return bottomRight.x()-topLeft.x(); }
-	int height() const { return bottomRight.y()-topLeft.y(); }
+	/*
+	wont work when wrapped...
+	int width()  const { return m_max.x()-m_min.x()+1; }
+	int height() const { return m_max.y()-m_min.y()+2; }
+	*/
+
+	// pos must be inside map!
+	bool contains(const Pos& pos) const {
+		for (int a=0; a<2; ++a) {
+			if (m_min[a] <= m_max[a]) {
+				// Non-wrapped
+				if (pos[a]<m_min[a]) return false;
+				if (pos[a]>m_max[a]) return false;
+			} else {
+				// Wrapped
+				if (m_max[a]<pos[a] && pos[a]<m_min[a])
+					return false;
+			}
+		}
+		return true;
+	}
+
+	/* distance to boundingbox edge.
+	   iff both returned coordinates are 0, contains(pos) == true.
+	   size == size of map.
+	*/
+	Vec2 distance(const Pos& pos, const Vec2& size) const {
+		Pos ret;
+		for (int a=0; a<2; ++a) {
+			if (m_min[a] <= m_max[a]) {
+				// Non-wrapped
+				if (m_min[a] <= pos[a] && pos[a] <= m_max[a])
+					ret[a] = 0; // Inside
+				else
+					ret[a] = std::min(
+								wrappedDist(pos[a], m_min[a], size[a]),
+								wrappedDist(pos[a], m_max[a], size[a]));
+			} else {
+				// Wrapped
+				if (pos[a] <= m_max[a] || m_min[a] <= pos[a])
+					ret[a] = 0; // inside
+				else
+					ret[a] = std::min(
+								wrappedDist(pos[a], m_min[a], size[a]),
+								wrappedDist(pos[a], m_max[a], size[a]));
+			}
+		}
+		return ret;
+	}
+
+	// 0 iff inside
+	int distanceManhattan(const Pos& pos, const Vec2& size) const {
+		Vec2 r = this->distance(pos, size);
+		assert(r.x() >= 0);
+		assert(r.y() >= 0);
+		return r.x() + r.y();
+	}
 };
 
 //////////////////////////////////////////////////////

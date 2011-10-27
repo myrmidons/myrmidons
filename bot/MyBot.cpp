@@ -1,4 +1,5 @@
 #include "Bot.hpp"
+#include "Room.hpp"
 
 using namespace std;
 
@@ -42,9 +43,18 @@ int main(int, char *[])
 #else
 	StandardIODevice io;
 #endif
+
 	State state(io.output());
 	g_state = &state;
+
+	Map map;
+	g_map = &map;
+
+	Rooms rooms;
+	g_rooms = &rooms;
+
 	Bot bot(io);
 	bot.playGame();
+
     return 0;
 }

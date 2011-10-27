@@ -28,6 +28,27 @@ bool operator<(const Interest& a, const Interest& b) {
 
 ///////////////////////////////////////////////////////////////////////
 
+void Room::makeClean() const {
+	if (!m_dirty) return;
+
+	m_neighbors.clear();
+
+	ITC(PosSet, pit, m_cells) {
+		for (int dir=0; dir<4; ++dir) {
+			if (Room* r = g_map->square(g_map->getLocation(*pit, dir)).room) {
+				if (r != this)
+					m_neighbors.insert(r);
+			}
+		}
+	}
+}
+
+const RoomSet& Room::neighborRooms() const {
+	makeClean();
+	return m_neighbors;
+}
+
+
 Room::Room(Pos seed) : m_dirty(true) {
 	m_bb.m_min = m_bb.m_max = seed;
 	m_contents = new RoomContents();

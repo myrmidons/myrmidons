@@ -63,6 +63,8 @@ public:
 
 	const BB& getBB() const { return m_bb; }
 
+	const RoomSet& neighborRooms() const;
+
 	///////////////////////////////////////////////
 
 private:
@@ -78,6 +80,8 @@ private:
 	bool isFinished() const;
 
 	bool isClosable(Pos pos) const;
+
+	void makeClean() const; // Lazy-calc everything that is dirty.
 
 	///////////////////////////////////////////////
 
@@ -99,7 +103,7 @@ private:
 
 	bool m_dirty; // For everything below this:
 
-	//RoomSet m_neighbors;
+	mutable RoomSet m_neighbors;
 };
 
 //////////////////////////////////////////////////////////////////

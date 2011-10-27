@@ -81,6 +81,8 @@ bool Room::isClosable(Pos pos) const {
 }
 
 void Room::add(Pos pos) {
+	LOG_DEBUG("Room::add " << pos);
+
 	m_cells.insert(pos);
 	m_open.insert(pos);
 	Square& s = g_map->square(pos);
@@ -103,9 +105,13 @@ void Room::add(Pos pos) {
 	for (int i=0; i<4; ++i)
 		if (Room* r = g_map->square(g_map->getLocation(pos, i)).room)
 			r->m_dirty = true;
+
+	LOG_DEBUG("Room::add DONE");
 }
 
 bool Room::isFinished() const {
+	LOG_DEBUG("Room::isFinished (this = " << this << ")");
+
 	if (getArea() >= g_rooms->maxRoomArea())
 		return true;
 	Vec2 bbSize = m_bb.size(g_map->size());
@@ -118,14 +124,20 @@ bool Room::isFinished() const {
 
 // Calculate m_interests that coincides with given positions.
 void Room::calcInterests(const PosSet& unassigned) {
+	LOG_DEBUG("Room::calcInterests (this = " << this << ")");
+
 	m_interests.clear();
 	m_interestPos.clear();
+
+	LOG_DEBUG("cleared");
 
 	if (isFinished())
 		return; // We have no interests - we are content.
 
 	typedef std::map<Pos, int> NeighMap;
 	NeighMap neighs; // all neighbor cells
+
+	LOG_DEBUG("Finding neighbors to room...");
 
 	ITC(PosSet, pit, m_open) {
 		if (g_map->square(*pit).isWater)
@@ -141,6 +153,8 @@ void Room::calcInterests(const PosSet& unassigned) {
 		}
 	}
 
+	LOG_DEBUG("Culling neighbors...");
+
 	ITC(NeighMap, nit, neighs) {
 		ASSERT(1 <= nit->second && nit->second <= 2);
 
@@ -151,6 +165,8 @@ void Room::calcInterests(const PosSet& unassigned) {
 		*/
 
 		if (nit->second==2 || !m_bb.contains(nit->first)) {
+			LOG_DEBUG("Adding neighbor cell at " << nit->first << " to interests...");
+
 			// We may expand here
 			Interest intr;
 			intr.room = this;
@@ -177,6 +193,8 @@ void Room::calcInterests(const PosSet& unassigned) {
 			m_interestPos.insert(intr.pos);
 		}
 	}
+
+	LOG_DEBUG("Room::calcInterests DONE");
 }
 
 ///////////////////////////////////////////////////////////////////////
@@ -206,6 +224,11 @@ void Rooms::expandWith(const PosSet& posArg) {
 	if (posArg.empty())
 		return;
 
+#ifdef DEBUG
+	ITC(PosSet, pit, posArg)
+		g_map->assertInMap(*pit);
+#endif
+
 	LOG_DEBUG("Rooms::expandWith");
 
 	PosSet unassigned = posArg; // Copy so we can take away one at the time.
@@ -232,37 +255,53 @@ void Rooms::expandWith(const PosSet& posArg) {
 
 		Room* room; // To which we assign a position.
 		if (!interests.empty()) {
+			LOG_DEBUG("A");
+
 			// Assign room with best fit:
 			Interest intr = *interests.begin();
 			room = intr.room;
+
+			LOG_DEBUG("Assigning position " << intr.pos << " to room " << room);
+
 			room->add(intr.pos);
 			unassigned.erase(intr.pos); // No more!
 
-			// This cell may have been the interest of may rooms.
+			LOG_DEBUG("Updating interests...");
+
+			// This cell may have been the interest of my rooms.
 			// Make sure we re-evaluates the interests of affected rooms:
 			ITC(RoomSet, rit, rooms) {
 				Room* ar = *rit;
 				if (ar->m_interestPos.count(intr.pos)) {
+					LOG_DEBUG("Erasing old interests...");
 					interests.erase(ar->m_interests.begin(), ar->m_interests.end());
+
+					LOG_DEBUG("Calculating new interests...");
 					ar->calcInterests(unassigned);
+
+					LOG_DEBUG("Adding new interests...");
 					interests.insert(ar->m_interests.begin(), ar->m_interests.end());
 				}
 			}
+
+			LOG_DEBUG("Interests updated.");
 		} else {
+			LOG_DEBUG("B");
+
 			// No interest taken - create a new room!
 			// Which do we select? Any!
-			Pos pos = *unassigned.end();
-			unassigned.erase(unassigned.end());
+			Pos pos = *unassigned.begin();
+			unassigned.erase(unassigned.begin());
 
 			if (!g_map->square(pos).isGround())
 				continue; // Discovered water? who cares!
-
-			LOG_DEBUG("Creating room at " << pos);
 
 			room = new Room(pos);
 			m_rooms.push_back(room);
 			m_open.insert(room);
 			rooms.insert(room);
+
+			LOG_DEBUG("Creating room " << room << " at " << pos);
 
 			room->calcInterests(unassigned);
 			interests.insert(room->m_interests.begin(), room->m_interests.end());

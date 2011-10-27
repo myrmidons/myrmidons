@@ -94,6 +94,10 @@ void Room::calcInterests(const PosSet& unassigned) {
 	NeighMap neighs; // all neighbor cells
 
 	ITC(PosSet, pit, m_open) {
+		if (g_map->square(*pit).isWater)
+			continue; // We cant have water in rooms
+		assert(g_map->square(*pit).isGround());
+
 		for (int i=0; i<4; ++i) { // All four directions
 			Pos p = g_map->getLocation(*pit, i);
 			if (unassigned.count(p)) {
@@ -208,6 +212,9 @@ void Rooms::expandWith(const PosSet& posArg) {
 			// Which do we select? Any!
 			Pos pos = *unassigned.end();
 			unassigned.erase(unassigned.end());
+
+			if (!g_map->square(pos).isGround())
+				continue; // Discovered water? who cares!
 
 			room = new Room(pos);
 			m_rooms.push_back(room);

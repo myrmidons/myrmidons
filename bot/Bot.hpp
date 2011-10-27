@@ -3,11 +3,19 @@
 
 #include "State.hpp"
 #include "Ant.hpp"
+#include <iostream>
 #include <vector>
-/*
-    This struct represents your bot in the game of Ants
-*/
 
+// Interface type for game state and command input/output
+class IODevice
+{
+public:
+	virtual std::istream& input() = 0;
+	virtual std::ostream& output() = 0;
+
+	virtual bool bufferInputChunk() { return true; }
+	virtual void flushOutputChunk() {}
+};
 
 struct Bot
 {

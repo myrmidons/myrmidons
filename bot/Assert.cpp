@@ -32,7 +32,7 @@ void AssertionFailed(const char* expr,
 	ss << "Assertion \"" << expr << "\" failed in \"" << function << "\", in " << file << ":" << line;
 
 #ifdef THIS_IS_MAC
-	ss << std::endl << "-----------------";
+	ss << std::endl << "-----------------" << std::endl;
 	ss << stackTrace();
 	ss << std::endl << "-----------------";
 #endif

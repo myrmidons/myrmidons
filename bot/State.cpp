@@ -161,30 +161,32 @@ istream& operator>>(istream &is, State &state)
 			if(inputType == "w") //water square
             {
                 is >> row >> col;
-				g_tracker->water(Pos(row, col));
+				g_tracker->water(Pos(col, row));
             }
             else if(inputType == "f") //food square
             {
                 is >> row >> col;
-				g_tracker->food(Pos(row, col));
+				g_tracker->food(Pos(col, row));
             }
             else if(inputType == "a") //live ant square
             {
                 is >> row >> col >> player;
-				g_tracker->ant(Pos(row,col),player);
+				g_tracker->ant(Pos(col, row), player);
             }
-            else if(inputType == "d") //dead ant square
+			else if(inputType == "d") //dead ant square
             {
                 is >> row >> col >> player;
-				g_tracker->deadAnt(Pos(row,col),player);
+				g_tracker->deadAnt(Pos(col, row), player);
 			}
             else if(inputType == "h")
             {
                 is >> row >> col >> player;
-				g_tracker->hill(Pos(row,col),player);
+				g_tracker->hill(Pos(col, row), player);
             }
             else if(inputType == "players") //player information
+			{
                 is >> state.noPlayers;
+			}
             else if(inputType == "scores") //score information
             {
                 state.scores = vector<double>(state.noPlayers, 0.0);

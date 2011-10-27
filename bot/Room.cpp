@@ -5,6 +5,7 @@
 
 #ifdef DEBUG
 #	include <QImage>
+#	include <sstream>
 #endif
 
 Rooms* g_rooms = NULL;
@@ -202,6 +203,9 @@ int Rooms::maxRoomWidth() const {
 }
 
 void Rooms::expandWith(const PosSet& posArg) {
+	if (posArg.empty())
+		return;
+
 	LOG_DEBUG("Rooms::expandWith");
 
 	PosSet unassigned = posArg; // Copy so we can take away one at the time.
@@ -267,6 +271,8 @@ void Rooms::expandWith(const PosSet& posArg) {
 	}
 
 	LOG_DEBUG("Rooms::expandWith DONE");
+
+	dumpImage();
 }
 
 #ifdef DEBUG
@@ -282,7 +288,8 @@ void Rooms::dumpImage() const {
 	Vec2 size = g_map->size();
 	//int Mult = 1; // Pixels per grid cell.
 	QImage img(size.x(), size.y(), QImage::Format_ARGB32);
-	img.fill(0);
+	//img.fill(0);
+	img.fill(qRgb(0,0,0));
 
 	std::map<Room*, QRgb> colorMap;
 	ITC(RoomList, rit, m_rooms)
@@ -297,6 +304,10 @@ void Rooms::dumpImage() const {
 		}
 	}
 
-	img.save("rooms.png");
+	static int s_nr = 0;
+	std::stringstream ss;
+	ss << "rooms_" << (s_nr++) << ".png";
+	std::string fn = ss.str();
+	img.save(fn.c_str());
 }
 #endif

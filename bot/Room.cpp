@@ -228,6 +228,8 @@ void Rooms::expandWith(const PosSet& posArg) {
 	}
 
 	while (!unassigned.empty()) {
+		LOG_DEBUG(unassigned.size() << " unassigned left");
+
 		Room* room; // To which we assign a position.
 		if (!interests.empty()) {
 			// Assign room with best fit:
@@ -254,6 +256,8 @@ void Rooms::expandWith(const PosSet& posArg) {
 
 			if (!g_map->square(pos).isGround())
 				continue; // Discovered water? who cares!
+
+			LOG_DEBUG("Creating room at " << pos);
 
 			room = new Room(pos);
 			m_rooms.push_back(room);

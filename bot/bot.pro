@@ -43,8 +43,4 @@ unix {
     DEFINES += THIS_IS_MAC=1
 }
 
-
-
-
-
-
+QMAKE_CXXFLAGS += -Wall -pedantic -Wextra -Wno-long-long

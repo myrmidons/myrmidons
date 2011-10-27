@@ -13,7 +13,7 @@ void AssertionFailed(const char* expr,
 	ss << "Assertion \"" << expr << "\" failed in \"" << function << "\", in " << file << ":" << line;
 	std::string msg = ss.str();
 
-	g_state->bug << msg << std::flush;
+	LOG_DEBUG( msg );
 
 #ifdef DEBUG
 	qFatal(msg.c_str());

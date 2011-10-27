@@ -4,10 +4,13 @@
 #include <cassert>
 #include "Ant.hpp"
 
+#include <sstream>
+
 using namespace std;
 
 // initialized in main
 State* g_state = NULL;
+
 
 //////////////////////////
 
@@ -17,27 +20,31 @@ State* g_state = NULL;
 
 //////////////////////////
 
+
 //constructor
 State::State(std::ostream& output)
 	: output(output)
 {
-	identifier = new Tracker();
     gameover = 0;
 	turn = 0;
 	ASSERT(!g_state && "more than one State constructed");
-	bug.open("debug.txt");
+
+	// Random logfile name....
+	std::stringstream ss;
+	ss << "debug_" << rand() << ".txt";
+	bug.open(ss.str());
 };
 
 //deconstructor
 State::~State()
 {
     bug.close();
-};
+}
 
 //sets the state up
 void State::setup() {
 	g_map->initMap(rows, cols);
-};
+}
 
 //resets all non-water squares to land and clears the bots ant vector
 
@@ -46,14 +53,9 @@ void State::setup() {
 void State::makeMove(const Pos &loc, int direction)
 {
 	output << "o " << loc[0] << " " << loc[1] << " " << CDIRECTIONS[direction] << endl;
-};
 
-//returns the new location from moving in a given direction with the edges wrapped
-/*Pos State::getLocation(const Pos &loc, int direction)
-{
-	return Pos( (loc[0] + DIRECTIONS[direction][0] + rows) % rows,
-					 (loc[1] + DIRECTIONS[direction][1] + cols) % cols );
-};*/
+}
+
 
 /*
     This is the output function for a state. It will add a char map
@@ -105,7 +107,7 @@ istream& operator>>(istream &is, State &state)
         else if(inputType == "turn")
         {
             is >> state.turn;
-			state.identifier->turn(state.turn);
+			g_tracker->turn(state.turn);
             break;
         }
         else //unknown line
@@ -159,27 +161,27 @@ istream& operator>>(istream &is, State &state)
             if(inputType == "w") //water square
             {
                 is >> row >> col;
-				state.identifier->water(Pos(row, col));
+				g_tracker->water(Pos(row, col));
             }
             else if(inputType == "f") //food square
             {
                 is >> row >> col;
-				state.identifier->food(Pos(row, col));
+				g_tracker->food(Pos(row, col));
             }
             else if(inputType == "a") //live ant square
             {
                 is >> row >> col >> player;
-				state.identifier->ant(Pos(row,col),player);
+				g_tracker->ant(Pos(row,col),player);
             }
             else if(inputType == "d") //dead ant square
             {
                 is >> row >> col >> player;
-				state.identifier->deadAnt(Pos(row,col),player);
+				g_tracker->deadAnt(Pos(row,col),player);
 			}
             else if(inputType == "h")
             {
                 is >> row >> col >> player;
-				state.identifier->hill(Pos(row,col),player);
+				g_tracker->hill(Pos(row,col),player);
             }
             else if(inputType == "players") //player information
                 is >> state.noPlayers;
@@ -191,7 +193,7 @@ istream& operator>>(istream &is, State &state)
             }
             else if(inputType == "go") //end of turn input
             {
-				state.identifier->go();
+				g_tracker->go();
                 if(state.gameover)
                     is.setstate(std::ios::failbit);
                 else

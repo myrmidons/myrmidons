@@ -1,6 +1,7 @@
 #include "Bot.hpp"
 #include "Room.hpp"
 #include "Map.hpp"
+#include "Tracker.hpp"
 
 using namespace std;
 
@@ -49,7 +50,10 @@ int main(int, char *[])
 	g_state = &state;
 
 	Map map;
-	g_map = &map;
+	g_map = &map; // Must be before g_tracker.
+
+	Tracker tracker;
+	g_tracker = &tracker;
 
 	Rooms rooms;
 	g_rooms = &rooms;

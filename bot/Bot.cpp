@@ -77,7 +77,9 @@ void Bot::playGame() {
 	// continues making moves while the game is not over
 	while(io.bufferInputChunk() && io.input() >> state)
     {
+
 		//state.updateVisionInformation();
+
 		makeMoves();
         endTurn();
 		io.flushOutputChunk();
@@ -104,7 +106,7 @@ int Bot::closestLocation(const Pos& loc, const vector<Pos>& location) {
 void Bot::makeMoves()
 {
 
-	AntSet const& ants = g_state->identifier->getLiveAnts();
+	AntSet const& ants = g_tracker->getLiveAnts();
 	for(AntSet::const_iterator it = ants.begin(); it != ants.end(); ++it) {
 		// Pick out this ants location from the set for later use.
 		Pos antLoc = (*it)->pos();//state.myAnts[ant];
@@ -122,7 +124,9 @@ void Bot::makeMoves()
 		}
 		if(bestRank > -100) {
 			// This will not be needed. Just for testing the identifyer as things stand at the moment.
+
 			g_map->moveAnt(antLoc, g_map->getLocation(antLoc, bestMove));
+
 
 			state.makeMove(antLoc, bestMove); // Needed because the map is still just a dummy.
 		}

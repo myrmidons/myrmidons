@@ -22,7 +22,7 @@ BattleScene::BattleScene(std::vector<Room *> *rooms) {
 	classifyFight();
 }
 
-void BattleScene::addRoom(Room* room) {
+void BattleScene::addRoom(Room* /*room*/) {
 	//m_rooms.insert(room);
 }
 
@@ -35,7 +35,7 @@ void BattleScene::update() {
 	   numFallenEnemies   = 0;
 
    for(std::vector<Room*>::iterator rit = m_rooms.begin(); rit != m_rooms.end(); ++rit) {
-	   Room *room = *rit;
+	   //Room *room = *rit;
 
 	  /* These are not yet defined.
 	   numMyrmidons       += room->getNumMyrmidons();

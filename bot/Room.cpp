@@ -1,6 +1,7 @@
 #include "Room.hpp"
 #include "Util.hpp"
 #include "Map.hpp"
+#include "State.hpp" // LOG_DEBUG
 
 #ifdef DEBUG
 #	include <QImage>
@@ -28,14 +29,31 @@ bool operator<(const Interest& a, const Interest& b) {
 
 ///////////////////////////////////////////////////////////////////////
 
-Room::Room(Pos seed) {
-	m_cells.insert(seed);
-	m_open.insert(seed);
+void Room::makeClean() const {
+	if (!m_dirty) return;
+
+	m_neighbors.clear();
+
+	ITC(PosSet, pit, m_cells) {
+		for (int dir=0; dir<4; ++dir) {
+			if (Room* r = g_map->square(g_map->getLocation(*pit, dir)).room) {
+				if (r != this)
+					m_neighbors.insert(r);
+			}
+		}
+	}
+}
+
+const RoomSet& Room::neighborRooms() const {
+	makeClean();
+	return m_neighbors;
+}
+
+
+Room::Room(Pos seed) : m_dirty(true) {
 	m_bb.m_min = m_bb.m_max = seed;
 	m_contents = new RoomContents();
-	Square& s = g_map->square(seed);
-	ASSERT(s.room==NULL);
-	s.room = this;
+	add(seed);
 }
 
 Room::~Room() {
@@ -69,6 +87,12 @@ void Room::add(Pos pos) {
 			closeThese.insert(*pit);
 
 	m_open.erase(closeThese.begin(), closeThese.end());
+
+	// We are now unsure of room-connection - dirty up affected rooms:
+	this->m_dirty = true;
+	for (int i=0; i<4; ++i)
+		if (Room* r = g_map->square(g_map->getLocation(pos, i)).room)
+			r->m_dirty = true;
 }
 
 bool Room::isFinished() const {
@@ -169,6 +193,8 @@ int Rooms::maxRoomWidth() const {
 }
 
 void Rooms::expandWith(const PosSet& posArg) {
+	LOG_DEBUG("Rooms::expandWith");
+
 	PosSet unassigned = posArg; // Copy so we can take away one at the time.
 
 	int maxRoomWidth = this->maxRoomWidth();
@@ -230,6 +256,8 @@ void Rooms::expandWith(const PosSet& posArg) {
 			rooms.erase(room); // No longer intersting for us
 		}
 	}
+
+	LOG_DEBUG("Rooms::expandWith DONE");
 }
 
 #ifdef DEBUG
@@ -240,6 +268,8 @@ QRgb randomColor(Room* r) {
 
 // Dump a png of the room colorings.
 void Rooms::dumpImage() const {
+	LOG_DEBUG("Rooms::dumpImage");
+
 	Vec2 size = g_map->size();
 	//int Mult = 1; // Pixels per grid cell.
 	QImage img(size.x(), size.y(), QImage::Format_ARGB32);

@@ -4,22 +4,17 @@
 #include <map>
 #include <vector>
 #include "Square.hpp"
-
+#include "AntStar.hpp"
+#include "Assert.hpp"
 
 class Ant;
 
 class Map
 {
-	std::vector<std::vector<Square> > grid;
-	std::map<Ant*, Pos> antpos;
-	std::map<Pos, Ant*> posant;
-	//resets all non-water squares to land and clears the bots ant vector
-	void reset();
 public:
 	Map();
-	int m_cols, m_rows;
-
 	void initMap(int rows, int cols);
+
 	void removeAnt(Ant* ant);
 	void addAnt(Ant* ant);
 	Ant* getAnt(Pos const& pos);
@@ -32,14 +27,31 @@ public:
 	// Take one (wrapped) step into one of four directions.
 	Pos getLocation(const Pos &loc, int direction);
 
-	Square& square(Pos const& pos) { return grid[pos[0]][pos[1]]; }
+	Path getOptimalPathTo(const Pos &from, const Pos &to);
+
+	Square& square(Pos const& pos);
+
 	bool isOccupied(const Pos& loc);
 
-	Vec2 size() const { return Vec2(m_cols, m_rows); }
+	const Vec2& size() const { return m_size; }
 
 	double distance(const Pos &loc1, const Pos &loc2);
 
 	void newTurn(int turn);
+	void assertInMap(const Pos& pos) const {
+		ASSERT(0<=pos.x() && pos.x()<m_size.x());
+		ASSERT(0<=pos.y() && pos.y()<m_size.y());
+	}
+
+private:
+	std::vector<std::vector<Square> > m_grid; // x/y
+	std::map<Ant*, Pos> antpos;
+	std::map<Pos, Ant*> posant;
+	Vec2 m_size;
+
+	//resets all non-water squares to land and clears the bots ant vector
+	void reset();
+
 };
 
 extern Map* g_map;

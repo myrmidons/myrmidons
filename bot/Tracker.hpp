@@ -57,4 +57,6 @@ private:
 	StateBuffer buf;
 };
 
+extern Tracker* g_tracker;
+
 #endif // IDENTIFIER_H

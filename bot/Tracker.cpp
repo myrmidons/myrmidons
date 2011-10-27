@@ -2,6 +2,8 @@
 #include "Ant.hpp"
 #include "Map.hpp"
 
+Tracker* g_tracker = 0;
+
 typedef enum {TheGoodGuys = 0} Team;
 
 Tracker::Tracker()
@@ -9,8 +11,9 @@ Tracker::Tracker()
 	m_antStorage.resize(10000); // Taken out of thin air.
 }
 
-inline size_t Tracker::indexOf(Ant* ant) const { return (ant - &m_antStorage[0]); }
-
+inline size_t Tracker::indexOf(Ant* ant) const {
+	return (ant - &m_antStorage[0]);
+}
 
 void Tracker::turn(int n) {
 	m_turn = n;

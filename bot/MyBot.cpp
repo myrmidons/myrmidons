@@ -42,9 +42,9 @@ int main(int, char *[])
 #else
 	StandardIODevice io;
 #endif
-	State state;
+	State state(io.output());
 	g_state = &state;
-	Bot bot;
+	Bot bot(io);
 	bot.playGame();
     return 0;
 }

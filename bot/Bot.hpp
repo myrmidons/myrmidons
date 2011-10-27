@@ -17,15 +17,17 @@ public:
 	virtual void flushOutputChunk() {}
 };
 
-struct Bot
+class Bot
 {
+	IODevice& io;
 	State& state;
 	AntIdentifier antID;
 
+public:
 	// Used for random ordering of directions.
 	std::vector<DirVec> dirVecs;
 
-    Bot();
+	explicit Bot(IODevice& io_device);
 
     void playGame();    //plays a single game of Ants
 

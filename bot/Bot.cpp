@@ -9,8 +9,9 @@
 using namespace std;
 
 //constructor
-Bot::Bot()
-	: state(*g_state)
+Bot::Bot(IODevice& io_device)
+	: io(io_device)
+	, state(*g_state)
 {
 	setupRandomDirections();
 }
@@ -66,17 +67,19 @@ DirVec const& Bot::randomDirVec() const {
 //plays a single game of Ants.
 void Bot::playGame() {
 	//reads the game parameters and sets up
-    cin >> state;
+	io.bufferInputChunk();
+	io.input() >> state;
     state.setup();
     endTurn();
 
 	// continues making moves while the game is not over
-    while(cin >> state)
+	while(io.bufferInputChunk() && io.input() >> state)
     {
         state.updateVisionInformation();
 		antID.update(state);
 		makeMoves();
         endTurn();
+		io.flushOutputChunk();
     }
 };
 
@@ -146,8 +149,8 @@ void Bot::endTurn()
         state.reset();
     state.turn++;
 
-    cout << "go" << endl;
-};
+	io.output() << "go" << endl;
+}
 
 bool Bot::safeLocation(const Pos &loc) {
 	return !state.grid[loc[0]][loc[1]].isWater;

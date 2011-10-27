@@ -38,18 +38,18 @@ int Bot::rankMove(Pos const& currentLoc, int dir) {
 	int rank = 0;
 
 
-	if(!safeLocation(newLoc) || state.isOccupied(newLoc))
+	if(!safeLocation(newLoc) || g_state->isOccupied(newLoc))
 		return -1000; // Absolutley not, it would be suicide!
 
-	for(int j = 0; j < (int)state.enemyAnts.size(); ++j) {
+/*	for(int j = 0; j < (int)state.enemyAnts.size(); ++j) {
 		double d = state.distance(newLoc,state.enemyAnts[j]);
 		if(int(d*d + 0.5) < 13)
 			rank -= 20;
 	}
+*/
 
 
-
-	int foodLocationIndex = closestLocation(currentLoc, state.food);
+/*	int foodLocationIndex = closestLocation(currentLoc, state.food);
 	if(foodLocationIndex >= 0) {
 			Pos foodLoc = state.food[foodLocationIndex];
 			if(state.distance(newLoc, foodLoc) >= state.distance(currentLoc, foodLoc)) {
@@ -58,7 +58,7 @@ int Bot::rankMove(Pos const& currentLoc, int dir) {
 			else {
 				rank += 10; // This move would take us closer to the nearest food item.
 			}
-	}
+	}*/
 
 
 	return rank;
@@ -104,11 +104,11 @@ int Bot::closestLocation(const Pos& loc, const vector<Pos>& location) {
 //makes the bots moves for the turn
 void Bot::makeMoves()
 {
-	size_t nAnts = state.myAnts.size();
 
-	for(size_t ant = 0; ant< nAnts; ant++) {
+	AntSet const& ants = g_state->identifier->getLiveAnts();
+	for(AntSet::const_iterator it = ants.begin(); it != ants.end(); ++it) {
 		// Pick out this ants location from the set for later use.
-		Pos antLoc = state.myAnts[ant];
+		Pos antLoc = (*it)->pos();//state.myAnts[ant];
 
 		DirVec const& dirs = randomDirVec();
 

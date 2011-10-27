@@ -9,13 +9,6 @@ using namespace std;
 // initialized in main
 State* g_state = NULL;
 
-//////////////////////////
-
-bool State::isOccupied(const Pos& loc) {
-	return grid[loc[0]][loc[1]].ant != -1;
-}
-
-//////////////////////////
 
 //constructor
 State::State(std::ostream& output)
@@ -32,23 +25,23 @@ State::State(std::ostream& output)
 State::~State()
 {
     bug.close();
-};
+}
 
 //sets the state up
 void State::setup()
 {
     grid = vector<vector<Square> >(rows, vector<Square>(cols, Square()));
 	g_map->initMap(rows, cols);
-};
+}
 
 //resets all non-water squares to land and clears the bots ant vector
 void State::reset()
 {
-    for(int row=0; row<rows; row++)
-        for(int col=0; col<cols; col++)
-            if(!grid[row][col].isWater)
-                grid[row][col].reset();
-};
+	for(int row=0; row<rows; row++)
+		for(int col=0; col<cols; col++)
+			if(!grid[row][col].isWater)
+				grid[row][col].reset();
+}
 
 //outputs move information to the engine
 void State::makeMove(const Pos &loc, int direction)
@@ -58,57 +51,7 @@ void State::makeMove(const Pos &loc, int direction)
 	Pos nLoc = getLocation(loc, direction);
 	grid[nLoc[0]][nLoc[1]].ant = grid[loc[0]][loc[1]].ant;
 	grid[loc[0]][loc[1]].ant = -1;
-};
-
-//returns the new location from moving in a given direction with the edges wrapped
-Pos State::getLocation(const Pos &loc, int direction)
-{
-	return Pos( (loc[0] + DIRECTIONS[direction][0] + rows) % rows,
-					 (loc[1] + DIRECTIONS[direction][1] + cols) % cols );
-};
-
-/*
-    This function will update update the lastSeen value for any squares currently
-    visible by one of your live ants.
-
-    BE VERY CAREFUL IF YOU ARE GOING TO TRY AND MAKE THIS FUNCTION MORE EFFICIENT,
-    THE OBVIOUS WAY OF TRYING TO IMPROVE IT BREAKS USING THE EUCLIDEAN METRIC, FOR
-    A CORRECT MORE EFFICIENT IMPLEMENTATION, TAKE A LOOK AT THE GET_VISION FUNCTION
-    IN ANTS.PY ON THE CONTESTS GITHUB PAGE.
-*/
-void State::updateVisionInformation()
-{
-	std::queue<Pos> locQueue;
-	Pos sLoc, cLoc, nLoc;
-
-	AntSet const& ants = g_state->identifier->getLiveAnts();
-	for(AntSet::const_iterator it = ants.begin(); it != ants.end(); ++it) {
-		sLoc = (*it)->pos();
-        locQueue.push(sLoc);
-
-        std::vector<std::vector<bool> > visited(rows, std::vector<bool>(cols, 0));
-		grid[sLoc[0]][sLoc[1]].isVisible = 1;
-		visited[sLoc[0]][sLoc[1]] = 1;
-
-        while(!locQueue.empty())
-        {
-            cLoc = locQueue.front();
-            locQueue.pop();
-
-            for(int d=0; d<TDIRECTIONS; d++)
-            {
-                nLoc = getLocation(cLoc, d);
-
-				if(!visited[nLoc[0]][nLoc[1]] && g_map->distance(sLoc, nLoc) <= viewradius)
-                {
-					grid[nLoc[0]][nLoc[1]].isVisible = 1;
-                    locQueue.push(nLoc);
-                }
-				visited[nLoc[0]][nLoc[1]] = 1;
-            }
-        }
-    }
-};
+}
 
 /*
     This is the output function for a state. It will add a char map

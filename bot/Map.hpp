@@ -4,7 +4,7 @@
 #include <map>
 #include <vector>
 #include "Square.hpp"
-
+#include "AntStar.hpp"
 
 class Ant;
 
@@ -30,6 +30,8 @@ public:
 
 	// Take one (wrapped) step into one of four directions.
 	Pos getLocation(const Pos &loc, int direction);
+
+	Path getOptimalPathTo(const Pos &from, const Pos &to);
 
 	Square& square(Pos const& pos) { return grid[pos[0]][pos[1]]; }
 	bool isOccupied(const Pos& loc);

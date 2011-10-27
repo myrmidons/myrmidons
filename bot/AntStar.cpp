@@ -15,6 +15,9 @@ double AntStar::heuristics(StarAnt* current, StarAnt* goal){
 }
 
 Path AntStar::findPath(Pos from, Pos to) {
+	assert(from.x() > -1 && from.x() < g_map->m_cols);
+	assert(from.y() > -1 && from.y() < g_map->m_rows);
+
 	m_grid = StarGrid(g_map->m_rows);
 	for(int r=0;r < g_map->m_rows;r++){
 		m_grid[r].reserve(g_map->m_cols);

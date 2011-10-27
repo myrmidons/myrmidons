@@ -2,7 +2,7 @@
 #include "Ant.hpp"
 #include "State.hpp"
 #include "Identifier.hpp"
-
+#include <cmath>
 Map* g_map = NULL;
 
 Map::Map()
@@ -140,15 +140,15 @@ void Map::reset()
 		for(int col=0; col<m_cols; col++)
 			if(!grid[row][col].isWater)
 				grid[row][col].reset();
-};
+}
 
 //returns the euclidean distance between two locations with the edges wrapped
  double Map::distance(const Pos &loc1, const Pos &loc2)
 {
-	int d1 = abs(loc1[0]-loc2[0]),
-		d2 = abs(loc1[1]-loc2[1]),
-		dr = min(d1, rows-d1),
-		dc = min(d2, cols-d2);
+	int d1 = std::abs(loc1[0]-loc2[0]),
+		d2 = std::abs(loc1[1]-loc2[1]),
+		dr = std::min(d1, m_rows-d1),
+		dc = std::min(d2, m_cols-d2);
 	return sqrt(dr*dr + dc*dc);
-};
+}
 

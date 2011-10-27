@@ -10,15 +10,15 @@ int AntStar::getMovementCost(){
 	return 1; // kostar alltid 1 att flytta sig mellan steg atm.
 }
 
-float AntStar::heuristics(StarAnt* current, StartAnt* goal){
+double AntStar::heuristics(StarAnt* current, StarAnt* goal){
 	return g_map->distance(current->p, goal->p);
 }
 
-Path AntStar::findPath(Map* m, Pos from, Pos to) {
-	m_grid = StarGrid(m->m_rows);
-	for(int r=0;r < m->m_rows;r++){
-		m_grid[r].reserve(m->m_cols);
-		for(int c=0;c< m->m_cols;c++){
+Path AntStar::findPath(Pos from, Pos to) {
+	m_grid = StarGrid(g_map->m_rows);
+	for(int r=0;r < g_map->m_rows;r++){
+		m_grid[r].reserve(g_map->m_cols);
+		for(int c=0;c< g_map->m_cols;c++){
 			m_grid[r].push_back( StarAnt(r,c) );
 		}
 	}
@@ -44,7 +44,7 @@ Path AntStar::findPath(Map* m, Pos from, Pos to) {
 
 		// gå i de olika vädersträcken
 		for(int i = 0; i < 4; i++){
-			Pos nPos = m->getLocation(current.p, i);
+			Pos nPos = g_map->getLocation(current.p, i);
 			StarAnt n = m_grid[nPos.x()][nPos.y()]; // neighbour
 
 			if(n.passable || n.closed) {
@@ -59,7 +59,7 @@ Path AntStar::findPath(Map* m, Pos from, Pos to) {
 			if(!beenVisited || gScore < n.g){
 				n.visited = true;
 				n.parent = &current;
-				n.h = heuristics(n, goal);
+				n.h = heuristics(&n, &goal);
 				n.g = gScore;
 				n.f = n.h + n.g;
 				if(beenVisited)
@@ -71,5 +71,5 @@ Path AntStar::findPath(Map* m, Pos from, Pos to) {
 			}
 		}
 	}
-	return NULL;
+	return Path();
 }

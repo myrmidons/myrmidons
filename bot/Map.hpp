@@ -4,7 +4,7 @@
 #include <map>
 #include <vector>
 #include "Square.hpp"
-#include <cmath>
+
 
 class Ant;
 

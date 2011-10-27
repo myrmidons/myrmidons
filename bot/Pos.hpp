@@ -5,6 +5,7 @@
 #include <set>
 #include <ostream>
 #include <cassert>
+#include <cstdlib>
 
 /*
 	struct for representing positions in the grid.
@@ -53,9 +54,9 @@ inline std::ostream& operator<<(std::ostream &os, const Pos& pos) {
 
 //////////////////////////////////////////////////////
 
-// Wrapped postivie distance between points a,b both on [0,size)
+// Wrapped positive distance between points a,b both on [0,size)
 inline int wrappedDist(int a, int b, int size) {
-	int d = abs(a-b);
+	int d = std::abs(a-b);
 	return std::min(d, size-d);
 }
 

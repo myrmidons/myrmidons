@@ -35,6 +35,8 @@ public:
 	// Give me the number of Pos the room currently contains.
 	int getArea() const { return m_cells.size(); }
 
+	const BB& getBB() const { return m_bb; }
+
 	///////////////////////////////////////////////
 
 private:
@@ -55,14 +57,15 @@ private:
 	PosList m_cells; // All positions in this Room (in the order they where added).
 	PosList m_open; // Positions bordering to unassigned cells.
 
+	/////////////////////////////////////////
+	// Derived:
+	BB m_bb;
+
 	/*
 	// for building:
 	PosSet closed; // positions that has no neigbor that is not assigned to a room (or water).
 	PosSet open; // edge positions with non-assigned neighbors.
 
-	/////////////////////////////////////////
-	// Derived:
-	BB bound;
 
 	// n^2, where n is the number of cells. symmetric, with zero diagonal.
 	// shortestPath[i + j*n] is the length of the shortest path between cells i and j.
@@ -86,7 +89,7 @@ private:
 	Range neighborDistance(int na, nb) const;
 	*/
 };
-typedef std::vector<Room*> RoomPtrVec;
+typedef std::vector<Room*> RoomList;
 
 //////////////////////////////////////////////////////////////////
 
@@ -95,11 +98,12 @@ class Rooms
 public:
 	// Called by g_map upon uncovering new grid cells.
 	void expandWith(const PosList& pos);
-	void expandWith(const Pos& pos);
 
 private:
-	RoomPtrVec m_rooms;
-	RoomPtrVec m_open; // rooms not yet closed/finished
+	RoomList m_rooms;
+	RoomList m_open; // rooms not yet closed/finished
 };
+
+extern Rooms* g_rooms;
 
 #endif // ROOM_H

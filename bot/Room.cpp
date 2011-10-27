@@ -34,25 +34,45 @@ void Room::add(Pos pos) {
 ///////////////////////////////////////////////////////////////////////
 // Rooms
 
-void Rooms::expandWith(const PosList& pos) {
-	ITC(PosList, pit, pos)
-		expandWith(*pit);
-}
+// Rooms volenteer interest in unassigned cells.
+// This interest is kept track of using this:
+struct Interest
+{
+	Pos pos;
+	Room* room;
+	/* 1 or 2: how many neighbors the cell has to the room
+		(3,4 impossible by constraint ofmanhattan-concavity). */
+	int neighbors;
 
+	// Less = priority. i.e.: "should a be assigned before b"?
+	friend bool operator<(const Interest& a, const Interest& b) {
+		if (a.neighbors > b.neighbors) return true;
+		if (b.neighbors > a.neighbors) return false;
 
-void Rooms::expandWith(const Pos& pos) {
-	//if (g_map->isWaterAt(pos))
-	//	return; // The only type of square not in a map
-
-	// See if pos is close to existing expanding room and if so, expand it.
-	ITC(RoomPtrVec, rit, m_open) {
-		Room* r = *rit;
-		if (r->tryExpandWith(pos))
-			return;
+		return a.room < b.room; // Unrelated tie-breaker.
 	}
+};
 
-	// No hits - make room.
-	Room* r = new Room(m_rooms.size(), pos);
-	m_rooms.push_back(r);
-	m_open.push_back(r);
+bool isInRange(const BB& bb, const Pos& pos, const Vec2& mapSize, int maxRoomWidth) {
+	Vec2 r =  bb.distance(pos, mapSize);
+	return std::min(r.x(), r.y()) < maxRoomWidth;
 }
+
+bool areAnyInRange(Room* room, const PosList& pos, const Vec2& mapSize, int maxRoomWidth) {
+	ITC(PosList, pit, pos)
+		if (isInRange(room->getBB(), *pit, mapSize, maxRoomWidth))
+			return true;
+	return false;
+}
+
+void Rooms::expandWith(const PosList& pos) {
+	int maxRoomWidth = 10; // FIXME
+	Vec2 mapSize = Vec2(200,200); // FIXME
+
+	RoomList rooms; // Affected rooms
+	ITC(RoomList, rit, m_open) // Go through open rooms
+		if (areAnyInRange(*rit, pos, mapSize, maxRoomWidth))
+			rooms.push_back(*rit);
+}
+
+Rooms* g_rooms = NULL;

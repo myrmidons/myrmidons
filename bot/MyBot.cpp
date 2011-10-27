@@ -1,4 +1,5 @@
 #include "Bot.hpp"
+#include "Room.hpp"
 
 using namespace std;
 
@@ -17,8 +18,12 @@ int main(int, char *[])
 {
     cout.sync_with_stdio(0); //this line makes your bot faster
 
+	g_rooms = new Rooms();
+
     Bot bot;
     bot.playGame();
+
+	delete g_rooms; // Play nice
 
     return 0;
 }

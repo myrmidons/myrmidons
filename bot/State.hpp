@@ -39,7 +39,8 @@ struct State
 	Vec2 m_size;
 	int
         turn, turns,
-        noPlayers;
+		noPlayers,
+		seed;
 	int viewRadius2;
     double attackradius, spawnradius, viewradius;
     double loadtime, turntime;
@@ -68,8 +69,13 @@ extern State* g_state;
 
 #ifdef DEBUG
 #	define LOG_DEBUG(msg) g_state->bug << msg << std::endl << std::flush
+#	define STAMP_BODY "STAMP: Function " << __FUNCTION__ << " in file " __FILE__ << " on row " <<  __LINE__
+#	define STAMP_ LOG_DEBUG(STAMP_BODY)
+#	define STAMP(foo) LOG_DEBUG(STAMP_BODY << ": " << foo)
 #else
 #	define LOG_DEBUG(msg)
+#	define STAMP_
+#	define STAMP(foo)
 #endif
 
 #endif //STATE_H_

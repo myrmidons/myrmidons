@@ -22,6 +22,9 @@ class Tracker {
 	AntSet m_liveAnts;
 	IndexSet m_deadIndices;
 
+	PosSet m_enemyHills;
+	PosSet m_hills;
+
 	int m_turn;
 
 public:
@@ -48,14 +51,20 @@ private:
 
 	void update();
 
-	struct StateBuffer {
-		std::vector<Pos> myAnts, enemyAnts, myHills, enemyHills, food, deadAnts, deadEnemies;
-		std::vector<int> enemyTeams, deadEnemyTeams, enemyHillTeams;
+	struct Buffer {
+		std::vector<Pos> myAnts, enemyAnts, myHills, food, deadAnts, deadEnemies;
+		std::vector<int> enemyTeams, deadEnemyTeams;
+
+		typedef std::pair<Pos, int> EnemyHill;
+		typedef std::set<EnemyHill> EnemyHillSet;
+
+		EnemyHillSet newEnemyHills;
+		PosSet newHills;
 
 		void reset();
 	};
 
-	StateBuffer buf;
+	Buffer buf;
 };
 
 extern Tracker* g_tracker;

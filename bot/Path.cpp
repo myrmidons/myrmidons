@@ -3,6 +3,7 @@
 #include "Room.hpp"
 #include "Util.hpp"
 #include "State.hpp" // LOG_DEBUG
+#include <algorithm>
 
 struct SearchNode {
 	SearchNode(SearchNode* par, Pos p, int d) : parent(par), pos(p), room(g_map->square(p).room), dist(d) {}

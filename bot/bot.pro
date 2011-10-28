@@ -28,6 +28,7 @@ SOURCES += \
     AntStar.cpp \
     Assert.cpp \
     Tracker.cpp \
+    RoomContents.cpp \
     Path.cpp
 
 # Add annoying warning disables below, e.g. -Wno-cats-allowed
@@ -46,5 +47,4 @@ macx {
 }
 
 QMAKE_CXXFLAGS += -Wall -pedantic -Wextra -Wno-long-long
-
 

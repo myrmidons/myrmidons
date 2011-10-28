@@ -4,6 +4,7 @@
 #include <vector>
 
 class Room;
+class Ant;
 
 /*
     struct for representing a square in the grid.
@@ -12,6 +13,7 @@ struct Square
 {
 	bool discovered,isVisible, isWater, isHill, isFood;
     int ant, hillPlayer;
+	Ant* pAnt;
     std::vector<int> deadAnts;
 	Room* room;
 
@@ -28,7 +30,7 @@ struct Square
         isVisible = 0;
         isHill = 0;
         isFood = 0;
-        ant = hillPlayer = -1;
+	//    ant = hillPlayer = -1;
         deadAnts.clear();
 	}
 

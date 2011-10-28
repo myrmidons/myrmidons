@@ -2,16 +2,36 @@
 #define ROOM_HPP
 
 #include "Pos.hpp"
+#include "Ant.hpp"
 #include <map>
 
 // This class handles the contents of a room.
 // Everything about a room except its connectivity is put into here.
+// Implementations in RoomContent.cpp
+
+
 class RoomContents {
 public:
+
+	void addMyrmidon(Ant* ant);
+	void removeMyrmidon(Ant* ant);
+
 	int getNumMyrmidons(); // The number of enemies in the room this turn.
 	int getNumEnemies(); // The number of enemies in the room this turn.
 	int getNumFallenMyrmidons(); // Give me the number of Myrmidons that has fallen this turn. (See you in valhalla!)
 	int getNumFallenEnemies(); // Give me the number of enemies that have fallen this turn.
+
+	void resetDynamic();
+
+	// Tell the room that it contains an enemy hill and take appropriate action.
+	// STUB
+	void enemyHillDiscovered(Pos const& pos, int team);
+
+	// Tell the room that it contains a myrmidon hill and take appropriate action.
+	// STUB
+	void myrmidonHillDiscovered(Pos const& pos);
+
+	void foodAt(Pos const& pos);
 
 	int lastVisitTime; // in time steps. trustworthyness of everything depends on this.
 
@@ -19,6 +39,9 @@ public:
 	IntList food;
 	IntList ants;
 	IntList hills;
+
+	AntSet m_pAnts;
+	PosSet m_food;
 };
 
 //////////////////////////////////////////////////////////////////
@@ -62,6 +85,7 @@ typedef std::set<Room*, RoomComp> RoomSet;
 // This class only contains connectivity data. For contents, see 'contents'.
 // A room shuld be small enough so that an ant in any part of the room can see
 // any other part. This means that an ant will see 2-3 rooms at once.
+// Implementation in Room.cpp
 class Room {
 public:
 	const int id; // Unique id per room. deterministic.
@@ -152,6 +176,8 @@ public:
 
 	// Called by g_map upon uncovering new grid cells.
 	void expandWith(const PosSet& pos);
+
+	void resetDynamicContent();
 
 #ifdef DEBUG
 	// Dump a png of the room colorings.

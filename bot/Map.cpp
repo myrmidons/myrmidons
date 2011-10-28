@@ -36,6 +36,11 @@ void Map::removeAnt(Ant* ant) {
 	else {
 		posant.erase(ant->pos());
 		antpos.erase(ant);
+
+		Square& sq = square(ant->pos());
+		sq.ant = -1;
+		sq.pAnt = 0;
+		sq.room->contents()->removeMyrmidon(ant);
 	}
 }
 
@@ -52,40 +57,69 @@ void Map::addAnt(Ant* ant) {
 	else {
 		antpos[ant] = ant->pos();
 		posant[ant->pos()] = ant;
+
+		Square& sq = square(ant->pos());
+		sq.ant = 0;
+		sq.pAnt = ant;
+		sq.room->contents()->addMyrmidon(ant);
+
 	}
 }
 
 // Get the ant that occupies a specific position.
 Ant* Map::getAnt(Pos const& pos) {
+	//return square(pos).pAnt;
 	if(posant.count(pos)) {
 		return posant[pos];
 	}
-//		g_state->bug << "In Map::getAnt: Ant does not exist!" << std::endl;
 	return 0;
 }
 
 void Map::moveAnt(Pos const& from, Pos const& to) {
-	g_state->bug << "Looking for ant at " << from << ": ";
+	g_tracker->log << "Looking for ant at " << from << ": ";
 	Ant* ant = getAnt(from);
+
 	if(ant) {
-		g_state->bug << "and moving it from " <<  ant->pos() << " to ";
+		g_tracker->log << "and moving it from " <<  ant->pos() << " to ";
 		removeAnt(ant);
 		ant->pos() = to;
 		addAnt(ant);
-		g_state->bug << ant->pos() << std::endl;
-
+		g_tracker->log << ant->pos() << std::endl;
 
 		square(to).ant = square(from).ant;
 		square(from).ant = -1;
+
+	/*	Square& sqFrom = square(from);
+		sqFrom.ant = -1;
+		sqFrom.pAnt = 0;
+		sqFrom.room->contents()->removeMyrmidon(ant);
+
+		Square& sqTo = square(to);
+		sqTo.ant = 0;
+		sqTo.pAnt = ant;
+		sqTo.room->contents()->addMyrmidon(ant);
+		*/
 	}
 	else {
-		g_state->bug << " without finding it." << std::endl;
+		g_tracker->log << " without finding it." << std::endl;
 	}
+}
 
+void Map::enemyHill(Pos const& pos, int team) {
+	square(pos).room->contents()->enemyHillDiscovered(pos, team);
+}
+
+void Map::hill(Pos const& pos) {
+	square(pos).room->contents()->myrmidonHillDiscovered(pos);
 }
 
 void Map::water(const Pos &pos) {
-	m_grid[pos[0]][pos[1]].isWater = 1;
+	square(pos).isWater = true;
+}
+
+void Map::food(Pos const& pos) {
+	square(pos).isFood = true;
+	square(pos).room->contents()->foodAt(pos);
 }
 
 //returns the new location from moving in a given direction with the edges wrapped

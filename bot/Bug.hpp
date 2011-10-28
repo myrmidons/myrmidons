@@ -1,11 +1,7 @@
-#ifndef BUG_H_
-#define BUG_H_
+#ifndef BUG_HPP
+#define BUG_HPP
 
 #include <fstream>
-
-#ifndef DEBUG
-	#define DEBUG
-#endif
 
 /*
     struct for debugging - this is gross but can be used pretty much like an ofstream,
@@ -18,6 +14,7 @@
         bug << "testing" << 2.0 << '%' << endl;
         bug.close();
 */
+
 struct Bug
 {
     std::ofstream file;
@@ -25,7 +22,7 @@ struct Bug
     Bug()
     {
 
-    };
+	}
 
     //opens the specified file
     inline void open(const std::string &filename)
@@ -33,7 +30,7 @@ struct Bug
         #ifdef DEBUG
             file.open(filename.c_str());
         #endif
-    };
+	}
 
     //closes the ofstream
     inline void close()
@@ -41,7 +38,7 @@ struct Bug
         #ifdef DEBUG
             file.close();
         #endif
-    };
+	}
 };
 
 //output function for endl
@@ -52,7 +49,7 @@ inline Bug& operator<<(Bug &bug, std::ostream& (*manipulator)(std::ostream&))
     #endif
 
     return bug;
-};
+}
 
 //output function
 template <class T>
@@ -63,6 +60,6 @@ inline Bug& operator<<(Bug &bug, const T &t)
     #endif
 
     return bug;
-};
+}
 
 #endif //BUG_H_

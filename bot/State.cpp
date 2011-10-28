@@ -1,121 +1,61 @@
 #include "State.hpp"
+#include "Tracker.hpp"
+#include "Map.hpp"
+#include <cassert>
+#include "Ant.hpp"
+
+#include <sstream>
 
 using namespace std;
 
-State g_state;
+// initialized in main
+State* g_state = NULL;
+
 
 //////////////////////////
 
-bool State::isOccupied(const Pos& loc) {
+/*bool State::isOccupied(const Pos& loc) {
 	return grid[loc[0]][loc[1]].ant != -1;
-}
+}*/
 
 //////////////////////////
+
 
 //constructor
-State::State()
+State::State(std::ostream& output)
+	: output(output)
 {
     gameover = 0;
-    turn = 0;
-	bug.open("debug.txt");
-};
+	turn = 0;
+	ASSERT(!g_state && "more than one State constructed");
+
+	// Random logfile name....
+	std::stringstream ss;
+	ss << "debug_" << (rand()+clock()) << ".txt";
+	bug.open(ss.str());
+}
 
 //deconstructor
 State::~State()
 {
     bug.close();
-};
+}
 
 //sets the state up
-void State::setup()
-{
-    grid = vector<vector<Square> >(rows, vector<Square>(cols, Square()));
-};
+void State::setup() {
+	g_map->initMap(m_size);
+}
 
 //resets all non-water squares to land and clears the bots ant vector
-void State::reset()
-{
-    myAnts.clear();
-    enemyAnts.clear();
-    myHills.clear();
-    enemyHills.clear();
-    food.clear();
-	deadAnts.clear();
-    for(int row=0; row<rows; row++)
-        for(int col=0; col<cols; col++)
-            if(!grid[row][col].isWater)
-                grid[row][col].reset();
-};
+
 
 //outputs move information to the engine
 void State::makeMove(const Pos &loc, int direction)
 {
-	cout << "o " << loc[0] << " " << loc[1] << " " << CDIRECTIONS[direction] << endl;
+	output << "o " << loc[1] << " " << loc[0] << " " << CDIRECTIONS[direction] << endl;
 
-	Pos nLoc = getLocation(loc, direction);
-	grid[nLoc[0]][nLoc[1]].ant = grid[loc[0]][loc[1]].ant;
-	grid[loc[0]][loc[1]].ant = -1;
-};
+}
 
-//returns the euclidean distance between two locations with the edges wrapped
- double State::distance(const Pos &loc1, const Pos &loc2)
-{
-	int d1 = abs(loc1[0]-loc2[0]),
-		d2 = abs(loc1[1]-loc2[1]),
-        dr = min(d1, rows-d1),
-        dc = min(d2, cols-d2);
-    return sqrt(dr*dr + dc*dc);
-};
-
-//returns the new location from moving in a given direction with the edges wrapped
-Pos State::getLocation(const Pos &loc, int direction)
-{
-	return Pos( (loc[0] + DIRECTIONS[direction][0] + rows) % rows,
-					 (loc[1] + DIRECTIONS[direction][1] + cols) % cols );
-};
-
-/*
-    This function will update update the lastSeen value for any squares currently
-    visible by one of your live ants.
-
-    BE VERY CAREFUL IF YOU ARE GOING TO TRY AND MAKE THIS FUNCTION MORE EFFICIENT,
-    THE OBVIOUS WAY OF TRYING TO IMPROVE IT BREAKS USING THE EUCLIDEAN METRIC, FOR
-    A CORRECT MORE EFFICIENT IMPLEMENTATION, TAKE A LOOK AT THE GET_VISION FUNCTION
-    IN ANTS.PY ON THE CONTESTS GITHUB PAGE.
-*/
-void State::updateVisionInformation()
-{
-	std::queue<Pos> locQueue;
-	Pos sLoc, cLoc, nLoc;
-
-    for(int a=0; a<(int) myAnts.size(); a++)
-    {
-        sLoc = myAnts[a];
-        locQueue.push(sLoc);
-
-        std::vector<std::vector<bool> > visited(rows, std::vector<bool>(cols, 0));
-		grid[sLoc[0]][sLoc[1]].isVisible = 1;
-		visited[sLoc[0]][sLoc[1]] = 1;
-
-        while(!locQueue.empty())
-        {
-            cLoc = locQueue.front();
-            locQueue.pop();
-
-            for(int d=0; d<TDIRECTIONS; d++)
-            {
-                nLoc = getLocation(cLoc, d);
-
-				if(!visited[nLoc[0]][nLoc[1]] && distance(sLoc, nLoc) <= viewradius)
-                {
-					grid[nLoc[0]][nLoc[1]].isVisible = 1;
-                    locQueue.push(nLoc);
-                }
-				visited[nLoc[0]][nLoc[1]] = 1;
-            }
-        }
-    }
-};
 
 /*
     This is the output function for a state. It will add a char map
@@ -125,19 +65,21 @@ void State::updateVisionInformation()
 */
 ostream& operator<<(ostream &os, const State &state)
 {
-    for(int row=0; row<state.rows; row++)
+	for(int y=0; y<state.m_size.y(); y++)
     {
-        for(int col=0; col<state.cols; col++)
+		for(int x=0; x<state.m_size.x(); x++)
         {
-            if(state.grid[row][col].isWater)
+			Pos pos(x,y);
+
+			if(g_map->square(pos).isWater)
                 os << '%';
-            else if(state.grid[row][col].isFood)
+			else if(g_map->square(pos).isFood)
                 os << '*';
-            else if(state.grid[row][col].isHill)
-                os << (char)('A' + state.grid[row][col].hillPlayer);
-            else if(state.grid[row][col].ant >= 0)
-                os << (char)('a' + state.grid[row][col].ant);
-            else if(state.grid[row][col].isVisible)
+			else if(g_map->square(pos).isHill)
+				os << (char)('A' + g_map->square(pos).hillPlayer);
+			else if(g_map->square(pos).ant >= 0)
+				os << (char)('a' + g_map->square(pos).ant);
+			else if(g_map->square(pos).isVisible)
                 os << '.';
             else
                 os << '?';
@@ -146,7 +88,7 @@ ostream& operator<<(ostream &os, const State &state)
     }
 
     return os;
-};
+}
 
 //input function
 istream& operator>>(istream &is, State &state)
@@ -165,6 +107,7 @@ istream& operator>>(istream &is, State &state)
         else if(inputType == "turn")
         {
             is >> state.turn;
+			g_tracker->turn(state.turn);
             break;
         }
         else //unknown line
@@ -181,9 +124,9 @@ istream& operator>>(istream &is, State &state)
             else if(inputType == "turntime")
                 is >> state.turntime;
             else if(inputType == "rows")
-                is >> state.rows;
+				is >> state.m_size.y();
             else if(inputType == "cols")
-                is >> state.cols;
+				is >> state.m_size.x();
             else if(inputType == "turns")
                 is >> state.turns;
             else if(inputType == "viewradius2")
@@ -214,47 +157,36 @@ istream& operator>>(istream &is, State &state)
     {
         //reads information about the current turn
         while(is >> inputType)
-        {
-            if(inputType == "w") //water square
+		{
+			if(inputType == "w") //water square
             {
                 is >> row >> col;
-                state.grid[row][col].isWater = 1;
+				g_tracker->water(Pos(col, row));
             }
             else if(inputType == "f") //food square
             {
                 is >> row >> col;
-                state.grid[row][col].isFood = 1;
-				state.food.push_back(Pos(row, col));
+				g_tracker->food(Pos(col, row));
             }
             else if(inputType == "a") //live ant square
             {
                 is >> row >> col >> player;
-                state.grid[row][col].ant = player;
-                if(player == 0)
-					state.myAnts.push_back(Pos(row, col));
-                else
-					state.enemyAnts.push_back(Pos(row, col));
+				g_tracker->ant(Pos(col, row), player);
             }
-            else if(inputType == "d") //dead ant square
+			else if(inputType == "d") //dead ant square
             {
                 is >> row >> col >> player;
-                state.grid[row][col].deadAnts.push_back(player);
-				if(player == 0)
-					state.deadAnts.push_back(Pos(row, col));
-            }
+				g_tracker->deadAnt(Pos(col, row), player);
+			}
             else if(inputType == "h")
             {
                 is >> row >> col >> player;
-                state.grid[row][col].isHill = 1;
-                state.grid[row][col].hillPlayer = player;
-                if(player == 0)
-					state.myHills.push_back(Pos(row, col));
-                else
-					state.enemyHills.push_back(Pos(row, col));
-
+				g_tracker->hill(Pos(col, row), player);
             }
             else if(inputType == "players") //player information
+			{
                 is >> state.noPlayers;
+			}
             else if(inputType == "scores") //score information
             {
                 state.scores = vector<double>(state.noPlayers, 0.0);
@@ -263,6 +195,7 @@ istream& operator>>(istream &is, State &state)
             }
             else if(inputType == "go") //end of turn input
             {
+				g_tracker->go();
                 if(state.gameover)
                     is.setstate(std::ios::failbit);
                 else
@@ -275,6 +208,6 @@ istream& operator>>(istream &is, State &state)
     }
 
     return is;
-};
+}
 
 

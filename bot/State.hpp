@@ -1,5 +1,5 @@
-#ifndef STATE_H_
-#define STATE_H_
+#ifndef STATE_HPP
+#define STATE_HPP
 
 #include <iostream>
 #include <stdio.h>
@@ -15,11 +15,14 @@
 #include "Square.hpp"
 #include "Pos.hpp"
 
+
+class Tracker;
 /*
     constants
 */
 const int TDIRECTIONS = 4;
-const char CDIRECTIONS[4] = {'N', 'E', 'S', 'W'};
+const char OCDIRECTIONS[4] = {'N', 'E', 'S', 'W'};
+const char CDIRECTIONS[4] = {'W', 'S', 'E', 'N'};
 const int DIRECTIONS[4][2] = { {-1, 0}, {0, 1}, {1, 0}, {0, -1} };      //{N, E, S, W}
 
 typedef std::vector<int> DirVec;
@@ -29,10 +32,12 @@ typedef std::vector<int> DirVec;
 */
 struct State
 {
+	std::ostream& output; // sinks simulation commands for the turn
     /*
         Variables
     */
-    int rows, cols,
+	Vec2 m_size;
+	int
         turn, turns,
         noPlayers;
     double attackradius, spawnradius, viewradius;
@@ -40,35 +45,30 @@ struct State
     std::vector<double> scores;
     bool gameover;
 
-    std::vector<std::vector<Square> > grid;
-	std::vector<Pos> myAnts, enemyAnts, myHills, enemyHills, food, deadAnts;
-
     Timer timer;
     Bug bug;
 
     /*
         Functions
     */
-    State();
+	explicit State(std::ostream& output_stream);
     ~State();
 
-    void setup();
-    void reset();
+	void setup();
 
 	void makeMove(const Pos &loc, int direction);
 
-	double distance(const Pos &loc1, const Pos &loc2);
-	Pos getLocation(const Pos &startLoc, int direction);
-
-	bool isOccupied(const Pos& loc);
-
-    void updateVisionInformation();
-
-	Square& square(Pos const& pos) { return grid[pos[0]][pos[1]]; }
 };
 
 std::ostream& operator<<(std::ostream &os, const State &state);
 std::istream& operator>>(std::istream &is, State &state);
 
-extern State g_state;
+extern State* g_state;
+
+#ifdef DEBUG
+#	define LOG_DEBUG(msg) g_state->bug << msg << std::endl << std::flush
+#else
+#	define LOG_DEBUG(msg)
+#endif
+
 #endif //STATE_H_

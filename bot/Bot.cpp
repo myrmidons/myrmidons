@@ -1,5 +1,8 @@
 #include "Bot.hpp"
 #include "Ant.hpp"
+#include "Map.hpp"
+#include "Tracker.hpp"
+
 #include <algorithm>
 #include <iostream>
 
@@ -9,7 +12,10 @@
 using namespace std;
 
 //constructor
-Bot::Bot() : state(g_state) {
+Bot::Bot(IODevice& io_device)
+	: io(io_device)
+	, state(*g_state)
+{
 	setupRandomDirections();
 }
 
@@ -27,32 +33,31 @@ void Bot::setupRandomDirections() {
 
 int Bot::rankMove(Pos const& currentLoc, int dir) {
 	// The new location to try to get to.
-	Pos newLoc = state.getLocation(currentLoc, dir);
+	Pos newLoc = g_map->getLocation(currentLoc, dir);
 
 	int rank = 0;
 
 
-	if(!safeLocation(newLoc) || state.isOccupied(newLoc))
+	if(!safeLocation(newLoc) || g_map->isOccupied(newLoc))
 		return -1000; // Absolutley not, it would be suicide!
 
+/*
 	for(int j = 0; j < (int)state.enemyAnts.size(); ++j) {
-		double d = state.distance(newLoc,state.enemyAnts[j]);
+		double d = g_map->distance(newLoc,state.enemyAnts[j]);
 		if(int(d*d + 0.5) < 13)
 			rank -= 20;
 	}
 
-
-
 	int foodLocationIndex = closestLocation(currentLoc, state.food);
 	if(foodLocationIndex >= 0) {
 			Pos foodLoc = state.food[foodLocationIndex];
-			if(state.distance(newLoc, foodLoc) >= state.distance(currentLoc, foodLoc)) {
+			if(g_map->distance(newLoc, foodLoc) >= g_map->distance(currentLoc, foodLoc)) {
 				//rank -= 10; // this move would take us further away from the nearest food item.
 			}
 			else {
 				rank += 10; // This move would take us closer to the nearest food item.
 			}
-	}
+	}*/
 
 
 	return rank;
@@ -61,28 +66,29 @@ int Bot::rankMove(Pos const& currentLoc, int dir) {
 DirVec const& Bot::randomDirVec() const {
 	return dirVecs[rand()%dirVecs.size()];
 }
+
 //plays a single game of Ants.
 void Bot::playGame() {
 	//reads the game parameters and sets up
-    cin >> state;
-    state.setup();
+	io.bufferInputChunk();
+	io.input() >> state;
+	state.setup();
     endTurn();
 
 	// continues making moves while the game is not over
-    while(cin >> state)
+	while(io.bufferInputChunk() && io.input() >> state)
     {
-        state.updateVisionInformation();
-		antID.update(state);
 		makeMoves();
         endTurn();
+		io.flushOutputChunk();
     }
-};
+}
 
 int Bot::closestLocation(const Pos& loc, const vector<Pos>& location) {
 	int result = -1;
 	double minDist = 10000000;
 	for(size_t i = 0; i < location.size(); ++i) {
-		double dist = state.distance(location[i], loc);
+		double dist = g_map->distance(location[i], loc);
 		if(dist < minDist) {
 			minDist = dist;
 			result = (int)i;
@@ -97,14 +103,11 @@ int Bot::closestLocation(const Pos& loc, const vector<Pos>& location) {
 //makes the bots moves for the turn
 void Bot::makeMoves()
 {
-	state.bug << "turn " << state.turn << ":" << endl << "----------------" << endl;
-	//state.bug << state << endl;
 
-	size_t nAnts = state.myAnts.size();
-
-	for(size_t ant = 0; ant< nAnts; ant++) {
+	AntSet const& ants = g_tracker->getLiveAnts();
+	for(AntSet::const_iterator it = ants.begin(); it != ants.end(); ++it) {
 		// Pick out this ants location from the set for later use.
-		Pos antLoc = state.myAnts[ant];
+		Pos antLoc = (*it)->pos();//state.myAnts[ant];
 
 		DirVec const& dirs = randomDirVec();
 
@@ -118,19 +121,12 @@ void Bot::makeMoves()
 			}
 		}
 		if(bestRank > -100) {
+			// This will not be needed. Just for testing the identifyer as things stand at the moment.
 
-			// WARNING! Ugliness below this line, close your eyes!
-			Ant* a = antID.m_map->getAnt(antLoc);
-			if(a) {
-				state.bug << "Moving ant from [" << antLoc << " [" << a->pos() << "]" << "to ";
-				antID.m_map->removeAnt(a);
-				a->pos() = state.getLocation(antLoc, bestMove);
-				state.bug << a->pos() << std::endl;
-				antID.m_map->addAnt(a);
-			}
-			// OK, you can look again.
+			g_map->moveAnt(antLoc, g_map->getLocation(antLoc, bestMove));
 
-			state.makeMove(antLoc, bestMove);
+
+			state.makeMove(antLoc, bestMove); // Needed because the map is still just a dummy.
 		}
 	}
 
@@ -138,15 +134,13 @@ void Bot::makeMoves()
 }
 
 //finishes the turn
-void Bot::endTurn()
-{
-    if(state.turn > 0)
-        state.reset();
+void Bot::endTurn() {
     state.turn++;
 
-    cout << "go" << endl;
-};
+	io.output() << "go" << endl;
+}
 
 bool Bot::safeLocation(const Pos &loc) {
-	return !state.grid[loc[0]][loc[1]].isWater;
+	Square& sq = g_map->square(loc);
+	return !(sq.isWater || sq.isFood);
 }

@@ -1,5 +1,5 @@
-#ifndef GENERAL_H
-#define GENERAL_H
+#ifndef GENERAL_HPP
+#define GENERAL_HPP
 
 #include <vector>
 #include "Room.hpp"

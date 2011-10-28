@@ -1,6 +1,31 @@
 #include "Bot.hpp"
+#include "Room.hpp"
+#include "Map.hpp"
+#include "Tracker.hpp"
 
 using namespace std;
+
+#ifdef NETWORK_DEBUGGING
+#include <QNetwork>
+#endif
+
+struct StandardIODevice : IODevice
+{
+	StandardIODevice()
+	{
+		cout.sync_with_stdio(0); //this line makes your bot faster
+	}
+
+	std::istream& input()
+	{
+		return std::cin;
+	}
+
+	std::ostream& output()
+	{
+		return std::cout;
+	}
+};
 
 /*
     This program will play a single game of Ants while communicating with
@@ -15,10 +40,31 @@ using namespace std;
 */
 int main(int, char *[])
 {
-    cout.sync_with_stdio(0); //this line makes your bot faster
+#ifdef NETWORK_DEBUGGING
+	// TODO: implement a network-based device for debugging
+#else
+	StandardIODevice io;
+#endif
 
-    Bot bot;
-    bot.playGame();
+	State state(io.output());
+	g_state = &state;
 
+	Map map;
+	g_map = &map; // Must be before g_tracker.
+
+	Tracker tracker;
+	g_tracker = &tracker;
+
+	Rooms rooms;
+	g_rooms = &rooms;
+
+	Bot bot(io);
+	bot.playGame();
+
+#ifdef DEBUG
+	g_rooms->dumpImage();
+#endif
+
+	g_state->bug << "Reached the end." << std::endl;
     return 0;
 }

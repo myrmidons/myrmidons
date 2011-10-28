@@ -49,6 +49,7 @@ inline void CommInterface::onInputLine(const char *line)
 		QByteArray buf(text.c_str(), text.size());
 		outputText(buf);
 		outputStream.clear();
+		outputStream.str("");
 	}
 }
 

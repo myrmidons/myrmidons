@@ -20,6 +20,11 @@ class Tracker;
 /*
     constants
 */
+const int WEST  = 0;
+const int SOUTH = 1;
+const int EAST  = 2;
+const int NORTH = 3;
+
 const int TDIRECTIONS = 4;
 //const char CDIRECTIONS[4] = {'N', 'E', 'S', 'W'};
 const char CDIRECTIONS[4] = {'W', 'S', 'E', 'N'};

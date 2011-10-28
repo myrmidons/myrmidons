@@ -16,10 +16,11 @@ public:
 	void addMyrmidon(Ant* ant);
 	void removeMyrmidon(Ant* ant);
 
-	int getNumMyrmidons(); // The number of enemies in the room this turn.
-	int getNumEnemies(); // The number of enemies in the room this turn.
-	int getNumFallenMyrmidons(); // Give me the number of Myrmidons that has fallen this turn. (See you in valhalla!)
-	int getNumFallenEnemies(); // Give me the number of enemies that have fallen this turn.
+	size_t getNumFood();
+	size_t getNumMyrmidons(); // The number of enemies in the room this turn.
+	size_t getNumEnemies(); // The number of enemies in the room this turn.
+	size_t getNumFallenMyrmidons(); // Give me the number of Myrmidons that has fallen this turn. (See you in valhalla!)
+	size_t getNumFallenEnemies(); // Give me the number of enemies that have fallen this turn.
 
 	void resetDynamic();
 
@@ -31,17 +32,16 @@ public:
 	// STUB
 	void myrmidonHillDiscovered(Pos const& pos);
 
-	void foodAt(Pos const& pos);
+	void insertFoodAt(Pos const& pos);
+	void insertEnemyAt(Pos const& pos, int team);
 
-	int lastVisitTime; // in time steps. trustworthyness of everything depends on this.
-
-	// indices into room positions list?
-	IntList food;
-	IntList ants;
-	IntList hills;
+	const AntSet& ants() const { return m_pAnts; }
 
 	AntSet m_pAnts;
+	PosSet m_enemies;
 	PosSet m_food;
+	PosSet m_enemyHills;
+	PosSet m_myrmidonHills;
 };
 
 //////////////////////////////////////////////////////////////////
@@ -168,6 +168,8 @@ private:
 class Rooms
 {
 public:
+	const RoomList& rooms() const { return m_rooms; }
+
 	// Room constraints
 	int maxRoomArea() const;
 	int maxRoomWidth() const;

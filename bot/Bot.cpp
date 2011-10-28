@@ -15,6 +15,7 @@ using namespace std;
 Bot::Bot(IODevice& io_device)
 	: io(io_device)
 	, state(*g_state)
+	, firstTurn(true)
 {
 	setupRandomDirections();
 }
@@ -69,19 +70,25 @@ DirVec const& Bot::randomDirVec() const {
 
 //plays a single game of Ants.
 void Bot::playGame() {
-	//reads the game parameters and sets up
-	io.bufferInputChunk();
-	io.input() >> state;
-	state.setup();
-    endTurn();
+	while(playOneTurn())
+		;
+}
 
-	// continues making moves while the game is not over
-	while(io.bufferInputChunk() && io.input() >> state)
-    {
+bool Bot::playOneTurn()
+{
+	if (!(io.input() >> state))
+		return false;
+	if (firstTurn)
+	{
+		state.setup();
+		firstTurn = false;
+	}
+	else
+	{
 		makeMoves();
-        endTurn();
-		io.flushOutputChunk();
-    }
+	}
+	endTurn();
+	return true;
 }
 
 int Bot::closestLocation(const Pos& loc, const vector<Pos>& location) {

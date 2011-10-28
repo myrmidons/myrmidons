@@ -5,8 +5,11 @@
 
 using namespace std;
 
-#ifdef NETWORK_DEBUGGING
-#include <QNetwork>
+#ifdef BOT_WITH_QT
+#include <QApplication>
+#include <QStringList>
+#include <sstream>
+#include "CommInterface.hpp"
 #endif
 
 struct StandardIODevice : IODevice
@@ -38,15 +41,39 @@ struct StandardIODevice : IODevice
     outlined on the specifications page at:
         http://www.ai-contest.com
 */
-int main(int, char *[])
+int main(int argc, char *argv[])
 {
-#ifdef NETWORK_DEBUGGING
-	// TODO: implement a network-based device for debugging
+	IODevice* io = NULL;
+#ifdef BOT_WITH_QT
+	QApplication app(argc, argv);
+	QStringList args = app.arguments();
+
+	unsigned short port = 0;
+
+	if (args.size() == 1)
+	{
+		std::cerr << "bot requires a listen port on the command line\n";
+		return 1;
+	}
+
+	if (args.size() >= 2)
+	{
+		std::istringstream iss(args[1].toAscii().constData());
+		if (!(iss >> port))
+		{
+			std::cerr << "could not parse port argument\n";
+			return 2;
+		}
+	}
+
+	CommInterface* commInterface = NULL;
+	io = commInterface = new CommInterface;
+
 #else
-	StandardIODevice io;
+	io = new StandardIODevice;
 #endif
 
-	State state(io.output());
+	State state(io->output());
 	g_state = &state;
 
 	Map map;
@@ -58,13 +85,24 @@ int main(int, char *[])
 	Rooms rooms;
 	g_rooms = &rooms;
 
-	Bot bot(io);
+	Bot bot(*io);
+#ifdef BOT_WITH_QT
+	if (commInterface)
+	{
+		commInterface->setBot(&bot);
+		commInterface->listen(port);
+	}
+
+	app.exec();
+#else
 	bot.playGame();
+#endif
 
 #ifdef DEBUG
 	g_rooms->dumpImage();
 #endif
 
 	g_state->bug << "Reached the end." << std::endl;
+	delete io;
     return 0;
 }

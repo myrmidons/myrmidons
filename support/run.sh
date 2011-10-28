@@ -16,14 +16,17 @@ if [ ! -d "../tools" ]; then
   exit 2
 fi
 
-if [ -e "./MyBot" ]; then
-  P1="./MyBot"
+if [ -e "MyBot" ]; then
+  BOT="./MyBot"
 elif [ -e "debug/bot" ]; then
-  P1="debug/bot"
+  BOT="debug/bot"
 elif [ -e "release/bot" ]; then
-  P1="release/bot"
+  BOT="release/bot"
+elif [ -e "bot" ]; then
+  BOT="bot"
 fi
 
+P1="nc localhost 19001"
 P2="python ../tools/sample_bots/python/HunterBot.py"
 MAPFILE="../tools/maps/example/tutorial1.map"
 

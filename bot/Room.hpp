@@ -33,12 +33,7 @@ public:
 
 	void foodAt(Pos const& pos);
 
-	int lastVisitTime; // in time steps. trustworthyness of everything depends on this.
-
-	// indices into room positions list?
-	IntList food;
-	IntList ants;
-	IntList hills;
+	const AntSet& ants() const { return m_pAnts; }
 
 	AntSet m_pAnts;
 	PosSet m_food;
@@ -168,6 +163,8 @@ private:
 class Rooms
 {
 public:
+	const RoomList& rooms() const { return m_rooms; }
+
 	// Room constraints
 	int maxRoomArea() const;
 	int maxRoomWidth() const;

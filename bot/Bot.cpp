@@ -2,6 +2,8 @@
 #include "Ant.hpp"
 #include "Map.hpp"
 #include "Tracker.hpp"
+#include "Room.hpp"
+#include "Util.hpp"
 
 #include <algorithm>
 #include <iostream>
@@ -110,30 +112,76 @@ int Bot::closestLocation(const Pos& loc, const vector<Pos>& location) {
 //makes the bots moves for the turn
 void Bot::makeMoves()
 {
+	LOG_DEBUG("Bot::makeMoves");
 
-	AntSet const& ants = g_tracker->getLiveAnts();
-	for(AntSet::const_iterator it = ants.begin(); it != ants.end(); ++it) {
-		// Pick out this ants location from the set for later use.
-		Pos antLoc = (*it)->pos();//state.myAnts[ant];
+	// Find crowded rooms, send ants out of them...
+	ITC(RoomList, rit, g_rooms->rooms()) {
+		Room* room = *rit;
+		RoomContents* rc = room->contents();
+		const AntSet& ants = rc->ants();
 
-		DirVec const& dirs = randomDirVec();
+		const RoomSet& neighRooms = room->neighborRooms();
 
-		int bestMove = 0, bestRank = -10000000;
-		for(int i = 0; i<TDIRECTIONS; i++) {
-			int d = dirs[i];
-			int rank = rankMove(antLoc, d);
-			if(rank > bestRank) {
-				bestRank = rank;
-				bestMove = d;
+		if (ants.size()>1 && !neighRooms.empty()) {
+			RoomList cands;
+			ITC(RoomSet, rit, neighRooms) {
+				if ((*rit)->contents()->ants().size() < ants.size()) {
+					// less crowded
+					cands.push_back(*rit);
+				}
+			}
+
+			if (cands.empty())
+				continue;
+
+			ITC(AntSet, ait, ants) {
+				Ant* a = *ait;
+				if (a->state() == Ant::STATE_NONE) {
+					a->goToRoom(cands[rand() % cands.size()]);
+				}
 			}
 		}
-		if(bestRank > -100) {
-			// This will not be needed. Just for testing the identifyer as things stand at the moment.
+	}
 
-		//	g_map->moveAnt(antLoc, g_map->getLocation(antLoc, bestMove));
+	AntSet const& ants = g_tracker->getLiveAnts();
+	ITC(AntSet, it, ants) {
+		Ant* ant = *it;
+		Pos pos = ant->pos();
 
+		ant->calcDesire();
+		PosList desire = ant->getDesire();
 
-		//	state.makeMove(antLoc, bestMove); // Needed because the map is still just a dummy.
+		if (desire.empty() || ant->state() == Ant::STATE_NONE) {
+			// Rando walk
+			DirVec const& dirs = randomDirVec();
+
+			int bestMove = 0, bestRank = -10000000;
+			for (int i = 0; i<TDIRECTIONS; i++) {
+				int d = dirs[i];
+				int rank = rankMove(pos, d);
+				if(rank > bestRank) {
+					bestRank = rank;
+					bestMove = d;
+				}
+			}
+			if (bestRank > -100) {
+				// This will not be needed. Just for testing the identifyer as things stand at the moment.
+				g_map->moveAnt(pos, g_map->getLocation(pos, bestMove));
+				state.makeMove(pos, bestMove); // Needed because the map is still just a dummy.
+			}
+		} else {
+			// Follow desire.
+			Pos dest = desire.front();
+			Vec2 d = g_map->difference(pos, dest);
+			int dir = -1;
+			if (d.x()<0)      dir = WEST;
+			else if (d.x()>0) dir = EAST;
+			else if (d.y()<0) dir = NORTH;
+			else if (d.y()>0) dir = SOUTH;
+			if (dir != -1) {
+				g_map->moveAnt(pos, dest);
+				state.makeMove(pos, dir);
+			}
 		}
 	}
 

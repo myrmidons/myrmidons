@@ -19,13 +19,13 @@ bool operator<(const Interest& a, const Interest& b) {
 	if (a.neighbors > b.neighbors) return true;
 	if (a.neighbors < b.neighbors) return false;
 
-	// Exapand smallest room first
-	if (a.room->getArea() < b.room->getArea()) return true;
-	if (a.room->getArea() > b.room->getArea()) return false;
-
 	// Try to keep squareness:
 	if (a.prio > b.prio) return true;
 	if (a.prio < b.prio) return false;
+
+	// Exapand smallest room first
+	if (a.area < b.area) return true;
+	if (a.area > b.area) return false;
 
 	return a.room < b.room; // tie-breaker.
 }
@@ -180,6 +180,7 @@ void Room::calcInterests(const PosSet& unassigned) {
 			intr.room = this;
 			intr.pos = nit->first;
 			intr.neighbors = nit->second;
+			intr.area = this->getArea();
 
 			if (intr.neighbors==2) {
 				intr.prio=0;
@@ -277,10 +278,12 @@ void Rooms::expandWith(const PosSet& posArg) {
 
 			LOG_DEBUG("Assigning position " << intr.pos << " to room " << room);
 
+			/*
 			// IMPORTANT: do this before add, since add chages size of room, which interest uses.
 			LOG_DEBUG("Erasing interests...");
 			ITC(InterestSet, iit, room->m_interests)
 				interests.erase(*iit);
+				*/
 
 			room->add(intr.pos);
 			unassigned.erase(intr.pos); // No more!

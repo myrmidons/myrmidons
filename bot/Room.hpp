@@ -36,6 +36,7 @@ struct Interest
 	/* 1 or 2: how many neighbors the cell has to the room
 		(3,4 impossible by constraint of manhattan-concavity). */
 	int neighbors;
+	int area; // Of room - smaller is prioritized
 	float prio; // Based on wether or not we are expanding the bb to make it more square.
 };
 

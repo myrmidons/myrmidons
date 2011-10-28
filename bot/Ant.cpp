@@ -54,6 +54,8 @@ bool Ant::goToRoom(Room* room) {
 }
 
 void Ant::calcDesire() {
+	LOG_DEBUG("Ant::calcDesire");
+
 	if (!m_path.isValid())
 		m_state = STATE_NONE;
 

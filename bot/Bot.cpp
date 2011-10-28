@@ -143,9 +143,12 @@ void Bot::makeMoves()
 		}
 	}
 
+	STAMP_;
 
 	AntSet const& ants = g_tracker->getLiveAnts();
 	ITC(AntSet, it, ants) {
+		LOG_DEBUG("Deciding ant move...");
+
 		Ant* ant = *it;
 		Pos pos = ant->pos();
 
@@ -179,6 +182,7 @@ void Bot::makeMoves()
 				}
 			}
 			if (bestRank > -100) {
+				LOG_DEBUG("Random move");
 				// This will not be needed. Just for testing the identifyer as things stand at the moment.
 				g_map->moveAnt(pos, g_map->getLocation(pos, bestMove));
 				state.makeMove(pos, bestMove); // Needed because the map is still just a dummy.
@@ -186,6 +190,7 @@ void Bot::makeMoves()
 		} else {
 			// Follow desire.
 			Pos dest = desire.front();
+			LOG_DEBUG("Desire to go from " << pos << " to " << dest);
 			Vec2 d = g_map->difference(pos, dest);
 			int dir = -1;
 			if (d.x()<0)      dir = WEST;
@@ -193,6 +198,7 @@ void Bot::makeMoves()
 			else if (d.y()<0) dir = NORTH;
 			else if (d.y()>0) dir = SOUTH;
 			if (dir != -1) {
+				LOG_DEBUG("Following desire");
 				g_map->moveAnt(pos, dest);
 				state.makeMove(pos, dir);
 			}

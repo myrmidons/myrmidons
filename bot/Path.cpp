@@ -30,8 +30,10 @@ Path Path::findPath(Pos start, Pos end)
 	Room* endRoom   = g_map->square(end).room;
 	ASSERT(startRoom && endRoom);
 
-	if (startRoom==endRoom)
+	if (startRoom==endRoom) {
+		LOG_DEBUG("Path finding within same room");
 		return Path(g_map->manhattanDist(start, end), start, end, WPList());
+	}
 
 	SearchNodeSet q;
 	SearchNodeSet allSearchNodes; // For freeing
@@ -68,6 +70,8 @@ Path Path::findPath(Pos start, Pos end)
 			}
 		} else {
 			// Done! Reconstruct path...
+			LOG_DEBUG("Found path, building...");
+
 			int sumDist = p->dist + g_map->manhattanDist(p->pos, end);
 			WPList wps;
 			while (p) {
@@ -95,10 +99,9 @@ Path::Path(int dist, Pos start, Pos end, const WPList& wps)
 	: m_dist(dist), m_start(start), m_end(end), m_points(wps) {
 }
 
-Vec2 deltaAlong(int axis, Vec2 d) {
-	Vec2 ret(0,0);
-	ret[axis] = sign(d[axis]);
-	return ret;
+Vec2 deltaAlong(Vec2 pos, int axis, Vec2 d) {
+	pos[axis] += sign(d[axis]);
+	return g_map->wrapPos( pos );
 }
 
 // Assumes in same room
@@ -109,15 +112,17 @@ PosList prioritizeWalk(Pos from, Pos to) {
 
 	int prioAxis = (Abs(d[0]) > Abs(d[1]) ? 0 : 1);
 	PosList ret;
-	ret.push_back(deltaAlong(prioAxis, d));
+	ret.push_back(deltaAlong(from, prioAxis, d));
 
 	if (d[1-prioAxis] != 0)
-		ret.push_back(deltaAlong(1-prioAxis, d));
+		ret.push_back(deltaAlong(from, 1-prioAxis, d));
 
 	return ret;
 }
 
 PosList Path::getNextStep(Pos pos) const {
+	STAMP("Path::getNextStep");
+
 	ASSERT(this->isValid());
 
 	if (pos==m_end)
@@ -127,6 +132,7 @@ PosList Path::getNextStep(Pos pos) const {
 
 	if (room == g_map->roomAt(m_end)) {
 		// We're in last room
+		LOG_DEBUG("In goal room");
 		return prioritizeWalk(pos, m_end);
 	}
 

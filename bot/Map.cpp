@@ -230,3 +230,9 @@ Vec2 Map::difference(Pos a, Pos b) const {
 				wrappedSignedDist(a[1], b[1], m_size[1])
 				);
 }
+
+Pos Map::wrapPos(Pos a) const {
+	for (int i=0; i<2; ++i)
+		a[i] = wrap(a[i], m_size[i]);
+	return a;
+}

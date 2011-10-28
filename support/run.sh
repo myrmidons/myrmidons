@@ -28,20 +28,21 @@ fi
 
 NETCAT=`which nc netcat`
 
-echo "${BOT}, lol"
-
 P1="nc localhost 19001"
-P1="${BOT}"
 P2="python ../tools/sample_bots/python/HunterBot.py"
 MAPFILE="../tools/maps/example/tutorial1.map"
+MAPFILE="../tools/maps/maze/maze_06p_01.map"
 
 ${PYTHON} ../tools/playgame.py \
          "${P1}" \
          "${P2}" \
+         "${P2}" \
+         "${P2}" \
+         "${P2}" \
+         "${P2}" \
          --map_file ${MAPFILE} \
          --log_dir game_logs \
          --turns 1000 \
-         --scenario \
          --player_seed 7 \
          --verbose \
          --loadtime 3600000 \

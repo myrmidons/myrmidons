@@ -24,6 +24,8 @@ typedef std::set<SearchNode*, SearchNodeComp> SearchNodeSet;
 
 Path Path::findPath(Pos start, Pos end)
 {
+	LOG_DEBUG("Path::findPath");
+
 	Room* startRoom = g_map->square(start).room;
 	Room* endRoom   = g_map->square(end).room;
 	ASSERT(startRoom && endRoom);
@@ -81,6 +83,8 @@ Path Path::findPath(Pos start, Pos end)
 
 	ITC(SearchNodeSet, wpit, allSearchNodes)
 		delete *wpit;
+
+	LOG_DEBUG("Path::findPath returning");
 
 	return retPath; // invalid if fail
 }

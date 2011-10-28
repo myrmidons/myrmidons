@@ -1,6 +1,7 @@
 #include "Ant.hpp"
 #include "Map.hpp"
 #include "Room.hpp"
+#include "State.hpp".hpp"
 
 Ant::Ant(const Pos &loc)
 	: m_state(STATE_NONE), m_position(loc) {
@@ -34,6 +35,7 @@ bool Ant::goTo(Pos dest) {
 }
 
 bool Ant::goToFoodAt(Pos dest) {
+	LOG_DEBUG("Ant::goToFoodAt");
 	if (goTo(dest)) {
 		// Win
 		m_state = STATE_GOING_TO_FOOD;

@@ -41,7 +41,6 @@ void Tracker::food(Pos const& pos) {
 
 void Tracker::ant(Pos const& pos, int team) {
 	ASSERT(g_map);
-	g_map->square(pos).ant = team;
 	if(team != TheGoodGuys) {
 		buf.enemyAnts.push_back(pos);
 		buf.enemyTeams.push_back(team);
@@ -86,7 +85,9 @@ void Tracker::hill(Pos const& pos, int team) {
 }
 
 void Tracker::go() {
+	STAMP("Before updateVisualInformation");
 	g_map->updateVisionInformation();
+	STAMP("Before update");
 	update();
 	TRACKER_LOG(getLiveAnts().size() << " live ants.");
 }
@@ -95,7 +96,7 @@ void Tracker::update() {
 
 	// Water have already been reported.
 
-	// Report hills to map.
+	// Report myrmidon hills to map.
 	IT(Buffer::EnemyHillSet, it, buf.newEnemyHills) {
 		g_map->enemyHill(it->first, it->second);
 	}
@@ -103,6 +104,11 @@ void Tracker::update() {
 	// Report enemy hills to map.
 	IT(PosSet, it, buf.newHills) {
 		g_map->hill(*it);
+	}
+
+	// Report food to map
+	IT(PosVec, it, buf.food) {
+		g_map->food(*it);
 	}
 
 	// Find free anthills.

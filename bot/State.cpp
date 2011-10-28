@@ -151,6 +151,11 @@ istream& operator>>(istream &is, State &state)
                 state.timer.start();
                 break;
             }
+			else if(inputType == "player_seed") {
+				is >> state.seed;
+				srand(state.seed);
+				LOG_DEBUG("Seed = " << state.seed);
+			}
             else    //unknown line
                 getline(is, junk);
         }
@@ -162,26 +167,31 @@ istream& operator>>(istream &is, State &state)
 		{
 			if(inputType == "w") //water square
             {
+				STAMP_;
                 is >> row >> col;
 				g_tracker->water(Pos(col, row));
             }
             else if(inputType == "f") //food square
             {
+				STAMP("Food");
                 is >> row >> col;
 				g_tracker->food(Pos(col, row));
             }
             else if(inputType == "a") //live ant square
             {
+				//STAMP;
                 is >> row >> col >> player;
 				g_tracker->ant(Pos(col, row), player);
             }
 			else if(inputType == "d") //dead ant square
             {
+				STAMP("Dead ant");
                 is >> row >> col >> player;
 				g_tracker->deadAnt(Pos(col, row), player);
 			}
             else if(inputType == "h")
             {
+				//STAMP;
                 is >> row >> col >> player;
 				g_tracker->hill(Pos(col, row), player);
             }

@@ -44,6 +44,7 @@ typedef Vec2T<float> Vec2f;
 
 typedef std::set<Pos> PosSet;
 typedef std::vector<Pos> PosList;
+typedef std::vector<Pos> PosVec;
 
 inline bool operator < (Pos const& a, Pos const& b) {
 	return (a[0] < b[0])||((a[0] == b[0]) && (a[1] < b[1]));

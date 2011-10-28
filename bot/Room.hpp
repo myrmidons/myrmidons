@@ -2,13 +2,20 @@
 #define ROOM_HPP
 
 #include "Pos.hpp"
+#include "Ant.hpp"
 #include <map>
 
 // This class handles the contents of a room.
 // Everything about a room except its connectivity is put into here.
 // Implementations in RoomContent.cpp
+
+
 class RoomContents {
 public:
+
+	void addMyrmidon(Ant* ant);
+	void removeMyrmidon(Ant* ant);
+
 	int getNumMyrmidons(); // The number of enemies in the room this turn.
 	int getNumEnemies(); // The number of enemies in the room this turn.
 	int getNumFallenMyrmidons(); // Give me the number of Myrmidons that has fallen this turn. (See you in valhalla!)
@@ -24,12 +31,17 @@ public:
 	// STUB
 	void myrmidonHillDiscovered(Pos const& pos);
 
+	void foodAt(Pos const& pos);
+
 	int lastVisitTime; // in time steps. trustworthyness of everything depends on this.
 
 	// indices into room positions list?
 	IntList food;
 	IntList ants;
 	IntList hills;
+
+	AntSet m_pAnts;
+	PosSet m_food;
 };
 
 //////////////////////////////////////////////////////////////////

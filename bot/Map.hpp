@@ -24,6 +24,9 @@ public:
 	// Terrain
 	void water(Pos const& pos);
 
+	// Food
+	void food(Pos const& pos);
+
 	// Enemy ants
 	void enemyHill(Pos const& pos, int team);
 	void enemyAnt(Pos const& pos, int team);

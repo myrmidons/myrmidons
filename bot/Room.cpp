@@ -277,6 +277,11 @@ void Rooms::expandWith(const PosSet& posArg) {
 
 			LOG_DEBUG("Assigning position " << intr.pos << " to room " << room);
 
+			// IMPORTANT: do this before add, since add chages size of room, which interest uses.
+			LOG_DEBUG("Erasing interests...");
+			ITC(InterestSet, iit, room->m_interests)
+				interests.erase(*iit);
+
 			room->add(intr.pos);
 			unassigned.erase(intr.pos); // No more!
 
@@ -326,10 +331,6 @@ void Rooms::expandWith(const PosSet& posArg) {
 			LOG_DEBUG("Removing finished room " << room);
 			m_open.erase(room);
 			rooms.erase(room); // No longer intersting for us
-
-			LOG_DEBUG("Erasing interests...");
-			ITC(InterestSet, iit, room->m_interests)
-				interests.erase(*iit);
 		}
 	}
 

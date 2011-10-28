@@ -149,6 +149,19 @@ void Bot::makeMoves()
 		Ant* ant = *it;
 		Pos pos = ant->pos();
 
+		if (ant->state() == Ant::STATE_NONE) {
+			// Try find food in room:
+			RoomContents* rc = g_map->roomContentAt(pos);
+			const PosSet& food = rc->m_food;
+
+			if (!food.empty()) {
+				// Go to random food:
+				PosSet::const_iterator it = food.begin();
+				advance(it, rand()%food.size());
+				ant->goToFoodAt(*it);
+			}
+		}
+
 		ant->calcDesire();
 		PosList desire = ant->getDesire();
 

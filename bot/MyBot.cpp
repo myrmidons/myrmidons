@@ -50,13 +50,14 @@ int main(int argc, char *argv[])
 
 	unsigned short port = 0;
 
-	if (args.size() == 1)
-	{
-		std::cerr << "bot requires a listen port on the command line\n";
-		return 1;
-	}
+	bool standalone = args.size() == 1;
+	CommInterface* commInterface = NULL;
 
-	if (args.size() >= 2)
+	if (standalone)
+	{
+	//	io = commInterface = new LocalInterface;
+	}
+	else
 	{
 		std::istringstream iss(args[1].toAscii().constData());
 		if (!(iss >> port))
@@ -64,10 +65,8 @@ int main(int argc, char *argv[])
 			std::cerr << "could not parse port argument\n";
 			return 2;
 		}
+		io = commInterface = new TcpCommInterface(port);
 	}
-
-	CommInterface* commInterface = NULL;
-	io = commInterface = new CommInterface;
 
 #else
 	io = new StandardIODevice;
@@ -90,7 +89,7 @@ int main(int argc, char *argv[])
 	if (commInterface)
 	{
 		commInterface->setBot(&bot);
-		commInterface->listen(port);
+		commInterface->go();
 	}
 
 	app.exec();

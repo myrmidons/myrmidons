@@ -12,40 +12,78 @@ class CommInterface : public QObject, public IODevice
 {
 	Q_OBJECT
 private:
-	QTcpServer* serv;
-	QTcpSocket* sock;
-	Bot* bot;
-
 	std::stringstream inputStream;
 	std::ostringstream outputStream;
+protected:
+	Bot* bot;
 
 public:
-	CommInterface(QObject* parent = 0)
-		: QObject(parent)
+	explicit CommInterface(QObject* parent = 0) : QObject(parent) {}
+	virtual void go() = 0;
+
+	// from IODevice
+	virtual std::istream& input() { return inputStream; }
+	virtual std::ostream& output() { return outputStream; }
+
+	void setBot(Bot* bot);
+
+	void onInputLine(const char* line);
+	virtual void outputText(const QByteArray& text) = 0;
+};
+
+inline void CommInterface::setBot(Bot* bot)
+{
+	this->bot = bot;
+}
+
+inline void CommInterface::onInputLine(const char *line)
+{
+	inputStream << line << "\n";
+	if (qstrcmp(line, "go") == 0 ||
+		qstrcmp(line, "ready") == 0)
+	{
+		bot->playOneTurn();
+		inputStream.str("");
+
+		std::string text = outputStream.str();
+		QByteArray buf(text.c_str(), text.size());
+		outputText(buf);
+		outputStream.clear();
+	}
+}
+
+class TcpCommInterface : public CommInterface
+{
+	Q_OBJECT
+private:
+	unsigned int port;
+	QTcpServer* serv;
+	QTcpSocket* sock;
+
+public:
+	explicit TcpCommInterface(unsigned short port, QObject* parent = 0)
+		: CommInterface(parent)
+		, port(port)
 		, serv(new QTcpServer(this))
 	{
 	}
 
-	void setBot(Bot* bot)
-	{
-		this->bot = bot;
-	}
-
-	void listen(unsigned short port)
+	void go()
 	{
 		connect(serv, SIGNAL(newConnection()), SLOT(connected()));
 		serv->listen(QHostAddress::Any, port);
 	}
 
-	virtual std::istream& input() { return inputStream; }
-	virtual std::ostream& output() { return outputStream; }
-
-Q_SIGNALS:
+	virtual void outputText(const QByteArray& text)
+	{
+		sock->write(text.constData(), text.size());
+	}
 
 private Q_SLOTS:
 	void connected()
 	{
 		sock = serv->nextPendingConnection();
+		sock->setSocketOption(QAbstractSocket::LowDelayOption, 1);
 		connect(sock, SIGNAL(readyRead()),
 				SLOT(readSome()));
 		connect(sock, SIGNAL(disconnected()),
@@ -57,16 +95,7 @@ private Q_SLOTS:
 		while (sock->canReadLine())
 		{
 			QString line = sock->readLine().trimmed();
-			inputStream << line.toAscii().constData() << "\n";
-			if (line == "go" || line == "ready")
-			{
-				bot->playOneTurn();
-				inputStream.str("");
-
-				std::string text = outputStream.str();
-				sock->write(text.c_str(), text.size());
-				outputStream.clear();
-			}
+			onInputLine(line.toAscii().constData());
 		}
 	}
 
@@ -74,6 +103,11 @@ private Q_SLOTS:
 	{
 		QApplication::exit(0);
 	}
+};
+
+class LocalCommInterface : public CommInterface
+{
+
 };
 
 #endif

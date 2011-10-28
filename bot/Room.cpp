@@ -40,6 +40,11 @@ bool RoomComp::operator()(Room* a, Room *b) const {
 
 ///////////////////////////////////////////////////////////////////////
 
+Pos Room::centerPos() const {
+	// TODO.
+	return *m_cells.begin();
+}
+
 void Room::makeClean() const {
 	if (!m_dirty) return;
 

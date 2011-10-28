@@ -82,6 +82,9 @@ public:
 
 	const BB& getBB() const { return m_bb; }
 
+	// The "best" point in the room.
+	Pos centerPos() const;
+
 	const RoomSet& neighborRooms() const;
 
 	// give info about our connection to this room.

@@ -113,6 +113,8 @@ PosList prioritizeWalk(Pos from, Pos to) {
 }
 
 PosList Path::getNextStep(Pos pos) const {
+	ASSERT(this->isValid());
+
 	if (pos==m_end)
 		return PosList(1, pos); // We have arrived
 

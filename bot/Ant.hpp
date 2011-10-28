@@ -2,18 +2,42 @@
 #define ANT_HPP
 
 #include "Pos.hpp"
-#include <map>
+#include "Path.hpp"
 #include <vector>
 
 class Ant {
-	Pos m_position;
-
 public:
 	Ant(Pos const& loc = Pos());
 	Ant(Ant const& ant);
 	Ant& operator=(Ant const& ant);
 
 	Pos& pos();
+
+	// Returns false on fail.
+	bool goTo(Pos pos);
+	bool goToFoodAt(Pos pos);
+	bool goToRoom(Room* room);
+
+	// update desire
+	void calcDesire();
+
+	// Where we would most want to go, based on current state.
+	const PosList& getDesire() const { return m_desire; }
+
+private:
+	enum State {
+		STATE_NONE,
+		STATE_GOING_TO_FOOD,
+		STATE_GOING_TO_ROOM
+	};
+
+	State m_state;
+	Pos m_position;
+
+	Path m_path; // Walking along this.
+
+	// Updated each turn:
+	PosList m_desire; // Neighbor cells we want to walk to.
 };
 
 typedef std::set<Ant*> AntSet;

@@ -23,6 +23,9 @@ public:
 
 	////////////////////////////////////
 
+	// Invalid path
+	Path() : m_dist(-1) {}
+
 	bool isValid() const { return m_dist >= 0; }
 
 	/* We are at pos, along this path.
@@ -34,8 +37,10 @@ public:
 	   */
 	PosList getNextStep(Pos pos) const;
 
+	const Pos& start() const { return m_start; }
+	const Pos& dest() const { return m_end; }
+
 private:
-	Path() : m_dist(-1) {}
 	explicit Path(int dist, Pos start, Pos end, const WPList& rooms);
 
 	int m_dist;

@@ -412,4 +412,11 @@ void Rooms::dumpImage() const {
 	LOG_DEBUG("Dumping rooms to " << fn);
 	img.save(fn.c_str());
 }
+
+void Rooms::resetDynamicContent() {
+	IT(RoomList, it, m_rooms) {
+		(*it)->contents()->resetDynamic();
+	}
+}
+
 #endif

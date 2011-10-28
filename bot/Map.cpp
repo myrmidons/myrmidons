@@ -60,32 +60,38 @@ Ant* Map::getAnt(Pos const& pos) {
 	if(posant.count(pos)) {
 		return posant[pos];
 	}
-//		g_state->bug << "In Map::getAnt: Ant does not exist!" << std::endl;
 	return 0;
 }
 
 void Map::moveAnt(Pos const& from, Pos const& to) {
-	g_state->bug << "Looking for ant at " << from << ": ";
+	g_tracker->log << "Looking for ant at " << from << ": ";
 	Ant* ant = getAnt(from);
 	if(ant) {
-		g_state->bug << "and moving it from " <<  ant->pos() << " to ";
+		g_tracker->log << "and moving it from " <<  ant->pos() << " to ";
 		removeAnt(ant);
 		ant->pos() = to;
 		addAnt(ant);
-		g_state->bug << ant->pos() << std::endl;
+		g_tracker->log << ant->pos() << std::endl;
 
 
 		square(to).ant = square(from).ant;
 		square(from).ant = -1;
 	}
 	else {
-		g_state->bug << " without finding it." << std::endl;
+		g_tracker->log << " without finding it." << std::endl;
 	}
+}
 
+void Map::enemyHill(Pos const& pos, int team) {
+	square(pos).room->contents()->enemyHillDiscovered(pos, team);
+}
+
+void Map::hill(Pos const& pos) {
+	square(pos).room->contents()->myrmidonHillDiscovered(pos);
 }
 
 void Map::water(const Pos &pos) {
-	m_grid[pos[0]][pos[1]].isWater = 1;
+	square(pos).isWater = true;
 }
 
 //returns the new location from moving in a given direction with the edges wrapped

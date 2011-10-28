@@ -15,10 +15,19 @@ public:
 	Map();
 	void initMap(Vec2 const& dim);
 
+	// Friendly ants
+	void hill(Pos const& pos);
 	void removeAnt(Ant* ant);
 	void addAnt(Ant* ant);
 	Ant* getAnt(Pos const& pos);
+
+	// Terrain
 	void water(Pos const& pos);
+
+	// Enemy ants
+	void enemyHill(Pos const& pos, int team);
+	void enemyAnt(Pos const& pos, int team);
+
 	void updateVisionInformation();
 
 	// Not sure if this is up to the Map-class in the end, but probably.

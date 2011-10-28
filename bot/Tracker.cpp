@@ -1,6 +1,7 @@
 #include "Tracker.hpp"
 #include "Ant.hpp"
 #include "Map.hpp"
+#include "Util.hpp"
 #include <sstream>
 #include <sys/time.h>
 
@@ -31,7 +32,6 @@ void Tracker::turn(int n) {
 
 void Tracker::water(Pos const& pos) {
 	ASSERT(g_map);
-	g_map->square(pos).isWater = true;
 	g_map->water(pos);
 }
 
@@ -52,7 +52,6 @@ void Tracker::ant(Pos const& pos, int team) {
 }
 
 void Tracker::deadAnt(Pos const& pos, int team) {
-	TRACKER_LOG("deadAnt(" << pos << ',' << team << ")");
 	if(team != TheGoodGuys) {
 		buf.deadEnemies.push_back(pos);
 		buf.deadEnemyTeams.push_back(team);
@@ -62,25 +61,49 @@ void Tracker::deadAnt(Pos const& pos, int team) {
 	}
 }
 
+// Track the hills and remember which ones we have already seen.
+// buffer the new ones for reporting when the maps visuals have been updated,
+// i.e. until the newly discovered hill-position have valid room-affinity.
 void Tracker::hill(Pos const& pos, int team) {
+
 	if(team != TheGoodGuys) {
-		buf.enemyHills.push_back(pos);
-		buf.enemyHillTeams.push_back(team);
+		if(m_enemyHills.find(pos) != m_enemyHills.end()) {
+			// This is a newly discovered anemy hill!
+			m_enemyHills.insert(pos);
+			TRACKER_LOG("Enemy hill for team " << team << " at " << pos);
+			buf.newEnemyHills.insert(Buffer::EnemyHill(pos,team));
+		}
 	}
 	else {
+		if(m_hills.find(pos) != m_hills.end()) {
+			// This is a new hill, horray!
+			m_hills.insert(pos);
+			TRACKER_LOG("We have a hill at " << pos);
+			buf.newHills.insert(pos);
+		}
 		buf.myHills.push_back(pos);
 	}
 }
 
 void Tracker::go() {
-	update();
 	g_map->updateVisionInformation();
+	update();
 	TRACKER_LOG(getLiveAnts().size() << " live ants.");
 }
 
 void Tracker::update() {
 
 	// Water have already been reported.
+
+	// Report hills to map.
+	IT(Buffer::EnemyHillSet, it, buf.newEnemyHills) {
+		g_map->enemyHill(it->first, it->second);
+	}
+
+	// Report enemy hills to map.
+	IT(PosSet, it, buf.newHills) {
+		g_map->hill(*it);
+	}
 
 	// Find free anthills.
 	TRACKER_LOG_("Looking for free ant hills...");
@@ -135,17 +158,15 @@ void Tracker::update() {
 	}
 }
 
-void Tracker::StateBuffer::reset() {
+void Tracker::Buffer::reset() {
 	myAnts.clear();
 	enemyAnts.clear();
 	myHills.clear();
-	enemyHills.clear();
 	food.clear();
 	deadAnts.clear();
 	deadEnemies.clear();
 	enemyTeams.clear();
 	deadEnemyTeams.clear();
-	enemyHillTeams.clear();
 }
 
 AntSet const& Tracker::getLiveAnts() {

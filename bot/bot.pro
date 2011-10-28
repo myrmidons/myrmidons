@@ -13,7 +13,8 @@ HEADERS += \
     Map.hpp \
     AntStar.hpp \
     Assert.hpp \
-    Tracker.hpp
+    Tracker.hpp \
+    Path.hpp
 
 SOURCES += \
     Ant.cpp \
@@ -26,7 +27,8 @@ SOURCES += \
     Map.cpp \
     AntStar.cpp \
     Assert.cpp \
-    Tracker.cpp
+    Tracker.cpp \
+    Path.cpp
 
 # Add annoying warning disables below, e.g. -Wno-cats-allowed
 # QMAKE_CXXFLAGS_WARN_ON = \
@@ -44,3 +46,5 @@ macx {
 }
 
 QMAKE_CXXFLAGS += -Wall -pedantic -Wextra -Wno-long-long
+
+

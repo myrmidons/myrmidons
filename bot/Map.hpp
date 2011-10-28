@@ -8,6 +8,7 @@
 #include "Assert.hpp"
 
 class Ant;
+class RoomContents;
 
 class Map
 {
@@ -27,15 +28,15 @@ public:
 	// Take one (wrapped) step into one of four directions.
 	Pos getLocation(const Pos &loc, int direction);
 
-	Path getOptimalPathTo(const Pos &from, const Pos &to);
+	PosPath getOptimalPathTo(const Pos &from, const Pos &to);
 
 	Square& square(Pos const& pos);
+	Room* roomAt(const Pos& pos);
+	RoomContents* roomContentAt(const Pos& pos);
 
 	bool isOccupied(const Pos& loc);
 
 	const Vec2& size() const { return m_size; }
-
-	double distance(const Pos &loc1, const Pos &loc2);
 
 	void newTurn(int turn);
 
@@ -43,6 +44,13 @@ public:
 		ASSERT(0<=pos.x() && pos.x()<m_size.x());
 		ASSERT(0<=pos.y() && pos.y()<m_size.y());
 	}
+
+	// usefull for distances etc:
+	int manhattanDist(Pos a, Pos b) const;
+	double distance(const Pos &loc1, const Pos &loc2);
+
+	// Wrapped.
+	Vec2 difference(Pos a, Pos b) const;
 
 private:
 	std::vector<std::vector<Square> > m_grid; // x/y

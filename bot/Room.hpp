@@ -89,6 +89,10 @@ public:
 
 	///////////////////////////////////////////////
 
+	// Helpers:
+	Pos closestPosNearNeighbor(Pos from, Room* neighbor, int* outDist=NULL) const;
+	Pos closestPosInNeighbor(Pos from, Room* neighbor, int* outDist=NULL) const;
+
 private:
 	friend class Rooms;
 	// For "Rooms" only:

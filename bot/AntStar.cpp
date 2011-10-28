@@ -14,7 +14,7 @@ double AntStar::heuristics(StarAnt* current, StarAnt* goal){
 	return g_map->distance(current->p, goal->p);
 }
 
-Path AntStar::findPath(Pos from, Pos to) {
+PosPath AntStar::findPath(Pos from, Pos to) {
 
 	Vec2 mapSize = g_map->size();
 	ASSERT(from.x() > -1 && from.x() < mapSize.x());
@@ -36,7 +36,7 @@ Path AntStar::findPath(Pos from, Pos to) {
 
 		// are we there yet? Yes we are son, back-trace vägen
 		if(current == goal) {
-			Path goalPath;
+			PosPath goalPath;
 			StarAnt curr = current;
 			while(curr.parent != NULL){
 				goalPath.push_front(curr.p);
@@ -74,5 +74,5 @@ Path AntStar::findPath(Pos from, Pos to) {
 			}
 		}
 	}
-	return Path();
+	return PosPath();
 }

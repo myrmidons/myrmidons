@@ -19,7 +19,7 @@ void Map::initMap(Vec2 const& dim) {
 											   std::vector<Square>(m_size.y(), Square()));
 }
 
-Path Map::getOptimalPathTo(const Pos &from, const Pos &to) {
+PosPath Map::getOptimalPathTo(const Pos &from, const Pos &to) {
 	AntStar star = AntStar();
 	return star.findPath(from, to);
 }
@@ -100,6 +100,18 @@ Square& Map::square(Pos const& pos) {
 	assertInMap(pos);
 	return m_grid[pos[0]][pos[1]];
 }
+
+
+Room* Map::roomAt(const Pos& pos) {
+	return square(pos).room;
+}
+
+RoomContents* Map::roomContentAt(const Pos& pos) {
+	Room* r = roomAt(pos);
+	ASSERT(r);
+	return r->contents();
+}
+
 /*
 	This function will update update the lastSeen value for any squares currently
 	visible by one of your live ants.
@@ -186,4 +198,16 @@ double Map::distance(const Pos &loc1, const Pos &loc2)
 	int dx = std::min(d0, m_size.x()-d0);
 	int dy = std::min(d1, m_size.y()-d1);
 	return sqrt(dx*dx + dy*dy);
+}
+
+int Map::manhattanDist(Pos a, Pos b) const {
+	return wrappedAbsDist(a[0], b[0], m_size[0]) + wrappedAbsDist(a[1], b[1], m_size[1]);
+}
+
+// Wrapped.
+Vec2 Map::difference(Pos a, Pos b) const {
+	return Vec2(
+				wrappedSignedDist(a[0], b[0], m_size[0]),
+				wrappedSignedDist(a[1], b[1], m_size[1])
+				);
 }

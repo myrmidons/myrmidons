@@ -70,6 +70,54 @@ const Room::NeighborInfo* Room::neighborInfo(Room* room) const {
 	return &m_neighborInfos[room];
 }
 
+Pos Room::closestPosNearNeighbor(Pos from, Room* neighbor, int* outDist) const {
+	const NeighborInfo* ni = neighborInfo(neighbor);
+
+	// Find best path from "from" to a cell in neighbor room
+	const int MaxInt = std::numeric_limits<int>::max();
+	int shortest = MaxInt;
+	Pos closest;
+
+	ITC(PosSet, pit, ni->cells) {
+		int dist = g_map->manhattanDist(from, *pit);
+		if (dist < shortest) {
+			shortest = dist;
+			closest = *pit;
+		}
+	}
+
+	ASSERT(shortest != MaxInt);
+
+	if (outDist)
+		*outDist = shortest;
+
+	return closest;
+}
+
+Pos Room::closestPosInNeighbor(Pos from, Room* neighbor, int* outDist) const {
+	int dist;
+	Pos closest = closestPosNearNeighbor(from, neighbor, &dist);
+
+	// Take one step into other room:
+	for (int dir=0; dir<4; ++dir) {
+		Pos nc = g_map->getLocation(closest, dir);
+		if (g_map->roomAt(nc) == neighbor) {
+			// This will do
+			if (outDist)
+				*outDist = dist + 1; // +1 to take that extra step
+			return nc;
+		}
+	}
+
+	// What the hell
+	ASSERT(false && "Room connections broken");
+
+	if (outDist)
+		*outDist = -1;
+
+	return from; // Fail. return w/e.
+}
+
 Room::Room(Pos seed) : id(getID<Room>()), m_dirty(true) {
 	m_bb.m_min = m_bb.m_max = seed;
 	m_contents = new RoomContents();

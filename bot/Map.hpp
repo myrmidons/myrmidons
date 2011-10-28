@@ -67,6 +67,8 @@ public:
 	// Wrapped.
 	Vec2 difference(Pos a, Pos b) const;
 
+	Pos wrapPos(Pos a) const;
+
 private:
 	std::vector<std::vector<Square> > m_grid; // x/y
 	std::map<Ant*, Pos> antpos;

@@ -159,6 +159,7 @@ void Bot::makeMoves()
 
 			if (!food.empty()) {
 				// Go to random food:
+				LOG_DEBUG("Going to food");
 				PosSet::const_iterator it = food.begin();
 				advance(it, rand()%food.size());
 				ant->goToFoodAt(*it);

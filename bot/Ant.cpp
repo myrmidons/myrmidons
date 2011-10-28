@@ -29,13 +29,14 @@ bool Ant::goTo(Pos dest) {
 		return true;
 	} else {
 		// Fail
+		LOG_DEBUG("Failed to go to path");
 		m_state = STATE_NONE;
 		return false;
 	}
 }
 
 bool Ant::goToFoodAt(Pos dest) {
-	LOG_DEBUG("Ant::goToFoodAt");
+	LOG_DEBUG("Ant::goToFoodAt " << dest);
 	if (goTo(dest)) {
 		// Win
 		m_state = STATE_GOING_TO_FOOD;
@@ -45,6 +46,10 @@ bool Ant::goToFoodAt(Pos dest) {
 }
 
 bool Ant::goToRoom(Room* room) {
+	if (room == g_map->roomAt(pos()))
+		LOG_DEBUG("Asked to go to room it is in");
+
+	LOG_DEBUG("Ant::goToRoom " << room);
 	if (goTo(room->centerPos())) {
 		// Win
 		m_state = STATE_GOING_TO_ROOM;
@@ -56,18 +61,23 @@ bool Ant::goToRoom(Room* room) {
 void Ant::calcDesire() {
 	LOG_DEBUG("Ant::calcDesire");
 
-	if (!m_path.isValid())
+	if (!m_path.isValid()) {
+		LOG_DEBUG("Invalid path, going to STATE_NONE");
 		m_state = STATE_NONE;
+	}
 
 	if (m_state==STATE_GOING_TO_FOOD) {
 		if (!g_map->square(m_path.dest()).isFood) {
+			LOG_DEBUG("FOOD GONE!");
 			m_state = STATE_NONE;
 		}
 	}
 
 	if (m_state==STATE_GOING_TO_ROOM) {
-		if (g_map->roomAt(pos()) && g_map->roomAt(m_path.dest()))
+		if (g_map->roomAt(pos()) && g_map->roomAt(m_path.dest())) {
+			LOG_DEBUG("Arrived to room");
 			m_state = STATE_NONE;
+		}
 	}
 
 	if (m_state == STATE_NONE) {

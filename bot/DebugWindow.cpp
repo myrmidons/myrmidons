@@ -5,9 +5,10 @@
 #include "Room.hpp"
 #include "State.hpp"
 #include "Util.hpp"
+#include "Tracker.hpp"
 #include <QPainter>
 
-const int Mult = 8; // pixels per grid cell
+const int Mult = 10; // pixels per grid cell
 
 DebugWindow* DebugWindow::s_instance = NULL;
 
@@ -62,10 +63,14 @@ QRgb randomColor(Room* room) {
 		b = (1234578 * id) % 255;
 		id += 78901;
 		/**/
-		//} while (r+g+b < 200 || r+g+b > 650); // avoid blacks and whites
-	} while (r+g+b < 250); // Racist code (avoid blacks)
+	} while (r+g+b < 200 || r+g+b > 650); // avoid blacks and whites
+	//} while (r+g+b < 250); // Racist code (avoid blacks)
 
 	return qRgb(r,g,b);
+}
+
+QPointF toQP(Vec2 pos) {
+	return Mult*QPointF(pos.x()+.5f, pos.y()+.5f);
 }
 
 void DebugWindow::redrawImg() {
@@ -108,13 +113,10 @@ void DebugWindow::redrawImg() {
 
 		// Add graph info
 		std::map<Room*, QPointF> centers;
-		ITC(RoomList, rit, rooms) {
-			Room* r = *rit;
-			Pos c = r->centerPos();
-			centers[r] = Mult*QPointF(c.x()+.5f, c.y()+.5f);
-		}
+		ITC(RoomList, rit, rooms)
+			centers[*rit] = toQP((*rit)->centerPos());
 
-		//painter.setClipping(true);
+		//painter.setClipping(true); // not needed
 
 		ITC(RoomList, rit, rooms) {
 			Room* r = *rit;
@@ -126,7 +128,11 @@ void DebugWindow::redrawImg() {
 				bool xwrap = (Abs(a.x()-b.x()) > m_img.width()/2);
 				bool ywrap = (Abs(a.y()-b.y()) > m_img.height()/2);
 				if (xwrap && ywrap) {
-					// TODO
+					if (a.x() < b.x())
+						std::swap(a,b);
+
+					painter.drawLine(a, b + QPointF(m_img.width(), m_img.height()));
+					painter.drawLine(a - QPointF(m_img.width(), m_img.height()), b);
 				} else if (xwrap) {
 					if (a.x() < b.x())
 						std::swap(a,b);
@@ -145,10 +151,36 @@ void DebugWindow::redrawImg() {
 			}
 		}
 
-		float rad = 0.4f*Mult;
+		float rad = 0.3f*Mult;
 
 		ITC(RoomList, rit, rooms)
 			painter.drawEllipse(centers[*rit], rad, rad);
+
+		//////////////////////////////////////////////////
+		// Draw ants
+
+		const AntSet& ants = g_tracker->getLiveAnts();
+		ITC(AntSet, ait, ants) {
+			Ant* ant = *ait;
+			QPointF pos = toQP(ant->pos());
+			float rad = 0.35f*Mult;
+			QRectF rect(pos.x()-rad, pos.y()-rad, 2*rad, 2*rad);
+			painter.fillRect(rect, Qt::red);
+
+			painter.setPen(Qt::white);
+			painter.drawRect(rect);
+
+			if (ant->state() != Ant::STATE_NONE) {
+				const Path& path = ant->path();
+				if (path.isValid()) {
+					QPointF dest = toQP(path.dest());
+					painter.setPen(Qt::white);
+					painter.drawLine(pos, dest);
+				}
+			}
+		}
+
+		// TODO Draw food
 	}
 
 	/////////////////////////

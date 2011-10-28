@@ -13,13 +13,13 @@ public:
 		STATE_GOING_TO_ROOM
 	};
 
-
 	Ant(Pos const& loc = Pos());
 	Ant(Ant const& ant);
 	Ant& operator=(Ant const& ant);
 
 	Pos& pos();
 	State state() const { return m_state; }
+	const Path& path() const { return m_path; }
 
 	// Returns false on fail.
 	bool goTo(Pos pos);

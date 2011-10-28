@@ -74,7 +74,7 @@ void Ant::calcDesire() {
 	}
 
 	if (m_state==STATE_GOING_TO_ROOM) {
-		if (g_map->roomAt(pos()) && g_map->roomAt(m_path.dest())) {
+		if (g_map->roomAt(pos()) == g_map->roomAt(m_path.dest())) {
 			LOG_DEBUG("Arrived to room");
 			m_state = STATE_NONE;
 		}

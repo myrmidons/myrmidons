@@ -124,10 +124,10 @@ void Bot::makeMoves()
 
 		const RoomSet& neighRooms = room->neighborRooms();
 
-		if (ants.size()>1 && !neighRooms.empty()) {
+		if (!ants.empty() && !neighRooms.empty()) {
 			RoomList cands;
 			ITC(RoomSet, rit, neighRooms) {
-				if ((*rit)->contents()->ants().size() < ants.size()) {
+				if ((*rit)->contents()->ants().size() <= ants.size()) {
 					// less crowded
 					cands.push_back(*rit);
 				}

@@ -32,7 +32,7 @@ struct StarAnt {
 };
 
 typedef std::vector<std::vector<StarAnt> > StarGrid;
-typedef std::deque<Pos> Path;
+typedef std::deque<Pos> PosPath;
 
 class AntStar
 {
@@ -42,7 +42,7 @@ class AntStar
 	double heuristics(StarAnt* current, StarAnt* goal);
 public:
     AntStar();
-	Path findPath(Pos from, Pos to);
+	PosPath findPath(Pos from, Pos to);
 };
 
 

@@ -106,12 +106,19 @@ public:
 
 	const BB& getBB() const { return m_bb; }
 
+	// The "best" point in the room.
+	Pos centerPos() const;
+
 	const RoomSet& neighborRooms() const;
 
 	// give info about our connection to this room.
 	const NeighborInfo* neighborInfo(Room* room) const;
 
 	///////////////////////////////////////////////
+
+	// Helpers:
+	Pos closestPosNearNeighbor(Pos from, Room* neighbor, int* outDist=NULL) const;
+	Pos closestPosInNeighbor(Pos from, Room* neighbor, int* outDist=NULL) const;
 
 private:
 	friend class Rooms;
@@ -146,6 +153,7 @@ private:
 	/////////////////////////////////////////
 	// Derived:
 	BB m_bb;
+	Pos m_center; // Visual center, euclid minimum bounding circle center.
 
 	bool m_dirty; // For everything below this:
 

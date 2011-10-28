@@ -2,6 +2,7 @@
 #include "Util.hpp"
 #include "Map.hpp"
 #include "State.hpp" // LOG_DEBUG
+#include <limits>
 
 #ifdef DEBUG
 #	include <QImage>
@@ -40,6 +41,10 @@ bool RoomComp::operator()(Room* a, Room *b) const {
 
 ///////////////////////////////////////////////////////////////////////
 
+Pos Room::centerPos() const {
+	return m_center;
+}
+
 void Room::makeClean() const {
 	if (!m_dirty) return;
 
@@ -70,7 +75,55 @@ const Room::NeighborInfo* Room::neighborInfo(Room* room) const {
 	return &m_neighborInfos[room];
 }
 
-Room::Room(Pos seed) : id(getID<Room>()), m_dirty(true) {
+Pos Room::closestPosNearNeighbor(Pos from, Room* neighbor, int* outDist) const {
+	const NeighborInfo* ni = neighborInfo(neighbor);
+
+	// Find best path from "from" to a cell in neighbor room
+	const int MaxInt = std::numeric_limits<int>::max();
+	int shortest = MaxInt;
+	Pos closest;
+
+	ITC(PosSet, pit, ni->cells) {
+		int dist = g_map->manhattanDist(from, *pit);
+		if (dist < shortest) {
+			shortest = dist;
+			closest = *pit;
+		}
+	}
+
+	ASSERT(shortest != MaxInt);
+
+	if (outDist)
+		*outDist = shortest;
+
+	return closest;
+}
+
+Pos Room::closestPosInNeighbor(Pos from, Room* neighbor, int* outDist) const {
+	int dist;
+	Pos closest = closestPosNearNeighbor(from, neighbor, &dist);
+
+	// Take one step into other room:
+	for (int dir=0; dir<4; ++dir) {
+		Pos nc = g_map->getLocation(closest, dir);
+		if (g_map->roomAt(nc) == neighbor) {
+			// This will do
+			if (outDist)
+				*outDist = dist + 1; // +1 to take that extra step
+			return nc;
+		}
+	}
+
+	// What the hell
+	ASSERT(false && "Room connections broken");
+
+	if (outDist)
+		*outDist = -1;
+
+	return from; // Fail. return w/e.
+}
+
+Room::Room(Pos seed) : id(getID<Room>()), m_dirty(true), m_center(seed) {
 	m_bb.m_min = m_bb.m_max = seed;
 	m_contents = new RoomContents();
 	add(seed);
@@ -89,6 +142,25 @@ bool Room::isClosable(Pos pos) const {
 	}
 	LOG_DEBUG("Closing cell " << pos << " in room " << this);
 	return true;
+}
+
+// A border cell has at least one neighbor not in room. could be water.
+bool isBorderCell(Pos pos, Room* r) {
+	for (int dir=0; dir<4; ++dir)
+		if (g_map->roomAt(g_map->getLocation(pos, dir)) != r)
+			return true;
+	return false;
+}
+
+// break if we get anything more than "currentBest"
+int bcRad2(int currentBest, Pos pos, const PosList& cells) {
+	int r2=0;
+	ITC(PosList, pit, cells) {
+		r2 = std::max(r2, g_map->euclidDistSq(pos, *pit));
+		if (r2 > currentBest)
+			return std::numeric_limits<int>::max();
+	}
+	return r2;
 }
 
 void Room::add(Pos pos) {
@@ -115,6 +187,25 @@ void Room::add(Pos pos) {
 
 	ITC(PosSet, pit, closeThese)
 		m_open.erase(*pit);
+
+	///////////////////////////////////////////
+
+	// Recalculate room center. Start by calculating bounding points.
+	PosList border;
+	ITC(PosSet, pit, m_cells)
+		if (isBorderCell(*pit, this))
+			border.push_back(*pit);
+
+	int minRad2 = std::numeric_limits<int>::max();
+	ITC(PosSet, pit, m_cells) {
+		int r2 = bcRad2(minRad2, *pit, border);
+		if (r2 < minRad2) {
+			m_center = *pit;
+			minRad2 = r2;
+		}
+	}
+
+	///////////////////////////////////////////
 
 	// We are now unsure of room-connection - dirty up affected rooms:
 	this->m_dirty = true;
@@ -224,7 +315,8 @@ void Room::calcInterests(const PosSet& unassigned) {
 				intr.prio = bbSize[1-axis] - bbSize[axis]; // larger on other axis is good
 			}
 
-			intr.centerDistSq = wrappedDistanceSqr(m_bb.centerF(mapSize), Vec2f(intr.pos), mapSize);
+			//intr.centerDistSq = wrappedDistanceSqr(m_bb.centerF(mapSize), Vec2f(intr.pos), mapSize);
+			intr.centerDistSq = g_map->euclidDistSq(m_center, intr.pos);
 
 			if (intr.centerDistSq > g_rooms->maxRoomRadiusSq()) {
 				LOG_DEBUG("Ignoring neighbor at " << intr.pos << " going outside max radius");

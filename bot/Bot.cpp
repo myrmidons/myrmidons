@@ -86,9 +86,9 @@ void Bot::playGame() {
 
 int Bot::closestLocation(const Pos& loc, const vector<Pos>& location) {
 	int result = -1;
-	double minDist = 10000000;
+	float minDist = 10000000;
 	for(size_t i = 0; i < location.size(); ++i) {
-		double dist = g_map->distance(location[i], loc);
+		float dist = g_map->euclidDist(location[i], loc);
 		if(dist < minDist) {
 			minDist = dist;
 			result = (int)i;

@@ -66,6 +66,12 @@ T sqr(const T& x) { return x*x; }
 template<typename T>
 T Abs(const T& x) { return x<0 ? -x : +x; }
 
+inline int sign(int v) {
+	if (v<0) return -1;
+	if (v>0) return +1;
+	return 0;
+}
+
 // wrap to [0,size)
 template<typename T>
 T wrap(T x, int size) {

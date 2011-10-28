@@ -100,7 +100,8 @@ void Room::add(Pos pos) {
 		if (isClosable(*pit))
 			closeThese.insert(*pit);
 
-	m_open.erase(closeThese.begin(), closeThese.end());
+	ITC(PosSet, pit, closeThese)
+		m_open.erase(*pit);
 
 	// We are now unsure of room-connection - dirty up affected rooms:
 	this->m_dirty = true;
@@ -218,11 +219,11 @@ bool areAnyInRange(Room* room, const PosSet& pos, const Vec2& mapSize, int maxRo
 }
 
 int Rooms::maxRoomArea() const {
-	return 100; // FIXME
+	return 400; // FIXME
 }
 
 int Rooms::maxRoomWidth() const {
-	return 10; // TODO: base on g-state view distance.
+	return 20; // TODO: base on g-state view distance.
 }
 
 void Rooms::expandWith(const PosSet& posArg) {
@@ -281,7 +282,8 @@ void Rooms::expandWith(const PosSet& posArg) {
 				Room* ar = *rit;
 				if (ar->m_interestPos.count(intr.pos)) {
 					LOG_DEBUG("Erasing old interests...");
-					interests.erase(ar->m_interests.begin(), ar->m_interests.end());
+					ITC(InterestSet, iit, ar->m_interests)
+						interests.erase(*iit);
 
 					LOG_DEBUG("Calculating new interests...");
 					ar->calcInterests(unassigned);
@@ -296,7 +298,7 @@ void Rooms::expandWith(const PosSet& posArg) {
 			LOG_DEBUG("B");
 
 			// No interest taken - create a new room!
-			// Which do we select? Any!
+			// FIXME: this is the worst possible choice - guaranteed to be a corner!
 			Pos pos = *unassigned.begin();
 			unassigned.erase(unassigned.begin());
 
@@ -320,6 +322,8 @@ void Rooms::expandWith(const PosSet& posArg) {
 			rooms.erase(room); // No longer intersting for us
 		}
 	}
+
+	// TODO: cull finished rooms from m_open
 
 	LOG_DEBUG("Rooms::expandWith DONE");
 

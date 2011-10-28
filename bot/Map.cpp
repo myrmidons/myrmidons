@@ -128,6 +128,11 @@ void Map::updateVisionInformation() {
 		m_grid[sLoc[0]][sLoc[1]].isVisible = 1;
 		visited[sLoc[0]][sLoc[1]] = 1;
 
+		if (!m_grid[sLoc[0]][sLoc[1]].discovered) {
+			m_grid[sLoc[0]][sLoc[1]].discovered = true;
+			discoveries.insert(sLoc);
+		}
+
 		while(!locQueue.empty()) {
 			cLoc = locQueue.front();
 			locQueue.pop();

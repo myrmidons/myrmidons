@@ -29,10 +29,12 @@ class Room;
 // This interest is kept track of using this:
 struct Interest
 {
+	Interest() : room(0), neighbors(-1), prio(-1337) {}
+
 	Pos pos;
 	Room* room;
 	/* 1 or 2: how many neighbors the cell has to the room
-		(3,4 impossible by constraint ofmanhattan-concavity). */
+		(3,4 impossible by constraint of manhattan-concavity). */
 	int neighbors;
 	float prio; // Based on wether or not we are expanding the bb to make it more square.
 };

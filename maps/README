@@ -1,0 +1,10 @@
+Tiles in maps
+
+% Water tile
+. Land tile
+! Dead ant tile
+* Food tile
+? Unseen tile
+n Ant hill tile, where n = {0, 1, 2, ... , 9}
+n Ant tile, where n = {a, b, c, ... , j}
+n Ant hill tile with ant on top, where n = {A, B, C, ... , J}

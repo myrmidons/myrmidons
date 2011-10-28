@@ -23,12 +23,15 @@ elif [ -e "debug/bot" ]; then
 elif [ -e "release/bot" ]; then
   BOT="release/bot"
 elif [ -e "bot" ]; then
-  BOT="bot"
+  BOT="./bot"
 fi
 
 NETCAT=`which nc netcat`
 
+echo "${BOT}, lol"
+
 P1="nc localhost 19001"
+P1="${BOT}"
 P2="python ../tools/sample_bots/python/HunterBot.py"
 MAPFILE="../tools/maps/example/tutorial1.map"
 
@@ -41,4 +44,6 @@ ${PYTHON} ../tools/playgame.py \
          --scenario \
          --player_seed 7 \
          --verbose \
+         --loadtime 3600000 \
+         --turntime 3600000 \
          -e

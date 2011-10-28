@@ -10,6 +10,7 @@ using namespace std;
 #include <QStringList>
 #include <sstream>
 #include "CommInterface.hpp"
+
 #endif
 
 struct StandardIODevice : IODevice
@@ -55,7 +56,7 @@ int main(int argc, char *argv[])
 
 	if (standalone)
 	{
-	//	io = commInterface = new LocalInterface;
+		io = commInterface = new LocalCommInterface;
 	}
 	else
 	{
@@ -86,9 +87,10 @@ int main(int argc, char *argv[])
 
 	Bot bot(*io);
 #ifdef BOT_WITH_QT
+	TurnInitiator ti(bot);
 	if (commInterface)
 	{
-		commInterface->setBot(&bot);
+		ti.connect(commInterface, SIGNAL(processTurn()), SLOT(doTurn()));
 		commInterface->go();
 	}
 

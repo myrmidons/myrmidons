@@ -5,6 +5,8 @@
 #include <QObject>
 #include <QtNetwork/QTcpServer>
 #include <QtNetwork/QTcpSocket>
+#include <QFuture>
+#include <QThread>
 #include "Bot.hpp"
 #include <sstream>
 
@@ -25,24 +27,20 @@ public:
 	virtual std::istream& input() { return inputStream; }
 	virtual std::ostream& output() { return outputStream; }
 
-	void setBot(Bot* bot);
-
-	void onInputLine(const char* line);
+	void onInputLine(std::string line);
 	virtual void outputText(const QByteArray& text) = 0;
+
+Q_SIGNALS:
+	void processTurn();
 };
 
-inline void CommInterface::setBot(Bot* bot)
-{
-	this->bot = bot;
-}
-
-inline void CommInterface::onInputLine(const char *line)
+inline void CommInterface::onInputLine(std::string line)
 {
 	inputStream << line << "\n";
-	if (qstrcmp(line, "go") == 0 ||
-		qstrcmp(line, "ready") == 0)
+	if (line == "go"||
+		line == "ready")
 	{
-		bot->playOneTurn();
+		emit processTurn();
 		inputStream.str("");
 
 		std::string text = outputStream.str();
@@ -106,9 +104,87 @@ private Q_SLOTS:
 	}
 };
 
+class LocalCommInterfaceTube : public QObject
+{
+	Q_OBJECT
+public:
+	void send(std::string line) { emit lineReceived(QString::fromStdString(line)); }
+Q_SIGNALS:
+	void lineReceived(QString line);
+};
+
+class LocalCommInterfaceWorker : public QThread
+{
+public:
+	LocalCommInterfaceWorker() {}
+
+	QFutureInterface<void> tubeCreate, tubeBound;
+
+	LocalCommInterfaceTube* tube;
+	virtual void run()
+	{
+		tube = new LocalCommInterfaceTube;
+		tubeCreate.reportFinished();
+
+		tubeBound.future().waitForFinished();
+
+		std::string line;
+		while (std::getline(std::cin, line))
+		{
+			tube->send(line);
+		}
+	}
+};
+
 class LocalCommInterface : public CommInterface
 {
+	Q_OBJECT
+private:
+	LocalCommInterfaceWorker* t;
 
+public:
+	LocalCommInterface()
+	{
+		std::cout.sync_with_stdio(0);
+	}
+
+	virtual void go()
+	{
+		t = new LocalCommInterfaceWorker();
+		t->tubeCreate.reportStarted();
+		t->start();
+
+		t->tubeBound.reportStarted();
+		t->tubeCreate.waitForFinished();
+		connect(t->tube, SIGNAL(lineReceived(QString)), SLOT(onTubeLine(QString)));
+		t->tubeBound.reportFinished();
+	}
+
+	virtual void outputText(const QByteArray &text)
+	{
+		std::cout << text.constData() << std::flush;
+	}
+
+private Q_SLOTS:
+	void onTubeLine(QString line)
+	{
+		onInputLine(line.toAscii().constData());
+	}
+};
+
+
+class TurnInitiator : public QObject
+{
+	Q_OBJECT
+private:
+	Bot& bot;
+public:
+	explicit TurnInitiator(Bot& bot) : bot(bot) {}
+public Q_SLOTS:
+	void doTurn()
+	{
+		bot.playOneTurn();
+	}
 };
 
 #endif

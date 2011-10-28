@@ -20,9 +20,8 @@ void RoomContents::myrmidonHillDiscovered(Pos const& pos) {
 }
 
 void RoomContents::resetDynamic() {
-	// Reset non-persistent stuff, like enemy ants a.s.o.
-	// STUB
 	m_food.clear();
+	m_enemies.clear();
 }
 
 void RoomContents::insertFoodAt(Pos const& pos) {

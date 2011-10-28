@@ -35,12 +35,7 @@ public:
 	void insertFoodAt(Pos const& pos);
 	void insertEnemyAt(Pos const& pos, int team);
 
-	int lastVisitTime; // in time steps. trustworthyness of everything depends on this.
-
-	// indices into room positions list?
-	IntList food;
-	IntList ants;
-	IntList hills;
+	const AntSet& ants() const { return m_pAnts; }
 
 	AntSet m_pAnts;
 	PosSet m_enemies;
@@ -173,6 +168,8 @@ private:
 class Rooms
 {
 public:
+	const RoomList& rooms() const { return m_rooms; }
+
 	// Room constraints
 	int maxRoomArea() const;
 	int maxRoomWidth() const;

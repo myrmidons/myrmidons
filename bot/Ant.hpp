@@ -7,11 +7,19 @@
 
 class Ant {
 public:
+	enum State {
+		STATE_NONE,
+		STATE_GOING_TO_FOOD,
+		STATE_GOING_TO_ROOM
+	};
+
+
 	Ant(Pos const& loc = Pos());
 	Ant(Ant const& ant);
 	Ant& operator=(Ant const& ant);
 
 	Pos& pos();
+	State state() const { return m_state; }
 
 	// Returns false on fail.
 	bool goTo(Pos pos);
@@ -25,12 +33,6 @@ public:
 	const PosList& getDesire() const { return m_desire; }
 
 private:
-	enum State {
-		STATE_NONE,
-		STATE_GOING_TO_FOOD,
-		STATE_GOING_TO_ROOM
-	};
-
 	State m_state;
 	Pos m_position;
 

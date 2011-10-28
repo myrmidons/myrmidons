@@ -38,7 +38,7 @@ struct Interest
 	int neighbors;
 	int area; // Of room - smaller is prioritized
 	float prio; // Based on wether or not we are expanding the bb to make it more square.
-	float centerDist; // Distance from room center to cell.
+	float centerDistSq; // Distance from room center to cell.
 };
 
 
@@ -131,6 +131,8 @@ public:
 	// Room constraints
 	int maxRoomArea() const;
 	int maxRoomWidth() const;
+	float maxRoomRadius() const;
+	float maxRoomRadiusSq() const;
 
 	// Called by g_map upon uncovering new grid cells.
 	void expandWith(const PosSet& pos);

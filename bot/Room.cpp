@@ -20,7 +20,7 @@ bool operator<(const Interest& a, const Interest& b) {
 	if (a.neighbors < b.neighbors) return false;
 
 	// Prioritize things close to center. Will keep squareness and roundness, and proprotize small rooms.
-	if (a.centerDist != b.centerDist) return a.centerDist < b.centerDist;
+	if (a.centerDistSq != b.centerDistSq) return a.centerDistSq < b.centerDistSq;
 /*
 	// Try to keep squareness:
 	if (a.prio > b.prio) return true;
@@ -220,7 +220,12 @@ void Room::calcInterests(const PosSet& unassigned) {
 				intr.prio = bbSize[1-axis] - bbSize[axis]; // larger on other axis is good
 			}
 
-			intr.centerDist = wrappedDistanceSqr(m_bb.centerF(mapSize), Vec2f(intr.pos), mapSize);
+			intr.centerDistSq = wrappedDistanceSqr(m_bb.centerF(mapSize), Vec2f(intr.pos), mapSize);
+
+			if (intr.centerDistSq > g_rooms->maxRoomRadiusSq()) {
+				LOG_DEBUG("Ignoring neighbor at " << intr.pos << " going outside max radius");
+				continue; // We may not expand this way!
+			}
 
 			LOG_DEBUG("Adding neighbor cell at " << nit->first << " to interests...");
 
@@ -253,6 +258,14 @@ int Rooms::maxRoomArea() const {
 
 int Rooms::maxRoomWidth() const {
 	return 10; // TODO: base on g-state view distance.
+}
+
+float Rooms::maxRoomRadius() const {
+	return 6; // FIXME
+}
+
+float Rooms::maxRoomRadiusSq() const {
+	return sqr(maxRoomRadius()); // FIXME
 }
 
 void Rooms::expandWith(const PosSet& posArg) {

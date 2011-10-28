@@ -13,6 +13,8 @@ Rooms* g_rooms = NULL;
 ///////////////////////////////////////////////////////////////////////
 
 bool operator<(const Interest& a, const Interest& b) {
+	LOG_DEBUG("Interest operator <");
+
 	// Expand into where we have many neighbors first
 	if (a.neighbors > b.neighbors) return true;
 	if (a.neighbors < b.neighbors) return false;
@@ -126,8 +128,11 @@ bool Room::isFinished() const {
 void Room::calcInterests(const PosSet& unassigned) {
 	LOG_DEBUG("Room::calcInterests (this = " << this << ")");
 
-	m_interests.clear();
+	LOG_DEBUG("clearing m_interestPos...");
 	m_interestPos.clear();
+
+	LOG_DEBUG("clearing m_interests...");
+	m_interests.clear();
 
 	LOG_DEBUG("cleared");
 
@@ -261,6 +266,8 @@ void Rooms::expandWith(const PosSet& posArg) {
 			Interest intr = *interests.begin();
 			room = intr.room;
 
+			ASSERT(rooms.count(room));
+
 			LOG_DEBUG("Assigning position " << intr.pos << " to room " << room);
 
 			room->add(intr.pos);
@@ -308,6 +315,7 @@ void Rooms::expandWith(const PosSet& posArg) {
 		}
 
 		if (room->isFinished()) {
+			LOG_DEBUG("Removing finished room " << room);
 			m_open.erase(room);
 			rooms.erase(room); // No longer intersting for us
 		}

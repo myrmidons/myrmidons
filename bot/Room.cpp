@@ -314,7 +314,8 @@ void Room::calcInterests(const PosSet& unassigned) {
 				intr.prio = bbSize[1-axis] - bbSize[axis]; // larger on other axis is good
 			}
 
-			intr.centerDistSq = wrappedDistanceSqr(m_bb.centerF(mapSize), Vec2f(intr.pos), mapSize);
+			//intr.centerDistSq = wrappedDistanceSqr(m_bb.centerF(mapSize), Vec2f(intr.pos), mapSize);
+			intr.centerDistSq = g_map->euclidDistSq(m_center, intr.pos);
 
 			if (intr.centerDistSq > g_rooms->maxRoomRadiusSq()) {
 				LOG_DEBUG("Ignoring neighbor at " << intr.pos << " going outside max radius");

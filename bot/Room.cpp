@@ -59,7 +59,7 @@ void Room::makeClean() const {
 			if (Room* r = g_map->square(cell).room) {
 				if (r != this) {
 					m_neighbors.insert(r);
-					m_neighborInfos[r].cells.insert(cell);
+					m_neighborInfos[r].cells.insert(*pit);
 				}
 			}
 		}
@@ -80,6 +80,8 @@ const Room::NeighborInfo* Room::neighborInfo(Room* room) const {
 }
 
 Pos Room::closestPosNearNeighbor(Pos from, Room* neighbor, int* outDist) const {
+	ASSERT(this != neighbor);
+
 	const NeighborInfo* ni = neighborInfo(neighbor);
 
 	// Find best path from "from" to a cell in neighbor room
@@ -118,7 +120,11 @@ Pos Room::closestPosInNeighbor(Pos from, Room* neighbor, int* outDist) const {
 		}
 	}
 
-	// What the hell
+	// What the hell - this shouldnt happen
+	LOG_DEBUG("closestPosInNeighbor failed goin from " << from << ", with closest at " << closest);
+	LOG_DEBUG("Room is " << this << ", neighbor is " << neighbor);
+
+
 	ASSERT(false && "Room connections broken");
 
 	if (outDist)

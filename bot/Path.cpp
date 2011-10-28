@@ -61,6 +61,7 @@ Path Path::findPath(Pos start, Pos end)
 			ITC(RoomSet, rit, neighs) {
 				Room* r = *rit;
 				if (!closedRooms.count(r)) {
+					closedRooms.insert(r);
 					int dist=0;
 					Pos pos = p->room->closestPosInNeighbor(p->pos, r, &dist);
 					SearchNode* newNode = new SearchNode(p, pos, p->dist + dist);

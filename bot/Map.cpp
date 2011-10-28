@@ -110,7 +110,7 @@ void Map::food(Pos const& pos) {
 	ASSERT(square(pos).discovered);
 	ASSERT(square(pos).room);
 	ASSERT(square(pos).room->contents());
-	square(pos).room->contents()->foodAt(pos);
+	square(pos).room->contents()->insertFoodAt(pos);
 	STAMP("End");
 }
 

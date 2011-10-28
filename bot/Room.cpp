@@ -126,7 +126,7 @@ Pos Room::closestPosInNeighbor(Pos from, Room* neighbor, int* outDist) const {
 	return from; // Fail. return w/e.
 }
 
-Room::Room(Pos seed) : id(getID<Room>()), m_dirty(true), m_center(seed) {
+Room::Room(Pos seed) : id(getID<Room>()), m_center(seed), m_dirty(true) {
 	m_bb.m_min = m_bb.m_max = seed;
 	m_contents = new RoomContents();
 	add(seed);

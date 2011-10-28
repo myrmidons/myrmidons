@@ -12,13 +12,11 @@ void RoomContents::removeMyrmidon(Ant* ant) {
 }
 
 void RoomContents::enemyHillDiscovered(Pos const& pos, int team) {
-	// STUB
-	// Begin drafting process, we have an invation to undertake!
+	m_enemyHills.insert(pos);
 }
 
 void RoomContents::myrmidonHillDiscovered(Pos const& pos) {
-	// STUB
-	// Keep this under close guard, let no enemy near it!
+	m_myrmidonHills.insert(pos);
 }
 
 void RoomContents::resetDynamic() {
@@ -27,14 +25,25 @@ void RoomContents::resetDynamic() {
 	m_food.clear();
 }
 
-void RoomContents::foodAt(Pos const& pos) {
+void RoomContents::insertFoodAt(Pos const& pos) {
 	m_food.insert(pos);
 }
 
-int RoomContents::getNumMyrmidons() {
-	return m_pAnts.size();
-} // The number of enemies in the room this turn.
+void RoomContents::insertEnemyAt(Pos const& pos, int team) {
+	m_enemies.insert(pos);
+}
 
-//int getNumEnemies(); // The number of enemies in the room this turn.
+size_t RoomContents::getNumMyrmidons() {
+	return m_pAnts.size();
+}
+
+size_t RoomContents::getNumEnemies() {
+	return m_enemies.size();
+}
+
+size_t RoomContents::getNumFood() {
+	return m_food.size();
+}
+
 //int getNumFallenMyrmidons(); // Give me the number of Myrmidons that has fallen this turn. (See you in valhalla!)
 //int getNumFallenEnemies();

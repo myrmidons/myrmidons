@@ -42,7 +42,7 @@ void AssertionFailed(const char* expr,
 	LOG_DEBUG( msg );
 
 #ifdef DEBUG
-	qFatal(msg.c_str());
+	qFatal("%s", msg.c_str());
 #endif
 
 	abort();

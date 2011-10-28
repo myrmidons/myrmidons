@@ -66,6 +66,7 @@ int Bot::rankMove(Pos const& currentLoc, int dir) {
 DirVec const& Bot::randomDirVec() const {
 	return dirVecs[rand()%dirVecs.size()];
 }
+
 //plays a single game of Ants.
 void Bot::playGame() {
 	//reads the game parameters and sets up
@@ -81,7 +82,7 @@ void Bot::playGame() {
         endTurn();
 		io.flushOutputChunk();
     }
-};
+}
 
 int Bot::closestLocation(const Pos& loc, const vector<Pos>& location) {
 	int result = -1;

@@ -35,7 +35,7 @@ debug {
     DEFINES += DEBUG
 }
 
-unix {
+macx {
     # 10.7==Lion not yet supported
     QMAKE_MAC_SDK = /Developer/SDKs/MacOSX10.6.sdk
     QMAKE_MACOSX_DEPLOYMENT_TARGET = 10.6
@@ -43,8 +43,4 @@ unix {
     DEFINES += THIS_IS_MAC=1
 }
 
-
-
-
-
-
+QMAKE_CXXFLAGS += -Wall -pedantic -Wextra -Wno-long-long

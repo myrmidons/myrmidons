@@ -21,6 +21,7 @@ class Bot
 {
 	IODevice& io;
 	State& state;
+	bool firstTurn;
 
 public:
 	// Used for random ordering of directions.
@@ -29,6 +30,7 @@ public:
 	explicit Bot(IODevice& io_device);
 
 	void playGame();  //plays a single game of Ants
+	bool playOneTurn();
 
 	void makeMoves(); //makes moves for a single turn
 	void endTurn();	  //indicates to the engine that it has made its moves

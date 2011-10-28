@@ -5,8 +5,12 @@
 
 using namespace std;
 
-#ifdef NETWORK_DEBUGGING
-#include <QNetwork>
+#ifdef BOT_WITH_QT
+#include <QApplication>
+#include <QStringList>
+#include <sstream>
+#include "CommInterface.hpp"
+
 #endif
 
 struct StandardIODevice : IODevice
@@ -38,15 +42,38 @@ struct StandardIODevice : IODevice
     outlined on the specifications page at:
         http://www.ai-contest.com
 */
-int main(int, char *[])
+int main(int argc, char *argv[])
 {
-#ifdef NETWORK_DEBUGGING
-	// TODO: implement a network-based device for debugging
+	IODevice* io = NULL;
+#ifdef BOT_WITH_QT
+	QApplication app(argc, argv);
+	QStringList args = app.arguments();
+
+	unsigned short port = 0;
+
+	bool standalone = args.size() == 1;
+	CommInterface* commInterface = NULL;
+
+	if (standalone)
+	{
+		io = commInterface = new LocalCommInterface;
+	}
+	else
+	{
+		std::istringstream iss(args[1].toAscii().constData());
+		if (!(iss >> port))
+		{
+			std::cerr << "could not parse port argument\n";
+			return 2;
+		}
+		io = commInterface = new TcpCommInterface(port);
+	}
+
 #else
-	StandardIODevice io;
+	io = new StandardIODevice;
 #endif
 
-	State state(io.output());
+	State state(io->output());
 	g_state = &state;
 
 	Map map;
@@ -58,8 +85,19 @@ int main(int, char *[])
 	Rooms rooms;
 	g_rooms = &rooms;
 
-	Bot bot(io);
+	Bot bot(*io);
+#ifdef BOT_WITH_QT
+	TurnInitiator ti(bot);
+	if (commInterface)
+	{
+		ti.connect(commInterface, SIGNAL(processTurn()), SLOT(doTurn()));
+		commInterface->go();
+	}
+
+	app.exec();
+#else
 	bot.playGame();
+#endif
 
 #ifdef DEBUG
 	g_rooms->dumpImage();

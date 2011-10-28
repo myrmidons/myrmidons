@@ -2,3 +2,5 @@ tools
 build
 bot/bot.pro.user
 bot-build-*
+bot/game_logs
+*.swp

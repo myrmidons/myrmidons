@@ -13,8 +13,9 @@ HEADERS += \
     Map.hpp \
     AntStar.hpp \
     Assert.hpp \
-    Tracker.hpp \
-    Path.hpp
+	Tracker.hpp \
+	Path.hpp \
+	CommInterface.hpp
 
 SOURCES += \
     Ant.cpp \
@@ -48,3 +49,8 @@ macx {
 
 QMAKE_CXXFLAGS += -Wall -pedantic -Wextra -Wno-long-long
 
+DEFINES += \
+	BOT_WITH_QT
+
+CONFIG += qt
+QT += network

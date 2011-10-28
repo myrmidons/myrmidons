@@ -81,12 +81,6 @@ public:
 					);
 	}
 
-	/*
-	wont work when wrapped...
-	int width()  const { return m_max.x()-m_min.x()+1; }
-	int height() const { return m_max.y()-m_min.y()+2; }
-	*/
-
 	bool containsOnAxis(int a, int pos) const {
 		if (m_min[a] <= m_max[a]) {
 			// Non-wrapped

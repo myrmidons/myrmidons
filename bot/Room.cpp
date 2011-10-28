@@ -13,19 +13,19 @@ Rooms* g_rooms = NULL;
 ///////////////////////////////////////////////////////////////////////
 
 bool operator<(const Interest& a, const Interest& b) {
-	LOG_DEBUG("Interest operator <");
+	//LOG_DEBUG("Interest operator <");
 
 	// Expand into where we have many neighbors first
 	if (a.neighbors > b.neighbors) return true;
 	if (a.neighbors < b.neighbors) return false;
 
-	// Try to keep squareness:
-	if (a.prio > b.prio) return true;
-	if (a.prio < b.prio) return false;
-
 	// Exapand smallest room first
 	if (a.room->getArea() < b.room->getArea()) return true;
 	if (a.room->getArea() > b.room->getArea()) return false;
+
+	// Try to keep squareness:
+	if (a.prio > b.prio) return true;
+	if (a.prio < b.prio) return false;
 
 	return a.room < b.room; // tie-breaker.
 }
@@ -76,7 +76,7 @@ bool Room::isClosable(Pos pos) const {
 	for (int i=0; i<4; ++i) {
 		Pos n = g_map->getLocation(pos, i);
 		const Square& s = g_map->square(n);
-		if (s.room==NULL && s.isGround())
+		if (s.room==NULL && (!s.isWater || !s.discovered))
 			return false; // We could expand here!
 	}
 	return true;
@@ -88,6 +88,8 @@ void Room::add(Pos pos) {
 	m_cells.insert(pos);
 	m_open.insert(pos);
 	Square& s = g_map->square(pos);
+	ASSERT(s.discovered);
+	ASSERT(!s.isWater);
 	ASSERT(s.room==NULL);
 	s.room = this;
 
@@ -115,6 +117,9 @@ void Room::add(Pos pos) {
 bool Room::isFinished() const {
 	LOG_DEBUG("Room::isFinished (this = " << this << ")");
 
+	if (m_open.empty())
+		return true;
+
 	if (getArea() >= g_rooms->maxRoomArea())
 		return true;
 	Vec2 bbSize = m_bb.size(g_map->size());
@@ -129,13 +134,13 @@ bool Room::isFinished() const {
 void Room::calcInterests(const PosSet& unassigned) {
 	LOG_DEBUG("Room::calcInterests (this = " << this << ")");
 
-	LOG_DEBUG("clearing m_interestPos...");
+	//LOG_DEBUG("clearing m_interestPos...");
 	m_interestPos.clear();
 
-	LOG_DEBUG("clearing m_interests...");
+	//LOG_DEBUG("clearing m_interests...");
 	m_interests.clear();
 
-	LOG_DEBUG("cleared");
+	//LOG_DEBUG("cleared");
 
 	if (isFinished())
 		return; // We have no interests - we are content.
@@ -146,13 +151,10 @@ void Room::calcInterests(const PosSet& unassigned) {
 	LOG_DEBUG("Finding neighbors to room...");
 
 	ITC(PosSet, pit, m_open) {
-		if (g_map->square(*pit).isWater)
-			continue; // We cant have water in rooms
 		ASSERT(g_map->square(*pit).isGround());
-
 		for (int i=0; i<4; ++i) { // All four directions
 			Pos p = g_map->getLocation(*pit, i);
-			if (unassigned.count(p)) {
+			if (unassigned.count(p) && g_map->square(p).isGround()) { // We cant have water in rooms
 				// This is a candidate!
 				neighs[p]++;
 			}
@@ -208,7 +210,7 @@ void Room::calcInterests(const PosSet& unassigned) {
 
 bool isInRange(const BB& bb, const Pos& pos, const Vec2& mapSize, int maxRoomWidth) {
 	Vec2 r =  bb.distance(pos, mapSize);
-	return std::min(r.x(), r.y()) <= maxRoomWidth;
+	return std::max(r.x(), r.y()) <= maxRoomWidth;
 }
 
 bool areAnyInRange(Room* room, const PosSet& pos, const Vec2& mapSize, int maxRoomWidth) {
@@ -219,11 +221,11 @@ bool areAnyInRange(Room* room, const PosSet& pos, const Vec2& mapSize, int maxRo
 }
 
 int Rooms::maxRoomArea() const {
-	return 400; // FIXME
+	return maxRoomWidth()*maxRoomWidth(); // FIXME
 }
 
 int Rooms::maxRoomWidth() const {
-	return 20; // TODO: base on g-state view distance.
+	return 10; // TODO: base on g-state view distance.
 }
 
 void Rooms::expandWith(const PosSet& posArg) {
@@ -231,8 +233,12 @@ void Rooms::expandWith(const PosSet& posArg) {
 		return;
 
 #ifdef DEBUG
-	ITC(PosSet, pit, posArg)
-		g_map->assertInMap(*pit);
+	ITC(PosSet, pit, posArg) {
+		Square& s = g_map->square(*pit);
+		ASSERT(s.room==NULL);
+		ASSERT(s.discovered);
+		ASSERT(s.isVisible);
+	}
 #endif
 
 	LOG_DEBUG("Rooms::expandWith");
@@ -267,7 +273,7 @@ void Rooms::expandWith(const PosSet& posArg) {
 			Interest intr = *interests.begin();
 			room = intr.room;
 
-			ASSERT(rooms.count(room));
+			ASSERT(rooms.count(room)); // How could we have gooten interest in this if not true?
 
 			LOG_DEBUG("Assigning position " << intr.pos << " to room " << room);
 
@@ -320,6 +326,10 @@ void Rooms::expandWith(const PosSet& posArg) {
 			LOG_DEBUG("Removing finished room " << room);
 			m_open.erase(room);
 			rooms.erase(room); // No longer intersting for us
+
+			LOG_DEBUG("Erasing interests...");
+			ITC(InterestSet, iit, room->m_interests)
+				interests.erase(*iit);
 		}
 	}
 

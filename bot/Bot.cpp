@@ -130,10 +130,10 @@ void Bot::makeMoves()
 		if(bestRank > -100) {
 			// This will not be needed. Just for testing the identifyer as things stand at the moment.
 
-		//	g_map->moveAnt(antLoc, g_map->getLocation(antLoc, bestMove));
+			g_map->moveAnt(antLoc, g_map->getLocation(antLoc, bestMove));
 
 
-		//	state.makeMove(antLoc, bestMove); // Needed because the map is still just a dummy.
+			state.makeMove(antLoc, bestMove); // Needed because the map is still just a dummy.
 		}
 	}
 

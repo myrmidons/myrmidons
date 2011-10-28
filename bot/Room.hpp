@@ -38,6 +38,7 @@ struct Interest
 	int neighbors;
 	int area; // Of room - smaller is prioritized
 	float prio; // Based on wether or not we are expanding the bb to make it more square.
+	float centerDist; // Distance from room center to cell.
 };
 
 

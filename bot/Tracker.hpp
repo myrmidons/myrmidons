@@ -5,10 +5,10 @@
 #include <set>
 
 #include "State.hpp"
+#include "Pos.hpp"
 
 class Ant;
 class Food; // Not yet.
-class Pos;
 class Map;
 
 typedef std::set<size_t> IndexSet;

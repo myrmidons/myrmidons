@@ -19,9 +19,13 @@ bool operator<(const Interest& a, const Interest& b) {
 	if (a.neighbors > b.neighbors) return true;
 	if (a.neighbors < b.neighbors) return false;
 
+	// Prioritize things close to center. Will keep squareness and roundness, and proprotize small rooms.
+	if (a.centerDist != b.centerDist) return a.centerDist < b.centerDist;
+/*
 	// Try to keep squareness:
 	if (a.prio > b.prio) return true;
 	if (a.prio < b.prio) return false;
+*/
 
 	// Exapand smallest room first
 	if (a.area < b.area) return true;
@@ -179,6 +183,8 @@ void Room::calcInterests(const PosSet& unassigned) {
 
 	LOG_DEBUG("Culling " << neighs.size() << " neighbors...");
 
+	Vec2 mapSize = g_map->size();
+
 	ITC(NeighMap, nit, neighs) {
 		ASSERT(1 <= nit->second && nit->second <= 2);
 
@@ -189,8 +195,6 @@ void Room::calcInterests(const PosSet& unassigned) {
 		*/
 
 		if (nit->second==2 || !m_bb.contains(nit->first)) {
-			LOG_DEBUG("Adding neighbor cell at " << nit->first << " to interests...");
-
 			// We may expand here
 			Interest intr;
 			intr.room = this;
@@ -208,11 +212,17 @@ void Room::calcInterests(const PosSet& unassigned) {
 				ASSERT(d.x()==1 || d.y()==1);
 				int axis = (d.x() > d.y() ? 0 : 1);
 
-				if (bbSize[axis] >= g_rooms->maxRoomWidth())
+				if (bbSize[axis] >= g_rooms->maxRoomWidth()) {
+					LOG_DEBUG("Ignoring neighbor at " << intr.pos << " expanding bb too much");
 					continue; // We may not expand this way!
+				}
 
 				intr.prio = bbSize[1-axis] - bbSize[axis]; // larger on other axis is good
 			}
+
+			intr.centerDist = wrappedDistanceSqr(m_bb.centerF(mapSize), Vec2f(intr.pos), mapSize);
+
+			LOG_DEBUG("Adding neighbor cell at " << nit->first << " to interests...");
 
 			m_interests.insert(intr);
 			m_interestPos.insert(intr.pos);
@@ -323,7 +333,7 @@ void Rooms::expandWith(const PosSet& posArg) {
 				}
 			}
 
-			LOG_DEBUG("Interests updated.");
+			LOG_DEBUG("Interests updated (" << interests.size() << " left)");
 		} else {
 			LOG_DEBUG("B");
 
@@ -333,7 +343,7 @@ void Rooms::expandWith(const PosSet& posArg) {
 			// Leftmost, topmost
 			PosSet::iterator it = unassigned.begin();
 #elif 1
-			// Righbmost, bottommost
+			// Rightmost, bottommost
 			PosSet::iterator it = unassigned.end();
 			--it;
 #else
@@ -375,9 +385,17 @@ void Rooms::expandWith(const PosSet& posArg) {
 }
 
 #ifdef DEBUG
-QRgb randomColor(Room* r) {
-	srand(reinterpret_cast<long>(r));
-	return qRgb(rand()%255, rand()%255, rand()%255);
+QRgb randomColor(Room* room) {
+	srand(reinterpret_cast<long>(room));
+
+	int r,g,b;
+	do {
+		r = rand()%255;
+		g = rand()%255;
+		b = rand()%255;
+	} while (r+g+b < 200 || r+g+b > 650); // avoid blacks and whites
+
+	return qRgb(r,g,b);
 }
 
 // Dump a png of the room colorings.

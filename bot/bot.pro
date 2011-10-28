@@ -15,7 +15,8 @@ HEADERS += \
     Assert.hpp \
 	Tracker.hpp \
 	Path.hpp \
-	CommInterface.hpp
+	CommInterface.hpp \
+    DebugWindow.hpp
 
 SOURCES += \
     Ant.cpp \
@@ -30,7 +31,8 @@ SOURCES += \
     Assert.cpp \
     Tracker.cpp \
     RoomContents.cpp \
-    Path.cpp
+    Path.cpp \
+    DebugWindow.cpp
 
 # Add annoying warning disables below, e.g. -Wno-cats-allowed
 # QMAKE_CXXFLAGS_WARN_ON = \
@@ -54,3 +56,5 @@ DEFINES += \
 
 CONFIG += qt
 QT += network
+
+

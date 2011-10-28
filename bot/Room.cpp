@@ -358,6 +358,9 @@ bool areAnyInRange(Room* room, const PosSet& pos, const Vec2& mapSize, int maxRo
 	return false;
 }
 
+Rooms::Rooms() {
+}
+
 int Rooms::maxRoomArea() const {
 	return maxRoomWidth()*maxRoomWidth(); // FIXME
 }
@@ -497,124 +500,7 @@ void Rooms::expandWith(const PosSet& posArg) {
 
 	// TODO: cull finished rooms from m_open
 
-#ifdef DEBUG
-	g_rooms->dumpImage();
-#endif
-
 	LOG_DEBUG("Rooms::expandWith DONE" << std::endl << "-");
-}
-
-#ifdef DEBUG
-QRgb randomColor(Room* room) {
-	//srand(reinterpret_cast<long>(room));
-	int id = room->id;
-
-	int r,g,b;
-	do {
-		/*
-		r = rand()%255;
-		g = rand()%255;
-		b = rand()%255;
-		/*/
-		r = (12345   * id) % 255;
-		g = (123456  * id) % 255;
-		b = (1234578 * id) % 255;
-		id += 78901;
-		/**/
-		//} while (r+g+b < 200 || r+g+b > 650); // avoid blacks and whites
-	} while (r+g+b < 250); // Racist code (avoid blacks)
-
-	return qRgb(r,g,b);
-}
-
-// Dump a png of the room colorings.
-void Rooms::dumpImage() const {
-	LOG_DEBUG("Rooms::dumpImage");
-
-	const QRgb voidColor = qRgb(60,60,60);
-	const QRgb wallColor = qRgb(0,0,0);
-
-	Vec2 size = g_map->size();
-	int Mult = 12; // Pixels per grid cell.
-	QImage img(Mult*size.x(), Mult*size.y(), QImage::Format_ARGB32);
-	img.fill(voidColor);
-
-	std::map<Room*, QRgb, RoomComp> colorMap;
-	ITC(RoomList, rit, m_rooms)
-		colorMap[*rit] = randomColor(*rit);
-
-	for (int y=0; y<size.y(); ++y) {
-		for (int x=0; x<size.x(); ++x) {
-			Square& s = g_map->square(Pos(x,y));
-			QRgb color;
-			if (s.room)
-				color = colorMap[s.room];
-			else if (s.isWater)
-				color = wallColor;
-			else
-				continue; // Undiscovered
-
-			for (int xi=0; xi<Mult; ++xi)
-				for (int yi=0; yi<Mult; ++yi)
-					img.setPixel(x*Mult+xi, y*Mult+yi, color);
-		}
-	}
-
-	//////////////////////////
-
-	{
-		QPainter painter(&img);
-		painter.setPen(Qt::white);
-
-		// Add graph info
-		std::map<Room*, QPointF> centers;
-		ITC(RoomList, rit, m_rooms) {
-			Room* r = *rit;
-			Pos c = r->centerPos();
-			centers[r] = Mult*QPointF(c.x()+.5f, c.y()+.5f);
-		}
-
-		//painter.setClipping(true);
-
-		ITC(RoomList, rit, m_rooms) {
-			Room* r = *rit;
-			QPointF a = centers[r];
-			const RoomSet& neighs = r->neighborRooms();
-			ITC(RoomSet, rit2, neighs) {
-				QPointF b = centers[*rit2];
-
-				bool xwrap = (Abs(a.x()-b.x()) > img.width()/2);
-				bool ywrap = (Abs(a.y()-b.y()) > img.height()/2);
-				if (xwrap && ywrap) {
-
-				} else if (xwrap) {
-
-				} else if (ywrap) {
-					LOG_DEBUG("Wrapping room graph lines...");
-					if (a.y() < b.y())
-						std::swap(a,b);
-
-					painter.drawLine(a, b + QPointF(0, img.height()));
-					painter.drawLine(a - QPointF(0, img.height()), b);
-				} else {
-					painter.drawLine(a,b);
-				}
-			}
-		}
-
-		float rad = 0.4f*Mult;
-
-		ITC(RoomList, rit, m_rooms)
-			painter.drawEllipse(centers[*rit], rad, rad);
-	}
-
-	/////////////////////////
-
-	static int s_nr = 0;
-	char nameBuf[100] = {};
-	sprintf(nameBuf, "rooms_%05d.png", s_nr++);
-	LOG_DEBUG("Dumping rooms to " << nameBuf);
-	img.save(nameBuf);
 }
 
 void Rooms::resetDynamicContent() {
@@ -622,5 +508,3 @@ void Rooms::resetDynamicContent() {
 		(*it)->contents()->resetDynamic();
 	}
 }
-
-#endif

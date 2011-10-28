@@ -168,6 +168,8 @@ private:
 class Rooms
 {
 public:
+	Rooms();
+
 	const RoomList& rooms() const { return m_rooms; }
 
 	// Room constraints
@@ -180,11 +182,6 @@ public:
 	void expandWith(const PosSet& pos);
 
 	void resetDynamicContent();
-
-#ifdef DEBUG
-	// Dump a png of the room colorings.
-	void dumpImage() const;
-#endif
 
 private:
 	RoomList m_rooms;

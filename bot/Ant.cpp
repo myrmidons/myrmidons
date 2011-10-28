@@ -88,4 +88,3 @@ void Ant::calcDesire() {
 		m_desire = m_path.getNextStep(pos());
 	}
 }
-

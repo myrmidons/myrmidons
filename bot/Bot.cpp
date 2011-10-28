@@ -8,7 +8,9 @@
 #include <algorithm>
 #include <iostream>
 
-/// Kc testar
+#ifdef DEBUG
+#	include "DebugWindow.hpp"
+#endif
 
 
 using namespace std;
@@ -205,6 +207,10 @@ void Bot::makeMoves()
 			}
 		}
 	}
+
+#ifdef DEBUG
+	DebugWindow::instance()->redraw();
+#endif
 
     state.bug << "time taken: " << state.timer.getTime() << "ms" << endl << endl;
 }

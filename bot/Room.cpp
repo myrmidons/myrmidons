@@ -79,6 +79,7 @@ bool Room::isClosable(Pos pos) const {
 		if (s.room==NULL && (!s.isWater || !s.discovered))
 			return false; // We could expand here!
 	}
+	LOG_DEBUG("Closing cell " << pos << " in room " << this);
 	return true;
 }
 
@@ -95,6 +96,8 @@ void Room::add(Pos pos) {
 
 	// Expand boundingbox
 	m_bb.expandTo(pos, g_map->size());
+
+	LOG_DEBUG("bb is now from " << m_bb.m_min << " to " << m_bb.m_max);
 
 	// Check to see if we can close anything in m_open
 	PosSet closeThese;
@@ -117,15 +120,26 @@ void Room::add(Pos pos) {
 bool Room::isFinished() const {
 	LOG_DEBUG("Room::isFinished (this = " << this << ")");
 
-	if (m_open.empty())
+	if (m_open.empty()) {
+		LOG_DEBUG("Room::isFinished: m_open.empty()");
 		return true;
+	}
 
-	if (getArea() >= g_rooms->maxRoomArea())
+	if (getArea() >= g_rooms->maxRoomArea()) {
+		LOG_DEBUG("Room::isFinished: maxRoomArea");
 		return true;
+	}
+
+	/*
 	Vec2 bbSize = m_bb.size(g_map->size());
 	int maxWidth = g_rooms->maxRoomWidth();
+
 	if (bbSize.x() >= maxWidth) return true;
 	if (bbSize.y() >= maxWidth) return true;
+
+	we stop this by not subscribing interest in cells outside a too long axis
+	*/
+
 	return false;
 }
 
@@ -142,8 +156,10 @@ void Room::calcInterests(const PosSet& unassigned) {
 
 	//LOG_DEBUG("cleared");
 
-	if (isFinished())
+	if (isFinished()) {
+		LOG_DEBUG("Room::calcInterests - bailing out - we're finished!");
 		return; // We have no interests - we are content.
+	}
 
 	typedef std::map<Pos, int> NeighMap;
 	NeighMap neighs; // all neighbor cells
@@ -161,7 +177,7 @@ void Room::calcInterests(const PosSet& unassigned) {
 		}
 	}
 
-	LOG_DEBUG("Culling neighbors...");
+	LOG_DEBUG("Culling " << neighs.size() << " neighbors...");
 
 	ITC(NeighMap, nit, neighs) {
 		ASSERT(1 <= nit->second && nit->second <= 2);
@@ -242,7 +258,7 @@ void Rooms::expandWith(const PosSet& posArg) {
 	}
 #endif
 
-	LOG_DEBUG("Rooms::expandWith");
+	LOG_DEBUG("-" << std::endl << "Rooms::expandWith");
 
 	PosSet unassigned = posArg; // Copy so we can take away one at the time.
 
@@ -313,8 +329,19 @@ void Rooms::expandWith(const PosSet& posArg) {
 
 			// No interest taken - create a new room!
 			// FIXME: this is the worst possible choice - guaranteed to be a corner!
-			Pos pos = *unassigned.begin();
-			unassigned.erase(unassigned.begin());
+#if 0
+			// Leftmost, topmost
+			PosSet::iterator it = unassigned.begin();
+#elif 1
+			// Righbmost, bottommost
+			PosSet::iterator it = unassigned.end();
+			--it;
+#else
+			PosSet::iterator it = unassigned.begin();
+			std::advance(it, rand() % unassigned.size());
+#endif
+			Pos pos = *it;
+			unassigned.erase(it);
 
 			if (!g_map->square(pos).isGround())
 				continue; // Discovered water? who cares!
@@ -327,6 +354,7 @@ void Rooms::expandWith(const PosSet& posArg) {
 			LOG_DEBUG("Creating room " << room << " at " << pos);
 
 			room->calcInterests(unassigned);
+			LOG_DEBUG("New room has " << room->m_interests.size() << " interests");
 			interests.insert(room->m_interests.begin(), room->m_interests.end());
 		}
 
@@ -339,11 +367,11 @@ void Rooms::expandWith(const PosSet& posArg) {
 
 	// TODO: cull finished rooms from m_open
 
-	LOG_DEBUG("Rooms::expandWith DONE");
-
 #ifdef DEBUG
 	g_rooms->dumpImage();
 #endif
+
+	LOG_DEBUG("Rooms::expandWith DONE" << std::endl << "-");
 }
 
 #ifdef DEBUG
@@ -371,6 +399,8 @@ void Rooms::dumpImage() const {
 			Square& s = g_map->square(Pos(x,y));
 			if (s.room) {
 				img.setPixel(x, y, colorMap[s.room]);
+			} else if (s.isWater) {
+				img.setPixel(x, y, qRgb(255,255,255));
 			}
 		}
 	}
@@ -379,6 +409,7 @@ void Rooms::dumpImage() const {
 	std::stringstream ss;
 	ss << "rooms_" << (s_nr++) << ".png";
 	std::string fn = ss.str();
+	LOG_DEBUG("Dumping rooms to " << fn);
 	img.save(fn.c_str());
 }
 #endif

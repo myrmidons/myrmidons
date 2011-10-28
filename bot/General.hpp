@@ -1,5 +1,5 @@
-#ifndef GENERAL_HPP
-#define GENERAL_HPP
+#ifndef GENERAL_H
+#define GENERAL_H
 
 #include <vector>
 #include "Room.hpp"
@@ -28,6 +28,11 @@ public:
 	BattleScene(std::vector<Room *> *rooms);
 	void update(); // Run each turn.
 	void addRoom(Room* room);
+
+	FightType getFightType();
+	double getProportions();
+	double getCrowdedness();
+	int getBattleHistory();
 
 private:
 	std::vector<Room*> m_rooms;

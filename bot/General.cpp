@@ -70,6 +70,23 @@ void BattleScene::classifyFight(){
 		m_fighttype = large;
 }
 
+FightType BattleScene::getFightType() {
+	return m_fighttype;
+}
+
+double BattleScene::getProportions() {
+	return m_proportions;
+}
+
+double BattleScene::getCrowdedness() {
+	return m_proportions;
+}
+
+int BattleScene::getBattleHistory() {
+	return m_battlehistory;
+}
+
+
 ///////////////
 /// GENERAL ///
 ///////////////
@@ -86,5 +103,23 @@ General::~General()
 
  // Execute new commands at each turn.
 void General::Command() {
+	if(m_battlescene->getFightType() == small) { // Brute force calculating
+
+	}
+	else if(m_battlescene->getFightType() == medium) { // ???
+
+	}
+	else { // Large, initialize clever boiding behaviour.
+		// 1) Identify:
+		//  -protectee (what to protect?).
+		//  -mass centre of participant myrmidons.
+		//  -mass centre of participant enemies.
+
+		// 2) Determine if each of these three points should repell the myrmidons, or attract them.
+		//	i.e Determine the force (negative or possitive) that each of the 3 points interacts with the myrmidons with.
+
+		// 3) Give the ants instructions to move around, Taking the forces into account.
+		//	this could probably benefit from some random noise, and possibly also include other parameters.
+	}
 
 }

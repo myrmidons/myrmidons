@@ -109,8 +109,6 @@ Square& Map::square(Pos const& pos) {
 	A CORRECT MORE EFFICIENT IMPLEMENTATION, TAKE A LOOK AT THE GET_VISION FUNCTION
 	IN ANTS.PY ON THE CONTESTS GITHUB PAGE.
 */
-
-
 void Map::updateVisionInformation() {
 	std::queue<Pos> locQueue;
 	Pos sLoc, cLoc, nLoc;
@@ -157,7 +155,7 @@ void Map::updateVisionInformation() {
 
 	g_state->bug << discoveries.size() << " new discoveries." << std::endl;
 
-	//g_rooms->expandWith(discoveries);
+	g_rooms->expandWith(discoveries);
 }
 
 bool Map::isOccupied(const Pos& loc) {

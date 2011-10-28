@@ -4,7 +4,7 @@
 #include <vector>
 #include <set>
 
-#include "State.hpp"
+#include "Bug.hpp"
 
 class Ant;
 class Food; // Not yet.
@@ -43,6 +43,9 @@ public:
 
 	AntSet const& getLiveAnts();
 
+
+	Bug log;
+
 private:
 
 	void update();
@@ -58,5 +61,13 @@ private:
 };
 
 extern Tracker* g_tracker;
+
+#ifdef DEBUG
+#	define TRACKER_LOG(msg) g_tracker->log << msg << std::endl << std::flush
+#	define TRACKER_LOG_(msg) g_tracker->log << msg
+#else
+#	define TRACKER_LOG(msg)
+#	define TRACKER_LOG_(msg)
+#endif
 
 #endif // IDENTIFIER_H

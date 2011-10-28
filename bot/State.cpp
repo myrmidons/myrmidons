@@ -105,8 +105,9 @@ istream& operator>>(istream &is, State &state)
             break;
         }
         else if(inputType == "turn")
-        {
-            is >> state.turn;
+		{
+			is >> state.turn;
+			state.bug << "turn " << state.turn << ":" << std::endl << "----------------" << std::endl;
 			g_tracker->turn(state.turn);
             break;
         }

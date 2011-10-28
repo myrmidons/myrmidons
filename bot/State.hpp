@@ -21,9 +21,9 @@ class Tracker;
     constants
 */
 const int TDIRECTIONS = 4;
-const char OCDIRECTIONS[4] = {'N', 'E', 'S', 'W'};
+//const char CDIRECTIONS[4] = {'N', 'E', 'S', 'W'};
 const char CDIRECTIONS[4] = {'W', 'S', 'E', 'N'};
-const int DIRECTIONS[4][2] = { {-1, 0}, {0, 1}, {1, 0}, {0, -1} };      //{N, E, S, W}
+const int DIRECTIONS[4][2] = { {-1, 0}, {0, 1}, {1, 0}, {0, -1} };      //{W, S, E, N}
 
 typedef std::vector<int> DirVec;
 

@@ -50,14 +50,22 @@ typedef std::set<Interest> InterestSet;
 //////////////////////////////////////////////////////////////////
 
 class Room;
+
+class RoomComp {
+public:
+	bool operator()(Room* a, Room *b) const;
+};
+
 typedef std::vector<Room*> RoomList;
-typedef std::set<Room*> RoomSet;
+typedef std::set<Room*, RoomComp> RoomSet;
 
 // This class only contains connectivity data. For contents, see 'contents'.
 // A room shuld be small enough so that an ant in any part of the room can see
 // any other part. This means that an ant will see 2-3 rooms at once.
 class Room {
 public:
+	const int id; // Unique id per room. deterministic.
+
 	///////////////////////////////////////////////
 	// For users:
 

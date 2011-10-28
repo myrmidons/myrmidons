@@ -31,7 +31,11 @@ bool operator<(const Interest& a, const Interest& b) {
 	if (a.area < b.area) return true;
 	if (a.area > b.area) return false;
 
-	return a.room < b.room; // tie-breaker.
+	return a.room->id < b.room->id; // tie-breaker.
+}
+
+bool RoomComp::operator()(Room* a, Room *b) const {
+	return a->id < b->id;
 }
 
 ///////////////////////////////////////////////////////////////////////
@@ -66,7 +70,7 @@ const Room::NeighborInfo* Room::neighborInfo(Room* room) const {
 	return &m_neighborInfos[room];
 }
 
-Room::Room(Pos seed) : m_dirty(true) {
+Room::Room(Pos seed) : id(getID<Room>()), m_dirty(true) {
 	m_bb.m_min = m_bb.m_max = seed;
 	m_contents = new RoomContents();
 	add(seed);
@@ -257,11 +261,12 @@ int Rooms::maxRoomArea() const {
 }
 
 int Rooms::maxRoomWidth() const {
-	return 10; // TODO: base on g-state view distance.
+	//return 10; // TODO: base on g-state view distance.
+	return (int)ceil(2 * maxRoomRadius());
 }
 
 float Rooms::maxRoomRadius() const {
-	return 6; // FIXME
+	return g_state->viewradius; // FIXME
 }
 
 float Rooms::maxRoomRadiusSq() const {
@@ -399,14 +404,23 @@ void Rooms::expandWith(const PosSet& posArg) {
 
 #ifdef DEBUG
 QRgb randomColor(Room* room) {
-	srand(reinterpret_cast<long>(room));
+	//srand(reinterpret_cast<long>(room));
+	int id = room->id;
 
 	int r,g,b;
 	do {
+		/*
 		r = rand()%255;
 		g = rand()%255;
 		b = rand()%255;
-	} while (r+g+b < 200 || r+g+b > 650); // avoid blacks and whites
+		/*/
+		r = (12345   * id) % 255;
+		g = (123456  * id) % 255;
+		b = (1234578 * id) % 255;
+		id += 78901;
+		/**/
+		//} while (r+g+b < 200 || r+g+b > 650); // avoid blacks and whites
+	} while (r+g+b < 250); // Racist code (avoid blacks)
 
 	return qRgb(r,g,b);
 }
@@ -415,13 +429,15 @@ QRgb randomColor(Room* room) {
 void Rooms::dumpImage() const {
 	LOG_DEBUG("Rooms::dumpImage");
 
+	const QRgb voidColor = qRgb(60,60,60);
+	const QRgb wallColor = qRgb(0,0,0);
+
 	Vec2 size = g_map->size();
 	//int Mult = 1; // Pixels per grid cell.
 	QImage img(size.x(), size.y(), QImage::Format_ARGB32);
-	//img.fill(0);
-	img.fill(qRgb(0,0,0));
+	img.fill(voidColor);
 
-	std::map<Room*, QRgb> colorMap;
+	std::map<Room*, QRgb, RoomComp> colorMap;
 	ITC(RoomList, rit, m_rooms)
 		colorMap[*rit] = randomColor(*rit);
 
@@ -431,7 +447,7 @@ void Rooms::dumpImage() const {
 			if (s.room) {
 				img.setPixel(x, y, colorMap[s.room]);
 			} else if (s.isWater) {
-				img.setPixel(x, y, qRgb(255,255,255));
+				img.setPixel(x, y, wallColor);
 			}
 		}
 	}

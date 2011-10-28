@@ -132,8 +132,9 @@ istream& operator>>(istream &is, State &state)
                 is >> state.turns;
             else if(inputType == "viewradius2")
             {
-                is >> state.viewradius;
-                state.viewradius = sqrt(state.viewradius);
+				is >> state.viewRadius2;
+				state.viewradius = sqrt((float)state.viewRadius2);
+				LOG_DEBUG("viewradius2 = " << state.viewRadius2);
             }
             else if(inputType == "attackradius2")
             {

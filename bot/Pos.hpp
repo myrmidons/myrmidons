@@ -53,9 +53,17 @@ inline std::ostream& operator<<(std::ostream &os, const Pos& pos) {
 //////////////////////////////////////////////////////
 
 // Wrapped positive distance between points a,b both on [0,size)
-inline int wrappedDist(int a, int b, int size) {
+inline int wrappedAbsDist(int a, int b, int size) {
 	int d = std::abs(a-b);
 	return std::min(d, size-d);
+}
+
+// Signed distance from a to b - like b-a, but wrapped. Ansewer in [size/2, size/2]
+inline int wrappedSignedDist(int a, int b, int size) {
+	int d = b-a;
+	while (d < -size/2) d += size;
+	while (d > +size/2) d -= size;
+	return d;
 }
 
 // Bounding box
@@ -112,8 +120,8 @@ public:
 			} else {
 				// Non-wrapped
 				ret[a] = std::min(
-							wrappedDist(pos[a], m_min[a], size[a]),
-							wrappedDist(pos[a], m_max[a], size[a]));
+							wrappedAbsDist(pos[a], m_min[a], size[a]),
+							wrappedAbsDist(pos[a], m_max[a], size[a]));
 			}
 		}
 		return ret;
@@ -133,10 +141,20 @@ public:
 			if (containsOnAxis(a, pos[a]))
 				continue;
 
-			if (wrappedDist(pos[a], m_min[a], size[a]) < wrappedDist(pos[a], m_max[a], size[a]))
-				m_min[a] = pos[a];
-			else
-				m_max[a] = pos[a];
+			if (m_min[a] == m_max[a]) {
+				// Special case: expand left or right?
+				if (wrappedSignedDist(m_min[a], pos[a], size[a]) < 0)
+					m_min[a] = pos[a];
+				else
+					m_max[a] = pos[a];
+			}
+			else {
+				// Expand to whichever is closest:
+				if (wrappedAbsDist(pos[a], m_min[a], size[a]) < wrappedAbsDist(pos[a], m_max[a], size[a]))
+					m_min[a] = pos[a];
+				else
+					m_max[a] = pos[a];
+			}
 		}
 	}
 };

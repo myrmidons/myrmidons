@@ -150,7 +150,9 @@ void Map::updateVisionInformation() {
 		}
 	}
 
-	g_rooms->expandWith(discoveries);
+	g_state->bug << discoveries.size() << " new discoveries." << std::endl;
+
+	//g_rooms->expandWith(discoveries);
 }
 
 bool Map::isOccupied(const Pos& loc) {

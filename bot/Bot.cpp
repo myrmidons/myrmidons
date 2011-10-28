@@ -109,7 +109,20 @@ int Bot::closestLocation(const Pos& loc, const vector<Pos>& location) {
 	return result;
 }
 
+void lookForFood(Ant* ant) {
+	// Try find food in room:
+	Vec2 pos = ant->pos();
+	RoomContents* rc = g_map->roomContentAt(pos);
+	const PosSet& food = rc->m_food;
 
+	if (!food.empty()) {
+		// Go to random food:
+		LOG_DEBUG("Going to food");
+		PosSet::const_iterator it = food.begin();
+		advance(it, rand()%food.size());
+		ant->goToFoodAt(*it);
+	}
+}
 
 //makes the bots moves for the turn
 void Bot::makeMoves()
@@ -136,10 +149,15 @@ void Bot::makeMoves()
 			if (cands.empty())
 				continue;
 
+			if (ants.size()==1)
+				lookForFood(*ants.begin());
+
 			ITC(AntSet, ait, ants) {
 				Ant* a = *ait;
 				if (a->state() == Ant::STATE_NONE) {
-					a->goToRoom(cands[rand() % cands.size()]);
+					//lookForFood(a);
+					if (a->state() == Ant::STATE_NONE)
+						a->goToRoom(cands[rand() % cands.size()]);
 				}
 			}
 		}
@@ -154,25 +172,14 @@ void Bot::makeMoves()
 		Ant* ant = *it;
 		Pos pos = ant->pos();
 
-		if (ant->state() == Ant::STATE_NONE) {
-			// Try find food in room:
-			RoomContents* rc = g_map->roomContentAt(pos);
-			const PosSet& food = rc->m_food;
-
-			if (!food.empty()) {
-				// Go to random food:
-				LOG_DEBUG("Going to food");
-				PosSet::const_iterator it = food.begin();
-				advance(it, rand()%food.size());
-				ant->goToFoodAt(*it);
-			}
-		}
+		if (ant->state() == Ant::STATE_NONE)
+			lookForFood(ant);
 
 		ant->calcDesire();
 		PosList desire = ant->getDesire();
 
 		if (desire.empty() || ant->state() == Ant::STATE_NONE) {
-			// Rando walk
+			// Random walk
 			DirVec const& dirs = randomDirVec();
 
 			int bestMove = 0, bestRank = -10000000;

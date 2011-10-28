@@ -8,7 +8,7 @@
 #include "Tracker.hpp"
 #include <QPainter>
 
-const int Mult = 10; // pixels per grid cell
+const int Zoom = 10; // pixels per grid cell
 
 DebugWindow* DebugWindow::s_instance = NULL;
 
@@ -26,7 +26,7 @@ DebugWindow::DebugWindow(QWidget *parent) : QWidget(parent), m_dirty(true)
 {
 	setWindowTitle("Debug window");
 	Vec2 mapSize = g_map->size();
-	resize(mapSize.x()*Mult, mapSize.y()*Mult);
+	resize(mapSize.x()*Zoom, mapSize.y()*Zoom);
 }
 
 void DebugWindow::redraw() {
@@ -70,7 +70,7 @@ QRgb randomColor(Room* room) {
 }
 
 QPointF toQP(Vec2 pos) {
-	return Mult*QPointF(pos.x()+.5f, pos.y()+.5f);
+	return Zoom*QPointF(pos.x()+.5f, pos.y()+.5f);
 }
 
 void DebugWindow::redrawImg() {
@@ -80,7 +80,7 @@ void DebugWindow::redrawImg() {
 	const QRgb wallColor = qRgb(0,0,0);
 
 	Vec2 size = g_map->size();
-	m_img = QImage(Mult*size.x(), Mult*size.y(), QImage::Format_ARGB32);
+	m_img = QImage(Zoom*size.x(), Zoom*size.y(), QImage::Format_ARGB32);
 	m_img.fill(voidColor);
 
 	std::map<Room*, QRgb, RoomComp> colorMap;
@@ -99,9 +99,9 @@ void DebugWindow::redrawImg() {
 			else
 				continue; // Undiscovered
 
-			for (int xi=0; xi<Mult; ++xi)
-				for (int yi=0; yi<Mult; ++yi)
-					m_img.setPixel(x*Mult+xi, y*Mult+yi, color);
+			for (int xi=0; xi<Zoom; ++xi)
+				for (int yi=0; yi<Zoom; ++yi)
+					m_img.setPixel(x*Zoom+xi, y*Zoom+yi, color);
 		}
 	}
 
@@ -151,10 +151,10 @@ void DebugWindow::redrawImg() {
 			}
 		}
 
-		float rad = 0.3f*Mult;
+		float roomCenterRad = 0.3f*Zoom;
 
 		ITC(RoomList, rit, rooms)
-			painter.drawEllipse(centers[*rit], rad, rad);
+			painter.drawEllipse(centers[*rit], roomCenterRad, roomCenterRad);
 
 		//////////////////////////////////////////////////
 		// Draw ants
@@ -163,8 +163,8 @@ void DebugWindow::redrawImg() {
 		ITC(AntSet, ait, ants) {
 			Ant* ant = *ait;
 			QPointF pos = toQP(ant->pos());
-			float rad = 0.35f*Mult;
-			QRectF rect(pos.x()-rad, pos.y()-rad, 2*rad, 2*rad);
+			float antRad = 0.35f*Zoom;
+			QRectF rect(pos.x()-antRad, pos.y()-antRad, 2*antRad, 2*antRad);
 			painter.fillRect(rect, Qt::red);
 
 			painter.setPen(Qt::white);
@@ -174,8 +174,10 @@ void DebugWindow::redrawImg() {
 				const Path& path = ant->path();
 				if (path.isValid()) {
 					QPointF dest = toQP(path.dest());
-					painter.setPen(Qt::white);
+					painter.setPen(Qt::black);
 					painter.drawLine(pos, dest);
+					float destRad = 0.15f * Zoom;
+					painter.drawEllipse(dest, destRad, destRad);
 				}
 			}
 		}

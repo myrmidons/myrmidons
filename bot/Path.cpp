@@ -126,8 +126,10 @@ PosList Path::getNextStep(Pos pos) const {
 
 	ASSERT(this->isValid());
 
-	if (pos==m_end)
+	if (pos==m_end) {
+		LOG_DEBUG("getNextStep has arrived");
 		return PosList(1, pos); // We have arrived
+	}
 
 	Room* room = g_map->roomAt(pos);
 

@@ -29,7 +29,7 @@ bool Ant::goTo(Pos dest) {
 		return true;
 	} else {
 		// Fail
-		LOG_DEBUG("Failed to go to path");
+		LOG_DEBUG("Ant::goTo failed");
 		m_state = STATE_NONE;
 		return false;
 	}
@@ -51,7 +51,7 @@ bool Ant::goToRoom(Room* room) {
 
 	LOG_DEBUG("Ant::goToRoom " << room);
 	if (goTo(room->centerPos())) {
-		// Win
+		LOG_DEBUG("Going to room");
 		m_state = STATE_GOING_TO_ROOM;
 		return true;
 	}
@@ -80,11 +80,17 @@ void Ant::calcDesire() {
 		}
 	}
 
+	m_desire.clear();
+
 	if (m_state == STATE_NONE) {
-		m_desire.clear();
 		// TODO: priorities.
-		m_desire.push_back( g_map->getLocation(pos(), rand()%4) );
+		//m_desire.push_back( g_map->getLocation(pos(), rand()%4) );
 	} else {
 		m_desire = m_path.getNextStep(pos());
+
+		if (m_desire.size()==0 || (m_desire.size()==1 && m_desire[0]==pos())) {
+			LOG_DEBUG("Resetting state - at target?");
+			m_state = STATE_NONE;
+		}
 	}
 }

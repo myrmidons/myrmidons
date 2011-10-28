@@ -56,9 +56,9 @@ private Q_SLOTS:
 	{
 		while (sock->canReadLine())
 		{
-			QString line = sock->readLine();
-			inputStream << line.toAscii().constData();
-			if (line == "go")
+			QString line = sock->readLine().trimmed();
+			inputStream << line.toAscii().constData() << "\n";
+			if (line == "go" || line == "ready")
 			{
 				bot->playOneTurn();
 				inputStream.str("");

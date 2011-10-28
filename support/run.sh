@@ -26,7 +26,10 @@ elif [ -e "bot" ]; then
   BOT="bot"
 fi
 
+NETCAT=`which nc netcat`
+
 P1="nc localhost 19001"
+P1="sh -c 'cat > foo.txt'"
 P2="python ../tools/sample_bots/python/HunterBot.py"
 MAPFILE="../tools/maps/example/tutorial1.map"
 

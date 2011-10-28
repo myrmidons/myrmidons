@@ -103,6 +103,5 @@ int main(int argc, char *argv[])
 #endif
 
 	g_state->bug << "Reached the end." << std::endl;
-	delete io;
     return 0;
 }

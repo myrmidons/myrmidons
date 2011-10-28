@@ -131,7 +131,7 @@ private:
 	BB m_bb;
 	Pos m_center; // Visual center, euclid minimum bounding circle center.
 
-	bool m_dirty; // For everything below this:
+	mutable bool m_dirty; // For everything below this:
 
 	typedef std::map<Room*, NeighborInfo> Neighbors;
 

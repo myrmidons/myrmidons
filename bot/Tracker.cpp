@@ -1,6 +1,8 @@
 #include "Tracker.hpp"
 #include "Ant.hpp"
 #include "Map.hpp"
+#include <sstream>
+#include <sys/time.h>
 
 Tracker* g_tracker = 0;
 
@@ -9,6 +11,10 @@ typedef enum {TheGoodGuys = 0} Team;
 Tracker::Tracker()
 	:m_numAnts(0) {
 	m_antStorage.resize(10000); // Taken out of thin air.
+
+	std::stringstream ss;
+	ss << "d_tracker_" << (rand()+clock()) << ".txt";
+	log.open(ss.str());
 }
 
 inline size_t Tracker::indexOf(Ant* ant) const {
@@ -17,7 +23,7 @@ inline size_t Tracker::indexOf(Ant* ant) const {
 
 void Tracker::turn(int n) {
 	m_turn = n;
-	g_state->bug << "turn " << n << ":" << std::endl << "----------------" << std::endl;
+	TRACKER_LOG("turn " << n << ":" << std::endl << "----------------");
 	buf.reset();
 	ASSERT(g_map);
 	g_map->newTurn(n);
@@ -25,6 +31,7 @@ void Tracker::turn(int n) {
 
 void Tracker::water(Pos const& pos) {
 	ASSERT(g_map);
+	g_map->square(pos).isWater = true;
 	g_map->water(pos);
 }
 
@@ -33,6 +40,7 @@ void Tracker::food(Pos const& pos) {
 }
 
 void Tracker::ant(Pos const& pos, int team) {
+	ASSERT(g_map);
 	g_map->square(pos).ant = team;
 	if(team != TheGoodGuys) {
 		buf.enemyAnts.push_back(pos);
@@ -44,7 +52,7 @@ void Tracker::ant(Pos const& pos, int team) {
 }
 
 void Tracker::deadAnt(Pos const& pos, int team) {
-	g_state->bug << "deadAnt(" << pos << ',' << team << ")" << std::endl;
+	TRACKER_LOG("deadAnt(" << pos << ',' << team << ")");
 	if(team != TheGoodGuys) {
 		buf.deadEnemies.push_back(pos);
 		buf.deadEnemyTeams.push_back(team);
@@ -67,7 +75,7 @@ void Tracker::hill(Pos const& pos, int team) {
 void Tracker::go() {
 	update();
 	g_map->updateVisionInformation();
-	g_state->bug << getLiveAnts().size() << " live ants." << std::endl;
+	TRACKER_LOG(getLiveAnts().size() << " live ants.");
 }
 
 void Tracker::update() {
@@ -75,7 +83,7 @@ void Tracker::update() {
 	// Water have already been reported.
 
 	// Find free anthills.
-	g_state->bug << "Looking for free ant hills...";
+	TRACKER_LOG_("Looking for free ant hills...");
 	PosSet freeHills;
 	for(size_t i = 0; i < buf.myHills.size(); ++i) {
 		Pos pos = buf.myHills[i];
@@ -84,20 +92,20 @@ void Tracker::update() {
 			freeHills.insert(pos);
 		}
 	}
-	g_state->bug << " Found " << freeHills.size() << std::endl;
+	TRACKER_LOG(" Found " << freeHills.size());
 
 	// Remove dead ants.
 	for(size_t i = 0; i < buf.deadAnts.size(); ++i) {
-		g_state->bug << "Dead ant at " << buf.deadAnts[i];
+		TRACKER_LOG_("Dead ant at " << buf.deadAnts[i]);
 		Ant* pAnt = g_map->getAnt(buf.deadAnts[i]);
 		if(!pAnt) {
-			g_state->bug << "Not found in map :\\" << std::endl;
+			TRACKER_LOG("Not found in map :\\");
 			continue;
 		}
 		g_map->removeAnt(pAnt);
 		m_liveAnts.erase(pAnt);
 		int j = indexOf(pAnt);
-		g_state->bug << ", index " << j << "." << std::endl;
+		TRACKER_LOG(", index " << j << ".");
 		m_deadIndices.insert(j);
 	}
 
@@ -111,18 +119,18 @@ void Tracker::update() {
 				// Our new ant replaces a fallen hero.
 				i = *it;
 				m_deadIndices.erase(it);
-				g_state->bug << "Spawning with reused index " << i << "." << std::endl;
+				TRACKER_LOG("Spawning with reused index " << i << ".");
 			}
 			else {
 				// Hurray! Our army grows!
 				i = m_numAnts++;
-				g_state->bug << "Spawning with new index " << i << "." << std::endl;
+				TRACKER_LOG("Spawning with new index " << i << ".");
 			}
 
 			Ant* newAnt = &(m_antStorage[i] = Ant(*hill));
 			g_map->addAnt(newAnt);
 			m_liveAnts.insert(newAnt);
-			g_state->bug << "Ant spawned at " << *hill << std::endl;
+			TRACKER_LOG("Ant spawned at " << *hill);
 		}
 	}
 }

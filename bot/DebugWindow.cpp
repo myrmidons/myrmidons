@@ -8,7 +8,7 @@
 #include "Tracker.hpp"
 #include <QPainter>
 
-const int Zoom = 10; // pixels per grid cell
+const int Zoom = 12; // pixels per grid cell
 
 DebugWindow* DebugWindow::s_instance = NULL;
 
@@ -116,8 +116,6 @@ void DebugWindow::redrawImg() {
 		ITC(RoomList, rit, rooms)
 			centers[*rit] = toQP((*rit)->centerPos());
 
-		//painter.setClipping(true); // not needed
-
 		ITC(RoomList, rit, rooms) {
 			Room* r = *rit;
 			QPointF a = centers[r];
@@ -127,6 +125,7 @@ void DebugWindow::redrawImg() {
 
 				bool xwrap = (Abs(a.x()-b.x()) > m_img.width()/2);
 				bool ywrap = (Abs(a.y()-b.y()) > m_img.height()/2);
+
 				if (xwrap && ywrap) {
 					if (a.x() < b.x())
 						std::swap(a,b);

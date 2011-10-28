@@ -47,7 +47,8 @@ public:
 
 	// usefull for distances etc:
 	int manhattanDist(Pos a, Pos b) const;
-	double distance(const Pos &loc1, const Pos &loc2);
+	float euclidDist(const Pos& a, const Pos& b) const;
+	int euclidDistSq(const Pos& a, const Pos& b) const;
 
 	// Wrapped.
 	Vec2 difference(Pos a, Pos b) const;

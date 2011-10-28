@@ -150,7 +150,7 @@ void Map::updateVisionInformation() {
 			for(int d=0; d<TDIRECTIONS; d++) {
 				nLoc = getLocation(cLoc, d);
 
-				if(!visited[nLoc[0]][nLoc[1]] && distance(sLoc, nLoc) <= g_state->viewradius) {
+				if (!visited[nLoc[0]][nLoc[1]] && euclidDist(sLoc, nLoc) <= g_state->viewradius) {
 					m_grid[nLoc[0]][nLoc[1]].isVisible = 1;
 					if(!m_grid[nLoc[0]][nLoc[1]].discovered) {
 						m_grid[nLoc[0]][nLoc[1]].discovered = true;
@@ -185,19 +185,19 @@ void Map::reset()
 {
 	for (int x=0; x<size().x(); ++x)
 		for (int y=0; y<size().y(); ++y)
-			if(!m_grid[x][y].isWater)
+			if (!m_grid[x][y].isWater)
 				m_grid[x][y].reset();
 }
 
-
 //returns the euclidean distance between two locations with the edges wrapped
-double Map::distance(const Pos &loc1, const Pos &loc2)
-{
-	int d0 = std::abs(loc1[0]-loc2[0]);
-	int d1 = std::abs(loc1[1]-loc2[1]);
-	int dx = std::min(d0, m_size.x()-d0);
-	int dy = std::min(d1, m_size.y()-d1);
-	return sqrt(dx*dx + dy*dy);
+float Map::euclidDist(const Pos& a, const Pos& b) const {
+	return sqrtf( (float)euclidDistSq(a, b) );
+}
+
+int Map::euclidDistSq(const Pos& a, const Pos& b) const {
+	return
+			sqr(wrappedAbsDist(a[0], b[0], m_size[0])) +
+			sqr(wrappedAbsDist(a[1], b[1], m_size[1]));
 }
 
 int Map::manhattanDist(Pos a, Pos b) const {

@@ -11,7 +11,7 @@ int AntStar::getMovementCost(){
 }
 
 double AntStar::heuristics(StarAnt* current, StarAnt* goal){
-	return g_map->distance(current->p, goal->p);
+	return g_map->euclidDist(current->p, goal->p);
 }
 
 PosPath AntStar::findPath(Pos from, Pos to) {

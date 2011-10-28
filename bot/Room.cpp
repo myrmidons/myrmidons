@@ -41,8 +41,7 @@ bool RoomComp::operator()(Room* a, Room *b) const {
 ///////////////////////////////////////////////////////////////////////
 
 Pos Room::centerPos() const {
-	// TODO.
-	return *m_cells.begin();
+	return m_center;
 }
 
 void Room::makeClean() const {
@@ -123,7 +122,7 @@ Pos Room::closestPosInNeighbor(Pos from, Room* neighbor, int* outDist) const {
 	return from; // Fail. return w/e.
 }
 
-Room::Room(Pos seed) : id(getID<Room>()), m_dirty(true) {
+Room::Room(Pos seed) : id(getID<Room>()), m_dirty(true), m_center(seed) {
 	m_bb.m_min = m_bb.m_max = seed;
 	m_contents = new RoomContents();
 	add(seed);
@@ -142,6 +141,25 @@ bool Room::isClosable(Pos pos) const {
 	}
 	LOG_DEBUG("Closing cell " << pos << " in room " << this);
 	return true;
+}
+
+// A border cell has at least one neighbor not in room. could be water.
+bool isBorderCell(Pos pos, Room* r) {
+	for (int dir=0; dir<4; ++dir)
+		if (g_map->roomAt(g_map->getLocation(pos, dir)) != r)
+			return true;
+	return false;
+}
+
+// break if we get anything more than "currentBest"
+int bcRad2(int currentBest, Pos pos, const PosList& cells) {
+	int r2=0;
+	ITC(PosList, pit, cells) {
+		r2 = std::max(r2, g_map->euclidDistSq(pos, *pit));
+		if (r2 > currentBest)
+			return std::numeric_limits<int>::max();
+	}
+	return r2;
 }
 
 void Room::add(Pos pos) {
@@ -168,6 +186,25 @@ void Room::add(Pos pos) {
 
 	ITC(PosSet, pit, closeThese)
 		m_open.erase(*pit);
+
+	///////////////////////////////////////////
+
+	// Recalculate room center. Start by calculating bounding points.
+	PosList border;
+	ITC(PosSet, pit, m_cells)
+		if (isBorderCell(*pit, this))
+			border.push_back(*pit);
+
+	int minRad2 = std::numeric_limits<int>::max();
+	ITC(PosSet, pit, m_cells) {
+		int r2 = bcRad2(minRad2, *pit, border);
+		if (r2 < minRad2) {
+			m_center = *pit;
+			minRad2 = r2;
+		}
+	}
+
+	///////////////////////////////////////////
 
 	// We are now unsure of room-connection - dirty up affected rooms:
 	this->m_dirty = true;

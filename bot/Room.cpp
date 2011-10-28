@@ -8,6 +8,7 @@
 #	include <QImage>
 #	include <QPainter>
 #	include <sstream>
+#	include <cstdio>
 #endif
 
 Rooms* g_rooms = NULL;
@@ -604,11 +605,10 @@ void Rooms::dumpImage() const {
 	/////////////////////////
 
 	static int s_nr = 0;
-	std::stringstream ss;
-	ss << "rooms_" << (s_nr++) << ".png";
-	std::string fn = ss.str();
-	LOG_DEBUG("Dumping rooms to " << fn);
-	img.save(fn.c_str());
+	char nameBuf[100] = {};
+	sprintf(nameBuf, "rooms_%05d.png", s_nr++);
+	LOG_DEBUG("Dumping rooms to " << nameBuf);
+	img.save(nameBuf);
 }
 
 void Rooms::resetDynamicContent() {

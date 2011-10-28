@@ -183,7 +183,8 @@ public:
 public Q_SLOTS:
 	void doTurn()
 	{
-		bot.playOneTurn();
+		if (!bot.playOneTurn())
+			QApplication::quit();
 	}
 };
 

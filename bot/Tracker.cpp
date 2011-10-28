@@ -25,9 +25,9 @@ inline size_t Tracker::indexOf(Ant* ant) const {
 void Tracker::turn(int n) {
 	m_turn = n;
 	TRACKER_LOG("turn " << n << ":" << std::endl << "----------------");
-	buf.reset();
+	buf.resetDynamics();
+	g_map->resetDynamics();
 	ASSERT(g_map);
-	g_map->newTurn(n);
 }
 
 void Tracker::water(Pos const& pos) {
@@ -41,6 +41,7 @@ void Tracker::food(Pos const& pos) {
 
 void Tracker::ant(Pos const& pos, int team) {
 	ASSERT(g_map);
+	g_map->square(pos).ant = team;
 	if(team != TheGoodGuys) {
 		buf.enemyAnts.push_back(pos);
 		buf.enemyTeams.push_back(team);
@@ -86,31 +87,38 @@ void Tracker::hill(Pos const& pos, int team) {
 
 void Tracker::go() {
 	STAMP("Before updateVisualInformation");
-	g_map->updateVisionInformation();
+	g_map->updateVisionInformation(buf.myAnts);
+
 	STAMP("Before update");
 	update();
+	STAMP("After update");
+
 	TRACKER_LOG(getLiveAnts().size() << " live ants.");
 }
 
 void Tracker::update() {
-
+	STAMP("Tracker::update");
 	// Water have already been reported.
 
+	STAMP_;
 	// Report myrmidon hills to map.
 	IT(Buffer::EnemyHillSet, it, buf.newEnemyHills) {
 		g_map->enemyHill(it->first, it->second);
 	}
 
+	STAMP_;
 	// Report enemy hills to map.
 	IT(PosSet, it, buf.newHills) {
 		g_map->hill(*it);
 	}
 
+	STAMP_;
 	// Report food to map
 	IT(PosVec, it, buf.food) {
 		g_map->food(*it);
 	}
 
+	STAMP_;
 	// Find free anthills.
 	TRACKER_LOG_("Looking for free ant hills...");
 	PosSet freeHills;
@@ -123,6 +131,7 @@ void Tracker::update() {
 	}
 	TRACKER_LOG(" Found " << freeHills.size());
 
+	STAMP_;
 	// Remove dead ants.
 	for(size_t i = 0; i < buf.deadAnts.size(); ++i) {
 		TRACKER_LOG_("Dead ant at " << buf.deadAnts[i]);
@@ -138,6 +147,7 @@ void Tracker::update() {
 		m_deadIndices.insert(j);
 	}
 
+	STAMP_;
 	// Spawn new ants.
 	for(PosSet::iterator hill = freeHills.begin(); hill != freeHills.end(); ++hill) {
 		if(g_map->square(*hill).ant == 0) {
@@ -164,7 +174,8 @@ void Tracker::update() {
 	}
 }
 
-void Tracker::Buffer::reset() {
+void Tracker::Buffer::resetDynamics() {
+	STAMP("Tracker::Buffer::resetDynamics");
 	myAnts.clear();
 	enemyAnts.clear();
 	myHills.clear();

@@ -167,7 +167,7 @@ istream& operator>>(istream &is, State &state)
 		{
 			if(inputType == "w") //water square
             {
-				STAMP_;
+				//STAMP_;
                 is >> row >> col;
 				g_tracker->water(Pos(col, row));
             }

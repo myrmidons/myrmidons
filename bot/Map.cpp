@@ -3,6 +3,7 @@
 #include "State.hpp"
 #include "Tracker.hpp"
 #include "Room.hpp"
+#include "Util.hpp"
 #include <cmath>
 
 Map* g_map = NULL;
@@ -85,20 +86,6 @@ void Map::moveAnt(Pos const& from, Pos const& to) {
 		ant->pos() = to;
 		addAnt(ant);
 		g_tracker->log << ant->pos() << std::endl;
-
-		square(to).ant = square(from).ant;
-		square(from).ant = -1;
-
-	/*	Square& sqFrom = square(from);
-		sqFrom.ant = -1;
-		sqFrom.pAnt = 0;
-		sqFrom.room->contents()->removeMyrmidon(ant);
-
-		Square& sqTo = square(to);
-		sqTo.ant = 0;
-		sqTo.pAnt = ant;
-		sqTo.room->contents()->addMyrmidon(ant);
-		*/
 	}
 	else {
 		g_tracker->log << " without finding it." << std::endl;
@@ -118,8 +105,13 @@ void Map::water(const Pos &pos) {
 }
 
 void Map::food(Pos const& pos) {
+	STAMP("Begin");
 	square(pos).isFood = true;
+	ASSERT(square(pos).discovered);
+	ASSERT(square(pos).room);
+	ASSERT(square(pos).room->contents());
 	square(pos).room->contents()->foodAt(pos);
+	STAMP("End");
 }
 
 //returns the new location from moving in a given direction with the edges wrapped
@@ -155,17 +147,16 @@ RoomContents* Map::roomContentAt(const Pos& pos) {
 	A CORRECT MORE EFFICIENT IMPLEMENTATION, TAKE A LOOK AT THE GET_VISION FUNCTION
 	IN ANTS.PY ON THE CONTESTS GITHUB PAGE.
 */
-void Map::updateVisionInformation() {
+void Map::updateVisionInformation(const PosList& antsPos) {
 	std::queue<Pos> locQueue;
 	Pos sLoc, cLoc, nLoc;
 
 	PosSet discoveries;
 
-	AntSet const& ants = g_tracker->getLiveAnts();
-	for(AntSet::const_iterator it = ants.begin(); it != ants.end(); ++it) {
+	LOG_DEBUG("updateVisionInformation has " << antsPos.size() << " ants");
 
-		square(sLoc).ant = 0;
-		sLoc = (*it)->pos();
+	ITC(PosList, pit, antsPos) {
+		sLoc = *pit;
 		locQueue.push(sLoc);
 
 		std::vector<std::vector<bool> > visited(size().x(), std::vector<bool>(size().y(), 0));
@@ -189,7 +180,6 @@ void Map::updateVisionInformation() {
 					if(!m_grid[nLoc[0]][nLoc[1]].discovered) {
 						m_grid[nLoc[0]][nLoc[1]].discovered = true;
 						discoveries.insert(nLoc);
-
 					}
 
 					locQueue.push(nLoc);
@@ -208,19 +198,14 @@ bool Map::isOccupied(const Pos& loc) {
 	return square(loc).ant != -1;
 }
 
-
-void Map::newTurn(int turn) {
-	reset();
-}
-
-
 //resets all non-water squares to land and clears the bots ant vector
-void Map::reset()
+void Map::resetDynamics()
 {
+	STAMP("Map::resetDynamics");
 	for (int x=0; x<size().x(); ++x)
 		for (int y=0; y<size().y(); ++y)
 			if (!m_grid[x][y].isWater)
-				m_grid[x][y].reset();
+				m_grid[x][y].resetDynamics();
 }
 
 //returns the euclidean distance between two locations with the edges wrapped

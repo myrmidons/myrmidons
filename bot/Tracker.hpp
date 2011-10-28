@@ -61,7 +61,7 @@ private:
 		EnemyHillSet newEnemyHills;
 		PosSet newHills;
 
-		void reset();
+		void resetDynamics();
 	};
 
 	Buffer buf;

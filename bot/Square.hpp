@@ -25,7 +25,7 @@ struct Square
 	}
 
 	// reset dynamic information
-    void reset()
+	void resetDynamics()
 	{
         isVisible = 0;
         isHill = 0;

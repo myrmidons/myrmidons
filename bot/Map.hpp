@@ -28,12 +28,16 @@ public:
 	// Food
 	void food(Pos const& pos);
 
+	//resets all non-water squares to land and clears the bots ant vector
+	void resetDynamics();
+
+	void updateVisionInformation(const PosList& myAnts);
+
+
+
 	// Enemy ants
 	void enemyHill(Pos const& pos, int team);
 	void enemyAnt(Pos const& pos, int team);
-
-	void updateVisionInformation();
-
 	// Not sure if this is up to the Map-class in the end, but probably.
 	void moveAnt(Pos const& from, Pos const& to); // Not used by the AntIdentifyer, just by Bot for testing purposes.
 
@@ -49,8 +53,6 @@ public:
 	bool isOccupied(const Pos& loc);
 
 	const Vec2& size() const { return m_size; }
-
-	void newTurn(int turn);
 
 	void assertInMap(const Pos& pos) const {
 		ASSERT(0<=pos.x() && pos.x()<m_size.x());
@@ -70,9 +72,6 @@ private:
 	std::map<Ant*, Pos> antpos;
 	std::map<Pos, Ant*> posant;
 	Vec2 m_size;
-
-	//resets all non-water squares to land and clears the bots ant vector
-	void reset();
 
 };
 

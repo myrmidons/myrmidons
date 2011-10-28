@@ -40,6 +40,7 @@ struct State
 	int
         turn, turns,
         noPlayers;
+	int viewRadius2;
     double attackradius, spawnradius, viewradius;
     double loadtime, turntime;
     std::vector<double> scores;

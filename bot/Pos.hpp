@@ -7,33 +7,40 @@
 #include <cstdlib>
 #include "Assert.hpp"
 
-/*
-	struct for representing positions in the grid.
-*/
-struct Pos
+template<typename T>
+struct Vec2T
 {
-	int coords[2];
-
-	Pos() {
-		coords[0] = coords[1] = 0;
+	Vec2T() {
+		m_v[0] = m_v[1] = 0;
 	}
 
-	Pos(int r, int c) {
-		coords[0] = r;
-		coords[1] = c;
+	Vec2T(T x, T y) {
+		m_v[0] = x;
+		m_v[1] = y;
 	}
 
-	inline int& operator[] (int const& i)       { return coords[i]; }
-	inline int  operator[] (int const& i) const { return coords[i]; }
+	template<typename F>
+	explicit Vec2T(const Vec2T<F>& v) {
+		m_v[0] = (T)v.x();
+		m_v[1] = (T)v.y();
+	}
 
-	inline int& x() { return coords[0]; }
-	inline int x() const { return coords[0]; }
+	inline T& operator[] (int const& i)       { ASSERT(i==0 || i==1); return m_v[i]; }
+	inline T  operator[] (int const& i) const { ASSERT(i==0 || i==1); return m_v[i]; }
 
-	inline int& y() { return coords[1]; }
-	inline int y() const { return coords[1]; }
+	inline T& x()       { return m_v[0]; }
+	inline T  x() const { return m_v[0]; }
+
+	inline T& y()       { return m_v[1]; }
+	inline T  y() const { return m_v[1]; }
+
+private:
+	T m_v[2];
 };
 
-typedef Pos Vec2;
+typedef Vec2T<int> Vec2;
+typedef Vec2 Pos;
+typedef Vec2T<float> Vec2f;
 
 typedef std::set<Pos> PosSet;
 typedef std::vector<Pos> PosList;
@@ -52,9 +59,28 @@ inline std::ostream& operator<<(std::ostream &os, const Pos& pos) {
 
 //////////////////////////////////////////////////////
 
+template<typename T>
+T sqr(const T& x) { return x*x; }
+
+template<typename T>
+T Abs(const T& x) { return x<0 ? -x : +x; }
+
+// wrap to [0,size)
+template<typename T>
+T wrap(T x, int size) {
+	while (x < 0)     x += size;
+	while (x >= size) x -= size;
+	return x;
+}
+
 // Wrapped positive distance between points a,b both on [0,size)
 inline int wrappedAbsDist(int a, int b, int size) {
-	int d = std::abs(a-b);
+	int d = Abs(a-b);
+	return std::min(d, size-d);
+}
+
+inline float wrappedAbsDist(float a, float b, int size) {
+	float d = Abs(a-b);
 	return std::min(d, size-d);
 }
 
@@ -64,6 +90,10 @@ inline int wrappedSignedDist(int a, int b, int size) {
 	while (d < -size/2) d += size;
 	while (d > +size/2) d -= size;
 	return d;
+}
+
+inline float wrappedDistanceSqr(const Vec2f& a, const Vec2f& b, const Vec2& size) {
+	return sqr(wrappedAbsDist(a[0], b[0], size[0])) + sqr(wrappedAbsDist(a[1], b[1], size[1]));
 }
 
 // Bounding box
@@ -78,6 +108,7 @@ public:
 			// Non-wrapped
 			return m_max[a] - m_min[a] + 1;
 		} else {
+			// Wrapped
 			return size + m_max[a] - m_min[a] - 1;
 		}
 	}
@@ -86,6 +117,17 @@ public:
 		return Vec2(
 					sizeAxis(0, mapSize[0]),
 					sizeAxis(1, mapSize[1])
+					);
+	}
+
+	float centerAxisF(int a, int size) const {
+		return wrap(m_min[a] + 0.5f*(sizeAxis(a, size)-1), size);
+	}
+
+	Vec2f centerF(const Vec2& mapSize) const {
+		return Vec2f(
+					centerAxisF(0, mapSize[0]),
+					centerAxisF(1, mapSize[1])
 					);
 	}
 

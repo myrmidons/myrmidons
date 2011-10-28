@@ -49,6 +49,7 @@ struct Interest
 	int neighbors;
 	int area; // Of room - smaller is prioritized
 	float prio; // Based on wether or not we are expanding the bb to make it more square.
+	float centerDistSq; // Distance from room center to cell.
 };
 
 
@@ -60,8 +61,14 @@ typedef std::set<Interest> InterestSet;
 //////////////////////////////////////////////////////////////////
 
 class Room;
+
+class RoomComp {
+public:
+	bool operator()(Room* a, Room *b) const;
+};
+
 typedef std::vector<Room*> RoomList;
-typedef std::set<Room*> RoomSet;
+typedef std::set<Room*, RoomComp> RoomSet;
 
 // This class only contains connectivity data. For contents, see 'contents'.
 // A room shuld be small enough so that an ant in any part of the room can see
@@ -69,6 +76,8 @@ typedef std::set<Room*> RoomSet;
 // Implementation in Room.cpp
 class Room {
 public:
+	const int id; // Unique id per room. deterministic.
+
 	///////////////////////////////////////////////
 	// For users:
 
@@ -142,6 +151,8 @@ public:
 	// Room constraints
 	int maxRoomArea() const;
 	int maxRoomWidth() const;
+	float maxRoomRadius() const;
+	float maxRoomRadiusSq() const;
 
 	// Called by g_map upon uncovering new grid cells.
 	void expandWith(const PosSet& pos);

@@ -19,15 +19,23 @@ bool operator<(const Interest& a, const Interest& b) {
 	if (a.neighbors > b.neighbors) return true;
 	if (a.neighbors < b.neighbors) return false;
 
+	// Prioritize things close to center. Will keep squareness and roundness, and proprotize small rooms.
+	if (a.centerDistSq != b.centerDistSq) return a.centerDistSq < b.centerDistSq;
+/*
 	// Try to keep squareness:
 	if (a.prio > b.prio) return true;
 	if (a.prio < b.prio) return false;
+*/
 
 	// Exapand smallest room first
 	if (a.area < b.area) return true;
 	if (a.area > b.area) return false;
 
-	return a.room < b.room; // tie-breaker.
+	return a.room->id < b.room->id; // tie-breaker.
+}
+
+bool RoomComp::operator()(Room* a, Room *b) const {
+	return a->id < b->id;
 }
 
 ///////////////////////////////////////////////////////////////////////
@@ -62,7 +70,7 @@ const Room::NeighborInfo* Room::neighborInfo(Room* room) const {
 	return &m_neighborInfos[room];
 }
 
-Room::Room(Pos seed) : m_dirty(true) {
+Room::Room(Pos seed) : id(getID<Room>()), m_dirty(true) {
 	m_bb.m_min = m_bb.m_max = seed;
 	m_contents = new RoomContents();
 	add(seed);
@@ -179,6 +187,8 @@ void Room::calcInterests(const PosSet& unassigned) {
 
 	LOG_DEBUG("Culling " << neighs.size() << " neighbors...");
 
+	Vec2 mapSize = g_map->size();
+
 	ITC(NeighMap, nit, neighs) {
 		ASSERT(1 <= nit->second && nit->second <= 2);
 
@@ -189,8 +199,6 @@ void Room::calcInterests(const PosSet& unassigned) {
 		*/
 
 		if (nit->second==2 || !m_bb.contains(nit->first)) {
-			LOG_DEBUG("Adding neighbor cell at " << nit->first << " to interests...");
-
 			// We may expand here
 			Interest intr;
 			intr.room = this;
@@ -208,11 +216,22 @@ void Room::calcInterests(const PosSet& unassigned) {
 				ASSERT(d.x()==1 || d.y()==1);
 				int axis = (d.x() > d.y() ? 0 : 1);
 
-				if (bbSize[axis] >= g_rooms->maxRoomWidth())
+				if (bbSize[axis] >= g_rooms->maxRoomWidth()) {
+					LOG_DEBUG("Ignoring neighbor at " << intr.pos << " expanding bb too much");
 					continue; // We may not expand this way!
+				}
 
 				intr.prio = bbSize[1-axis] - bbSize[axis]; // larger on other axis is good
 			}
+
+			intr.centerDistSq = wrappedDistanceSqr(m_bb.centerF(mapSize), Vec2f(intr.pos), mapSize);
+
+			if (intr.centerDistSq > g_rooms->maxRoomRadiusSq()) {
+				LOG_DEBUG("Ignoring neighbor at " << intr.pos << " going outside max radius");
+				continue; // We may not expand this way!
+			}
+
+			LOG_DEBUG("Adding neighbor cell at " << nit->first << " to interests...");
 
 			m_interests.insert(intr);
 			m_interestPos.insert(intr.pos);
@@ -242,7 +261,16 @@ int Rooms::maxRoomArea() const {
 }
 
 int Rooms::maxRoomWidth() const {
-	return 10; // TODO: base on g-state view distance.
+	//return 10; // TODO: base on g-state view distance.
+	return (int)ceil(2 * maxRoomRadius());
+}
+
+float Rooms::maxRoomRadius() const {
+	return g_state->viewradius; // FIXME
+}
+
+float Rooms::maxRoomRadiusSq() const {
+	return sqr(maxRoomRadius()); // FIXME
 }
 
 void Rooms::expandWith(const PosSet& posArg) {
@@ -323,7 +351,7 @@ void Rooms::expandWith(const PosSet& posArg) {
 				}
 			}
 
-			LOG_DEBUG("Interests updated.");
+			LOG_DEBUG("Interests updated (" << interests.size() << " left)");
 		} else {
 			LOG_DEBUG("B");
 
@@ -333,7 +361,7 @@ void Rooms::expandWith(const PosSet& posArg) {
 			// Leftmost, topmost
 			PosSet::iterator it = unassigned.begin();
 #elif 1
-			// Righbmost, bottommost
+			// Rightmost, bottommost
 			PosSet::iterator it = unassigned.end();
 			--it;
 #else
@@ -375,22 +403,41 @@ void Rooms::expandWith(const PosSet& posArg) {
 }
 
 #ifdef DEBUG
-QRgb randomColor(Room* r) {
-	srand(reinterpret_cast<long>(r));
-	return qRgb(rand()%255, rand()%255, rand()%255);
+QRgb randomColor(Room* room) {
+	//srand(reinterpret_cast<long>(room));
+	int id = room->id;
+
+	int r,g,b;
+	do {
+		/*
+		r = rand()%255;
+		g = rand()%255;
+		b = rand()%255;
+		/*/
+		r = (12345   * id) % 255;
+		g = (123456  * id) % 255;
+		b = (1234578 * id) % 255;
+		id += 78901;
+		/**/
+		//} while (r+g+b < 200 || r+g+b > 650); // avoid blacks and whites
+	} while (r+g+b < 250); // Racist code (avoid blacks)
+
+	return qRgb(r,g,b);
 }
 
 // Dump a png of the room colorings.
 void Rooms::dumpImage() const {
 	LOG_DEBUG("Rooms::dumpImage");
 
+	const QRgb voidColor = qRgb(60,60,60);
+	const QRgb wallColor = qRgb(0,0,0);
+
 	Vec2 size = g_map->size();
 	//int Mult = 1; // Pixels per grid cell.
 	QImage img(size.x(), size.y(), QImage::Format_ARGB32);
-	//img.fill(0);
-	img.fill(qRgb(0,0,0));
+	img.fill(voidColor);
 
-	std::map<Room*, QRgb> colorMap;
+	std::map<Room*, QRgb, RoomComp> colorMap;
 	ITC(RoomList, rit, m_rooms)
 		colorMap[*rit] = randomColor(*rit);
 
@@ -400,7 +447,7 @@ void Rooms::dumpImage() const {
 			if (s.room) {
 				img.setPixel(x, y, colorMap[s.room]);
 			} else if (s.isWater) {
-				img.setPixel(x, y, qRgb(255,255,255));
+				img.setPixel(x, y, wallColor);
 			}
 		}
 	}

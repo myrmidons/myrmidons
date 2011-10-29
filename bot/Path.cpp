@@ -45,7 +45,6 @@ Path Path::findPath(Pos start, Pos end)
 	allSearchNodes.insert(startNode);
 
 	RoomSet closedRooms;
-	closedRooms.insert(startRoom);
 
 	Path retPath;
 
@@ -53,6 +52,7 @@ Path Path::findPath(Pos start, Pos end)
 		// Get closest
 		SearchNode* p = *q.begin();
 		q.erase(q.begin());
+		closedRooms.insert(p->room);
 
 		if (p->room != endRoom) {
 			// I still haven't found what I've been looking for.
@@ -61,7 +61,6 @@ Path Path::findPath(Pos start, Pos end)
 			ITC(RoomSet, rit, neighs) {
 				Room* r = *rit;
 				if (!closedRooms.count(r)) {
-					closedRooms.insert(r);
 					int dist=0;
 					Pos pos = p->room->closestPosInNeighbor(p->pos, r, &dist);
 					SearchNode* newNode = new SearchNode(p, pos, p->dist + dist);

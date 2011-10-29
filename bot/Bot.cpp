@@ -142,7 +142,8 @@ void Bot::makeMoves()
 			ITC(RoomSet, rit, neighRooms) {
 				if ((*rit)->contents()->ants().size() <= ants.size()) {
 					// less crowded
-					cands.push_back(*rit);
+					if ((*rit)->getArea() > 4) // Don't bother with small rooms
+						cands.push_back(*rit);
 				}
 			}
 

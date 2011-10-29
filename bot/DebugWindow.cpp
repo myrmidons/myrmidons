@@ -178,11 +178,31 @@ void DebugWindow::redrawImg() {
 			if (ant->state() != Ant::STATE_NONE) {
 				const Path& path = ant->path();
 				if (path.isValid()) {
-					QPointF dest = toQP(path.dest());
-					painter.setPen(Qt::black);
-					drawWrappedLine(painter, pos, dest);
 					float destRad = 0.15f * Zoom;
+					painter.setPen(Qt::black);
+
+					/*
+					QPointF dest = toQP(path.dest());
+					drawWrappedLine(painter, pos, dest);
 					painter.drawEllipse(dest, destRad, destRad);
+					/*/
+					Room* antRoom = g_map->roomAt(ant->pos());
+					QPointF p = pos;
+					const WPList& wayPoints = path.wayPoints();
+					bool draw=false;
+					for (int i=0; i<wayPoints.size(); ++i) {
+						if (!draw) {
+							draw = (wayPoints[i].room == antRoom);
+							continue; // Start drawing waypoint in next room
+						}
+						QPointF wpPos = toQP(wayPoints[i].pos);
+
+						drawWrappedLine(painter, p, wpPos);
+						painter.drawEllipse(wpPos, destRad, destRad);
+
+						p = wpPos;
+					}
+					/**/
 				}
 			}
 		}

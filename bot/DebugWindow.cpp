@@ -208,9 +208,9 @@ void DebugWindow::redrawImg() {
 			}
 		}
 
-		// TODO Draw food
-		const PosList& food = g_tracker->getAllFood();
-		ITC(PosList, pit, food) {
+		// Draw food
+		const PosSet& food = g_tracker->getFood();
+		ITC(PosSet, pit, food) {
 			painter.setPen(Qt::green);
 			QPointF pos = toQP(*pit);
 			painter.drawEllipse(pos, 2, 2);

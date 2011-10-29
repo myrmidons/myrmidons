@@ -16,11 +16,13 @@ struct SearchNode {
 
 struct SearchNodeComp {
 	bool operator()(const SearchNode* a, const SearchNode* b) const {
+		//if (a->dist != b->dist)
+		//	return a->dist < b->dist
 		return a->dist < b->dist;
 	}
 };
 
-typedef std::set<SearchNode*, SearchNodeComp> SearchNodeSet;
+typedef std::multiset<SearchNode*, SearchNodeComp> SearchNodeQueue;
 
 Path Path::findPath(Pos start, Pos end)
 {
@@ -35,8 +37,8 @@ Path Path::findPath(Pos start, Pos end)
 		return Path(g_map->manhattanDist(start, end), start, end, WPList());
 	}
 
-	SearchNodeSet q;
-	SearchNodeSet allSearchNodes; // For freeing
+	SearchNodeQueue q;
+	std::set<SearchNode*> allSearchNodes; // For freeing
 
 	SearchNode* startNode = new SearchNode(NULL, start, 0);
 
@@ -63,6 +65,7 @@ Path Path::findPath(Pos start, Pos end)
 				if (!closedRooms.count(r)) {
 					int dist=0;
 					Pos pos = p->room->closestPosInNeighbor(p->pos, r, &dist);
+					ASSERT(dist>0);
 					SearchNode* newNode = new SearchNode(p, pos, p->dist + dist);
 					q.insert(newNode);
 					allSearchNodes.insert(newNode);
@@ -85,7 +88,7 @@ Path Path::findPath(Pos start, Pos end)
 		}
 	}
 
-	ITC(SearchNodeSet, wpit, allSearchNodes)
+	ITC(std::set<SearchNode*>, wpit, allSearchNodes)
 		delete *wpit;
 
 	LOG_DEBUG("Path::findPath returning");

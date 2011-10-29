@@ -16,7 +16,8 @@ public:
 	explicit Ant(Pos const& loc = Pos());
 	~Ant();
 	/*const*/ int id; // Unique id per ant. deterministic.
-	Pos& pos();
+	Pos pos();
+	Pos expectedPos();
 	State state() const { return m_state; }
 	const Path& path() const { return m_path; }
 
@@ -35,10 +36,15 @@ public:
 	// Where we would most want to go, based on current state.
 	const PosList& getDesire() const { return m_desire; }
 
+	// Sets the expected position for next round, should only be used by the coordinator
+	void setExpectedPos(Pos p);
+
+	// Only used by tracker!
+	void setPos(Pos p);
 private:
 	State m_state;
 	Pos m_position;
-
+	Pos m_expectedPosition; // What pos do this ant expect to be at the next turn? (used for tracking)
 	Path m_path; // Walking along this.
 
 	// Updated each turn:

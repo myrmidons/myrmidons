@@ -30,7 +30,7 @@ struct Square
 	{
 		discovered = isWater = isHill = isFood = false;
 		antTeam = hillTeam = -1;
-		destinyAnt = NULL;
+		pAnt = destinyAnt = NULL;
 		room = NULL;
 		resetDynamics();
 	}

@@ -16,11 +16,12 @@ const int WEST  = 0;
 const int SOUTH = 1;
 const int EAST  = 2;
 const int NORTH = 3;
+const int STAY = 4;
 
 const int TDIRECTIONS = 4;
 //const char CDIRECTIONS[4] = {'N', 'E', 'S', 'W'};
 const char CDIRECTIONS[4] = {'W', 'S', 'E', 'N'};
-const int DIRECTIONS[4][2] = { {-1, 0}, {0, 1}, {1, 0}, {0, -1} };      //{W, S, E, N}
+const int DIRECTIONS[4][2] = { {-1, 0}, {0, 1}, {1, 0}, {0, -1}};      //{W, S, E, N}
 
 typedef std::vector<int> DirVec;
 

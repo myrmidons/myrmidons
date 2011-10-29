@@ -13,16 +13,6 @@ using namespace std;
 // initialized in main
 State* g_state = NULL;
 
-
-//////////////////////////
-
-/*bool State::isOccupied(const Pos& loc) {
-	return grid[loc[0]][loc[1]].ant != -1;
-}*/
-
-//////////////////////////
-
-
 //constructor
 State::State(std::ostream& output)
 	: output(output)

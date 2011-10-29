@@ -36,7 +36,7 @@ public:
 	void endTurnInput();
 
 	AntSet&   getAnts();
-	EnemySet const& getEnemies() const;
+	const EnemySet& getEnemies() const;
 	PosSet const&   getFood() const;
 
 	int turn() const { return m_turn; }

@@ -6,7 +6,7 @@
 #include "Room.hpp"
 #include "RoomContents.hpp"
 #include "Util.hpp"
-
+#include "Coordinator.hpp"
 #include <algorithm>
 #include <iostream>
 #include <limits>
@@ -37,38 +37,6 @@ void Bot::setupRandomDirections() {
 	do {
 		dirVecs.push_back(dirs);
 	} while(std::next_permutation(dirs.begin(), dirs.end()));
-}
-
-int Bot::rankMove(Pos const& currentLoc, int dir) {
-	// The new location to try to get to.
-	Pos newLoc = g_map->getLocation(currentLoc, dir);
-
-	int rank = 0;
-
-
-	if(!safeLocation(newLoc) || g_map->isOccupied(newLoc))
-		return -1000; // Absolutley not, it would be suicide!
-
-/*
-	for(int j = 0; j < (int)state.enemyAnts.size(); ++j) {
-		double d = g_map->distance(newLoc,state.enemyAnts[j]);
-		if(int(d*d + 0.5) < 13)
-			rank -= 20;
-	}
-
-	int foodLocationIndex = closestLocation(currentLoc, state.food);
-	if(foodLocationIndex >= 0) {
-			Pos foodLoc = state.food[foodLocationIndex];
-			if(g_map->distance(newLoc, foodLoc) >= g_map->distance(currentLoc, foodLoc)) {
-				//rank -= 10; // this move would take us further away from the nearest food item.
-			}
-			else {
-				rank += 10; // This move would take us closer to the nearest food item.
-			}
-	}*/
-
-
-	return rank;
 }
 
 DirVec const& Bot::randomDirVec() const {
@@ -206,42 +174,18 @@ void Bot::makeMoves()
 		}
 	}
 
-	STAMP_;
-
-//	AntSet& ants = g_tracker->getAnts();
 	ITC(AntSet, it, ants) {
-		LOG_DEBUG("Deciding ant move...");
-
 		Ant* ant = *it;
-		Pos pos = ant->pos();
-
 		if (ant->state() == Ant::STATE_NONE)
 			lookForFood(ant);
 
+		Pos pos = ant->pos();
 		ant->calcDesire();
 		PosList desire = ant->getDesire();
 
 		ant->setExpectedPos(ant->pos());
 
-		if (desire.empty() || ant->state() == Ant::STATE_NONE) {
-			// Random walk
-			DirVec const& dirs = randomDirVec();
-
-			int bestMove = 0, bestRank = -10000000;
-			for (int i = 0; i<TDIRECTIONS; i++) {
-				int d = dirs[i];
-				int rank = rankMove(pos, d);
-				if(rank > bestRank) {
-					bestRank = rank;
-					bestMove = d;
-				}
-			}
-			if (bestRank > -100) {
-				LOG_DEBUG("Random move");
-				ant->setExpectedPos(g_map->getLocation(pos, bestMove));
-				state.makeMove(pos, bestMove); // Needed because the map is still just a dummy.
-			}
-		} else {
+		if (!desire.empty()) {
 			// Follow desire.
 			Pos dest = desire.front();
 			LOG_DEBUG("Desire to go from " << pos << " to " << dest);
@@ -259,7 +203,10 @@ void Bot::makeMoves()
 		}
 	}
 
+	//g_coordinator->moveAntsAfterDesire(ants); // all ants desires are calculated, so they should all have a plan/goal/mission/objective
+
 #ifdef DEBUG
+	// Draw map with desires and plans.
 	DebugWindow::instance()->redraw();
 #endif
 

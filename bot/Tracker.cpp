@@ -3,6 +3,7 @@
 #include "Map.hpp"
 #include "Util.hpp"
 #include "Logger.hpp"
+#include "Room.hpp"
 #include <sstream>
 #include <sys/time.h>
 #include <set>
@@ -25,7 +26,7 @@ void Tracker::beginTurnInput(int n) {
 	// Reset dynamic content (ants, food) so we can fill it in from scratch
 	buf.resetDynamics();
 	g_map->resetDynamics();
-	g_room->resetDynamics();
+	g_rooms->resetDynamics();
 }
 
 void Tracker::bufferWater(Pos const& pos) {
@@ -136,14 +137,15 @@ void Tracker::updateMapInfo() {
 	/////////////////////////////////////////////////////
 
 	// Our ants at buf.myAnts now. Update our m_ants by: moving, killing, spawning.
-	PosSet currentAntPos = buf.myAnts;
+	PosSet unaccountedAntPos; // will be shrunk as the position is set to a new ant.
+	unaccountedAntPos.insert(buf.myAnts.begin(), buf.myAnts.end());
 	AntSet doneAnts;
 
 	// Check which ants got to go where they wanted:
 	ITC(AntSet, ait, m_ants) {
 		Ant* ant = *ait;
 		Pos expected = ant->expectedPos();
-		if (currentAntPos.count(expected)) {
+		if (unaccountedAntPos.count(expected)) {
 			// There is an ant where this ant went. It must be this ant.
 			// Update map/room info about ant.
 			g_map->removeAnt(ant);
@@ -151,7 +153,7 @@ void Tracker::updateMapInfo() {
 			g_map->addAnt(ant);
 
 			// Mark position and ant as "tracked":
-			currentAntPos.erase(expected);
+			unaccountedAntPos.erase(expected);
 			doneAnts.insert(ant);
 		}
 	}
@@ -164,13 +166,13 @@ void Tracker::updateMapInfo() {
 			if (doneAnts.count(*ait))
 				continue;
 			Ant* ant = *ait;
-			if (currentAntPos.count(ant->pos())) {
+			if (unaccountedAntPos.count(ant->pos())) {
 				LOG_TRACKER("Ant found at old (expected) positions - its movement was probably denied.");
 
 				// No need to move it - just marked as "tracked":
 				g_map->addAnt(ant); // Update dynamic data
 
-				currentAntPos.erase(expected);
+				unaccountedAntPos.erase(ant->pos());
 				doneAnts.insert(ant);
 			}
 		}
@@ -200,15 +202,16 @@ void Tracker::updateMapInfo() {
 		}
 	}
 
-	if (!currentAntPos.empty()) {
+	if (!unaccountedAntPos.empty()) {
 		// Still positions not matched to any ant? Must be new ants! Hooray!
-		LOG_TRACKER("Tracker found " << currentAntPos.size() << " new ants!");
-		ITC(PosSet, pit, currentAntPos) {
+		LOG_TRACKER("Tracker found " << unaccountedAntPos.size() << " new ants!");
+		ITC(PosSet, pit, unaccountedAntPos) {
 			LOG_TRACKER("New ant at " << *pit);
 			Ant* ant = new Ant(*pit);
 			m_ants.insert(ant);
 			g_map->addAnt(ant);
 		}
+		unaccountedAntPos.clear(); // All accounted for.
 	}
 
 	ASSERT(buf.myAnts.size() == m_ants.size());
@@ -237,12 +240,13 @@ void Tracker::Buffer::resetDynamics() {
 }
 
 AntSet& Tracker::getAnts() {
-	return m_liveAnts;
+	return m_ants;
 }
 
-EnemySet const& Tracker::getEnemies() const {
+const EnemySet& Tracker::getEnemies() const {
 	return buf.enemyAnts;
 }
+
 const PosSet& Tracker::getFood() const {
-	return this->buf.food; // FIXEDME: Mattias - is this right? Yep. - Mattias
+	return this->buf.food;
 }

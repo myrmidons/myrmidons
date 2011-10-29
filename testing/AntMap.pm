@@ -13,7 +13,7 @@ sub readfile {
         $cols = $1 if (/cols (\d+)/);
 
         if (s/m //) {
-            push(@map, $_);
+            push(@map, [split(//)]);
         }
     }
     close(MAP);
@@ -32,7 +32,7 @@ sub print_map {
 sub getpos {
     shift;
     my ($x, $y) = @_;
-    return substr($map[$y], $x, 1);
+    return $map[$x][$y];
 }
 
 sub nrows { return $rows; }

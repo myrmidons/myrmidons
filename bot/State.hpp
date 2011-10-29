@@ -2,17 +2,9 @@
 #define STATE_HPP
 
 #include <iostream>
-#include <stdio.h>
-#include <cstdlib>
-#include <cmath>
-#include <string>
 #include <vector>
-#include <queue>
-#include <stack>
 
 #include "Timer.hpp"
-#include "Bug.hpp"
-#include "Square.hpp"
 #include "Pos.hpp"
 
 
@@ -52,8 +44,7 @@ struct State
     std::vector<double> scores;
     bool gameover;
 
-    Timer timer;
-    Bug bug;
+	Timer timer;
 
     /*
         Functions
@@ -71,16 +62,5 @@ std::ostream& operator<<(std::ostream &os, const State &state);
 std::istream& operator>>(std::istream &is, State &state);
 
 extern State* g_state;
-
-#ifdef DEBUG
-#	define LOG_DEBUG(msg) g_state->bug << msg << std::endl << std::flush
-#	define STAMP_BODY "STAMP: Function " << __FUNCTION__ << " in file " __FILE__ << " on row " <<  __LINE__
-#	define STAMP_ LOG_DEBUG(STAMP_BODY)
-#	define STAMP(foo) LOG_DEBUG(STAMP_BODY << ": " << foo)
-#else
-#	define LOG_DEBUG(msg)
-#	define STAMP_
-#	define STAMP(foo)
-#endif
 
 #endif //STATE_H_

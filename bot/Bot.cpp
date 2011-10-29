@@ -1,6 +1,7 @@
 #include "Bot.hpp"
 #include "Ant.hpp"
 #include "Map.hpp"
+#include "Logger.hpp"
 #include "Tracker.hpp"
 #include "Room.hpp"
 #include "RoomContents.hpp"
@@ -261,7 +262,7 @@ void Bot::makeMoves()
 	DebugWindow::instance()->redraw();
 #endif
 
-    state.bug << "time taken: " << state.timer.getTime() << "ms" << endl << endl;
+	LOG_DEBUG("time taken: " << state.timer.getTime() << "ms" << endl);
 }
 
 //finishes the turn

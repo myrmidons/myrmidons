@@ -47,6 +47,8 @@ public:
 	EnemySet const& getEnemies() const;
 	PosSet const&   getFood() const;
 
+	int turn() const { return m_turn; }
+
 	// All known food, wether visible or not.
 	//const PosList& getAllFood() const;
 

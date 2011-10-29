@@ -1,7 +1,7 @@
 #include "Ant.hpp"
 #include "Map.hpp"
 #include "Room.hpp"
-#include "State.hpp"
+#include "Logger.hpp"
 
 Ant::Ant(const Pos &loc)
 	: m_state(STATE_NONE), m_position(loc) {

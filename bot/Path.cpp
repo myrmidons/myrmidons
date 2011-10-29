@@ -2,7 +2,7 @@
 #include "Map.hpp"
 #include "Room.hpp"
 #include "Util.hpp"
-#include "State.hpp" // LOG_DEBUG
+#include "Logger.hpp"
 #include <algorithm>
 
 struct SearchNode {

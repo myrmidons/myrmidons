@@ -81,6 +81,8 @@ void Tracker::bufferHill(Pos const& pos, int team) {
 }
 
 void Tracker::endTurnInput() {
+	if (g_state->gameover)
+		return;
 
 	STAMP("Before update");
 	updateMapInfo();
@@ -105,6 +107,7 @@ void Tracker::updateMapInfo() {
 	LOG_TRACKER("Reporting new myrmidon hills to map.");
 	IT(PosSet, it, buf.newHills) {
 		g_map->addHill(*it);
+		m_ourHills.insert(*it);
 	}
 	LOG_TRACKER(buf.newHills.size() << " hills reported.");
 
@@ -112,6 +115,7 @@ void Tracker::updateMapInfo() {
 	LOG_TRACKER("Reporting new enemy hills to map.");
 	IT(EnemySet, it, buf.newEnemyHills) {
 		g_map->addEnemyHill(*it);
+		m_enemyHills.insert(*it);
 	}
 	LOG_TRACKER(buf.newEnemyHills.size() << " hills reported.");
 
@@ -136,6 +140,10 @@ void Tracker::updateMapInfo() {
 
 	/////////////////////////////////////////////////////
 
+	updateAnts();
+}
+
+void Tracker::updateAnts() {
 	// Remove ants, and re-add them later if still alive. This ensures consistent dynamic data (ant, team, etc).
 	ITC(AntSet, ait, m_ants)
 		g_map->removeAnt(*ait);

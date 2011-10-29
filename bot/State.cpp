@@ -86,6 +86,7 @@ istream& operator>>(istream &is, State &state)
 	while(is >> inputType) {
 		if (inputType == "end") {
             state.gameover = 1;
+			Logger::instance()->endGame();
             break;
         }
 		else if (inputType == "turn") {

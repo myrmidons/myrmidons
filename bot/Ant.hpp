@@ -9,6 +9,7 @@ class Ant {
 public:
 	enum State {
 		STATE_NONE,
+		STATE_GOING_TO_POS,
 		STATE_GOING_TO_FOOD,
 		STATE_GOING_TO_ROOM
 	};

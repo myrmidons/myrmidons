@@ -17,8 +17,8 @@ typedef std::set<Ant*> AntSet;
 class Tracker {
 	AntSet m_ants; // All our ants. new-borns and kills done in endTurnInput
 
-	PosSet m_enemyHills;
-	PosSet m_hills;
+	PosSet m_ourHills;
+	EnemyHillSet m_enemyHills;
 
 	int m_turn;
 
@@ -38,6 +38,8 @@ public:
 	AntSet&   getAnts();
 	const EnemySet& getEnemies() const;
 	PosSet const&   getFood() const;
+	const PosSet& ourHills() const { return m_ourHills; }
+	const EnemyHillSet& enemyHills() const { return m_enemyHills; }
 
 	int turn() const { return m_turn; }
 
@@ -47,8 +49,8 @@ public:
 	Bug log;
 
 private:
-
 	void updateMapInfo();
+	void updateAnts();
 
 	struct Buffer {
 

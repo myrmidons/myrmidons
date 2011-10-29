@@ -15,7 +15,7 @@ public:
 
 	explicit Ant(Pos const& loc = Pos());
 	~Ant();
-
+	/*const*/ int id; // Unique id per ant. deterministic.
 	Pos& pos();
 	State state() const { return m_state; }
 	const Path& path() const { return m_path; }

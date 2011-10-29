@@ -2,9 +2,10 @@
 #include "Map.hpp"
 #include "Room.hpp"
 #include "State.hpp"
+#include "Util.hpp"
 
 Ant::Ant(const Pos &loc)
-	: m_state(STATE_NONE), m_position(loc) {
+	: id(getID<Ant>()), m_state(STATE_NONE), m_position(loc) {
 }
 
 Ant::~Ant() {

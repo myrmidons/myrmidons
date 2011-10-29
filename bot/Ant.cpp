@@ -15,14 +15,18 @@ Ant::~Ant() {
 	stop(); // Clear Square.destinyAnt
 }
 
-Pos& Ant::pos() {
+Pos Ant::pos() const {
 	return m_position;
 }
 Pos Ant::expectedPos() {
 	return m_expectedPosition;
 }
+
 void Ant::setExpectedPos(Pos p) {
 	m_expectedPosition = p;
+}
+void Ant::setPos(Pos p) {
+	m_position = p;
 }
 
 bool Ant::goTo(Pos dest) {

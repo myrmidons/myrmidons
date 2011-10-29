@@ -98,11 +98,6 @@ void lookForFood(Ant* ant) {
 //makes the bots moves for the turn
 void Bot::makeMoves()
 {
-	// This is what the bot currently is acting on, so it's if the image is wrong, our decitions are wrong and rightfully so.
-#ifdef DEBUG
-	DebugWindow::instance()->redraw();
-#endif
-
 	LOG_DEBUG("Bot::makeMoves");
 
 	// Update current ant states
@@ -186,6 +181,11 @@ void Bot::makeMoves()
 	}
 
 	g_coordinator->moveAntsAfterDesire(ants); // all ants desires are calculated, so they should all have a plan/goal/mission/objective
+
+#ifdef DEBUG
+	// Draw map with desires and plans.
+	DebugWindow::instance()->redraw();
+#endif
 
 	LOG_DEBUG("time taken: " << state.timer.getTime() << "ms" << endl);
 }

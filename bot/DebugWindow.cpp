@@ -48,9 +48,11 @@ void DebugWindow::paintEvent(QPaintEvent* event) {
 	painter.drawImage(0, 0, m_img);
 }
 
-const QRgb FoodColor = qRgb(0, 128, 0); // Dark green. Inviting.
+const QRgb FoodColor = qRgb(0, 160, 0); // Dark green. Inviting.
 const QRgb VoidColor = qRgb(60,60, 60); // Undiscovered
 const QRgb WallColor = qRgb(0, 0,  0);
+const QRgb FriendColor = qRgb(0, 0,  255);
+const QRgb EnemyColor = qRgb(255, 0,  0);
 
 bool compClose(int x, int y) {
 	return Abs(x-y) < 75;
@@ -91,7 +93,8 @@ QRgb randomColor(Room* room) {
 		color = qRgb(r,g,b);
 		id += 78901;
 		/**/
-	} while (colorClose(color, FoodColor) || colorClose(color, VoidColor) || colorClose(color, WallColor));
+	} while (colorClose(color, FoodColor) || colorClose(color, VoidColor) || colorClose(color, WallColor) ||
+			 colorClose(color, FriendColor) || colorClose(color, EnemyColor));
 	//} while (r+g+b < 250); // Racist code (avoid blacks)
 
 	return color;
@@ -131,6 +134,14 @@ void drawWrappedLine(QPainter& painter, QPointF a, QPointF b) {
 	}
 }
 
+void drawSquare(QPainter& painter, QPointF pos, float r, QRgb color) {
+	QRectF rect(pos.x()-r, pos.y()-r, 2*r, 2*r);
+	painter.fillRect(rect, color);
+
+	painter.setPen(Qt::white);
+	painter.drawRect(rect);
+}
+
 void DebugWindow::redrawImg() {
 	LOG_DEBUG("Rooms::dumpImage");
 
@@ -154,12 +165,13 @@ void DebugWindow::redrawImg() {
 			else
 				continue; // Undiscovered
 
+			QRgb oddColor = color;
 			if (!s.visible())
-				color = darken(color);
+				oddColor = darken(color); // Draw fog of war using striped
 
 			for (int xi=0; xi<Zoom; ++xi)
 				for (int yi=0; yi<Zoom; ++yi)
-					m_img.setPixel(x*Zoom+xi, y*Zoom+yi, color);
+					m_img.setPixel(x*Zoom+xi, y*Zoom+yi, ((yi/2+1)%2) ? color : oddColor);
 		}
 	}
 
@@ -191,17 +203,17 @@ void DebugWindow::redrawImg() {
 
 		//////////////////////////////////////////////////
 		// Draw ants
+		float antRad = 0.35f*Zoom;
+
+		const EnemySet& enemies = g_tracker->getEnemies();
+		ITC(EnemySet, eit, enemies)
+			drawSquare(painter, toQP(eit->pos), antRad, EnemyColor);
 
 		const AntSet& ants = g_tracker->getAnts();
 		ITC(AntSet, ait, ants) {
 			Ant* ant = *ait;
 			QPointF pos = toQP(ant->pos());
-			float antRad = 0.35f*Zoom;
-			QRectF rect(pos.x()-antRad, pos.y()-antRad, 2*antRad, 2*antRad);
-			painter.fillRect(rect, Qt::red);
-
-			painter.setPen(Qt::white);
-			painter.drawRect(rect);
+			drawSquare(painter, pos, antRad, FriendColor);
 
 			if (ant->state() != Ant::STATE_NONE) {
 				const Path& path = ant->path();
@@ -236,6 +248,12 @@ void DebugWindow::redrawImg() {
 					painter.drawEllipse(wpPos, destRad, destRad);
 					/**/
 				}
+			}
+
+			if (ant->expectedPos() != ant->pos()) {
+				// Draw where ant is expected to go
+				painter.setPen(Qt::white);
+				drawWrappedLine(painter, pos, toQP(ant->expectedPos()));
 			}
 		}
 

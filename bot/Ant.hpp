@@ -16,7 +16,7 @@ public:
 	explicit Ant(Pos const& loc = Pos());
 	~Ant();
 	/*const*/ int id; // Unique id per ant. deterministic.
-	Pos& pos();
+	Pos pos() const;
 	Pos expectedPos();
 	State state() const { return m_state; }
 	const Path& path() const { return m_path; }
@@ -38,6 +38,9 @@ public:
 
 	// Sets the expected position for next round, should only be used by the coordinator
 	void setExpectedPos(Pos p);
+
+	// Only used by tracker!
+	void setPos(Pos p);
 private:
 	State m_state;
 	Pos m_position;

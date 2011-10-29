@@ -62,9 +62,9 @@ ostream& operator<<(ostream &os, const State &state)
 			else if(g_map->square(pos).isFood)
                 os << '*';
 			else if(g_map->square(pos).isHill)
-				os << (char)('A' + g_map->square(pos).hillPlayer);
-			else if(g_map->square(pos).ant >= 0)
-				os << (char)('a' + g_map->square(pos).ant);
+				os << (char)('A' + g_map->square(pos).hillTeam);
+			else if(g_map->square(pos).antTeam >= 0)
+				os << (char)('a' + g_map->square(pos).antTeam);
 			else if(g_map->square(pos).visible())
                 os << '.';
             else
@@ -90,7 +90,6 @@ istream& operator>>(istream &is, State &state)
         }
 		else if (inputType == "turn") {
 			is >> state.turn;
-			LOG_DEBUG("turn " << state.turn << ":" << std::endl << "----------------");
 			g_tracker->beginTurnInput(state.turn);
             break;
         }
@@ -156,7 +155,7 @@ istream& operator>>(istream &is, State &state)
             }
             else if(inputType == "f") //food square
             {
-				STAMP("Food");
+				//STAMP("Food");
                 is >> row >> col;
 				g_tracker->bufferFood(Pos(col, row));
             }
@@ -168,7 +167,7 @@ istream& operator>>(istream &is, State &state)
             }
 			else if(inputType == "d") //dead ant square
             {
-				STAMP("Dead ant");
+				//STAMP("Dead ant");
                 is >> row >> col >> player;
 				g_tracker->bufferDeadAnt(Pos(col, row), player);
 			}

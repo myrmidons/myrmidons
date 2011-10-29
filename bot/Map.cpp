@@ -29,69 +29,43 @@ PosPath Map::getOptimalPathTo(const Pos &from, const Pos &to) {
 }
 
 void Map::removeAnt(Ant* ant) {
-	if(!antpos.count(ant)) {
-		// FAIL!
-		LOG_ERROR("FAIL in Map::removeAnt: Ant already removed! (or never added)");
-	}
-	else if(!posant.count(ant->pos())) {
-		// FAIL!
-		LOG_ERROR("FAIL in Map::removeAnt: Ant postion already removed! (or never added)");
-	}
-	else {
-		posant.erase(ant->pos());
-		antpos.erase(ant);
+	LOG_DEBUG("removeAnt(" << *ant << ") from pos " << ant->pos());
 
-		Square& sq = square(ant->pos());
-		sq.ant = -1;
-		sq.pAnt = 0;
-		sq.room->contents()->removeMyrmidon(ant);
-	}
+	Square& sq = square(ant->pos());
+	sq.antTeam = NO_TEAM;
+	ASSERT(sq.pAnt == ant);
+	sq.pAnt = 0;
+	sq.room->contents()->removeMyrmidon(ant);
 }
 
 // Tell the map that an ant has spawned.
 void Map::addAnt(Ant* ant) {
-	if(antpos.count(ant)) {
-		// FAIL!
-		LOG_ERROR("FAIL in Map::addAnt: Ant already added!");
-	}
-	else if(posant.count(ant->pos())) {
-		// FAIL!
-		LOG_ERROR("FAIL in Map::addAnt: Ant position already added!");
-	}
-	else {
-		antpos[ant] = ant->pos();
-		posant[ant->pos()] = ant;
+	LOG_DEBUG("addAnt(" << *ant << ") to pos " << ant->pos());
 
-		Square& sq = square(ant->pos());
-		sq.ant = 0;
-		sq.pAnt = ant;
-		sq.room->contents()->addMyrmidon(ant);
-
-	}
+	Square& sq = square(ant->pos());
+	ASSERT(sq.pAnt == NULL);
+	sq.antTeam = 0;
+	sq.pAnt = ant;
+	sq.room->contents()->addMyrmidon(ant);
 }
 
 // Get the ant that occupies a specific position.
 Ant* Map::getAntAt(Pos const& pos) {
-	//return square(pos).pAnt;
-	if(posant.count(pos)) {
-		return posant[pos];
-	}
-	return 0;
+	return square(pos).pAnt;
 }
 
 void Map::moveAnt(Pos const& from, Pos const& to) {
-	TRACKER_LOG("Looking for ant at " << from << ": ");
+	LOG_TRACKER("Map::moveAnt from: " << from << ", to: " << to);
 	Ant* ant = getAntAt(from);
 
-	if(ant) {
-		TRACKER_LOG("and moving it from " <<  ant->pos() << " to ");
+	if (ant) {
 		removeAnt(ant);
 		ant->pos() = to;
 		addAnt(ant);
-		TRACKER_LOG(ant->pos());
+		LOG_TRACKER(ant->pos());
 	}
 	else {
-		TRACKER_LOG(" without finding it.");
+		LOG_ERROR("Map::moveAnt failed to find ant!");
 	}
 }
 
@@ -108,21 +82,23 @@ void Map::addWater(const Pos &pos) {
 }
 
 void Map::addFood(Pos const& pos) {
-	STAMP("Begin");
+	//STAMP("Begin");
 	square(pos).isFood = true;
 	ASSERT(square(pos).discovered);
 	ASSERT(square(pos).room);
 	ASSERT(square(pos).room->contents());
 	square(pos).room->contents()->insertFoodAt(pos);
-	STAMP("End");
+	//STAMP("End");
 }
 
 void Map::addEnemyHill(EnemyHill const& hill) {
-	square(hill.pos).hillPlayer = hill.team;
+	square(hill.pos).hillTeam = hill.team;
 }
 
 void Map::addEnemyAnt(EnemyAnt const& ant) {
-	square(ant.pos).ant = ant.team;
+	Square& s = square(ant.pos);
+	ASSERT(s.antTeam<0);
+	s.antTeam = ant.team;
 }
 
 //returns the new location from moving in a given direction with the edges wrapped
@@ -206,7 +182,7 @@ void Map::updateVisionInformation(const PosList& antsPos) {
 }
 
 bool Map::isOccupied(const Pos& loc) {
-	return square(loc).ant != -1;
+	return square(loc).antTeam >= 0;
 }
 
 //resets all non-water squares to land

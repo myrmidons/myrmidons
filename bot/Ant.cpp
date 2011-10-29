@@ -7,14 +7,8 @@ Ant::Ant(const Pos &loc)
 	: m_state(STATE_NONE), m_position(loc) {
 }
 
-Ant::Ant(Ant const& ant)
-	: m_position(ant.m_position){
-
-}
-
-Ant& Ant::operator=(Ant const& ant) {
-	m_position = ant.m_position;
-	return *this;
+Ant::~Ant() {
+	stop(); // Clear Square.destinyAnt
 }
 
 Pos& Ant::pos() {
@@ -26,11 +20,12 @@ bool Ant::goTo(Pos dest) {
 	if (m_path.isValid()) {
 		// Win
 		m_state = STATE_GOING_TO_ROOM;
+		g_map->square(dest).destinyAnt = this;
 		return true;
 	} else {
 		// Fail
 		LOG_DEBUG("Ant::goTo failed");
-		m_state = STATE_NONE;
+		stop();
 		return false;
 	}
 }
@@ -46,6 +41,8 @@ bool Ant::goToFoodAt(Pos dest) {
 }
 
 bool Ant::goToRoom(Room* room) {
+	stop();
+
 	if (room == g_map->roomAt(pos()))
 		LOG_DEBUG("Asked to go to room it is in");
 
@@ -58,18 +55,28 @@ bool Ant::goToRoom(Room* room) {
 	return false;
 }
 
+void Ant::stop() {
+	if (m_path.isValid()) {
+		Square& s = g_map->square(m_path.dest());
+		if (s.destinyAnt == this)
+			s.destinyAnt = NULL;
+	}
+	m_path=Path();
+	m_state = STATE_NONE;
+}
+
 void Ant::calcDesire() {
 	LOG_DEBUG("Ant::calcDesire");
 
 	if (!m_path.isValid()) {
-		LOG_DEBUG("Invalid path, going to STATE_NONE");
-		m_state = STATE_NONE;
+		LOG_DEBUG("Invalid path, stopping");
+		stop();
 	}
 
 	if (m_state==STATE_GOING_TO_FOOD) {
 		if (!g_map->square(m_path.dest()).isFood) {
 			LOG_DEBUG("FOOD GONE!");
-			m_state = STATE_NONE;
+			stop();
 		}
 	}
 
@@ -90,7 +97,7 @@ void Ant::calcDesire() {
 
 		if (m_desire.size()==0 || (m_desire.size()==1 && m_desire[0]==pos())) {
 			LOG_DEBUG("Resetting state - at target?");
-			m_state = STATE_NONE;
+			stop();
 		}
 	}
 }

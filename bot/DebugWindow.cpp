@@ -190,7 +190,7 @@ void DebugWindow::redrawImg() {
 					QPointF p = pos;
 					const WPList& wayPoints = path.wayPoints();
 					bool draw=false;
-					for (int i=0; i<wayPoints.size(); ++i) {
+					for (int i=0; i<(int)wayPoints.size(); ++i) {
 						if (!draw) {
 							draw = (wayPoints[i].room == antRoom);
 							continue; // Start drawing waypoint in next room

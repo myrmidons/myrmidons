@@ -13,9 +13,8 @@ public:
 		STATE_GOING_TO_ROOM
 	};
 
-	Ant(Pos const& loc = Pos());
-	Ant(Ant const& ant);
-	Ant& operator=(Ant const& ant);
+	explicit Ant(Pos const& loc = Pos());
+	~Ant();
 
 	Pos& pos();
 	State state() const { return m_state; }
@@ -25,6 +24,7 @@ public:
 	bool goTo(Pos pos);
 	bool goToFoodAt(Pos pos);
 	bool goToRoom(Room* room);
+	void stop(); // Stop going towards currnet goal.
 
 	// update desire
 	void calcDesire();

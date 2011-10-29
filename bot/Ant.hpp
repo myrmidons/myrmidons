@@ -69,7 +69,7 @@ inline bool operator == (EnemyAnt const& a, EnemyAnt const& b) {
 	return (a.team == b.team) && (a.pos == b.pos);
 }
 inline std::ostream& operator<<(std::ostream &os, const Ant& ant) {
-	return os << "Ant[" << ant.id << "]";
+	return os << "Ant[" << ant.id << ", " <<  ant.pos() <<"]";
 }
 
 typedef EnemyAnt EnemyHill;

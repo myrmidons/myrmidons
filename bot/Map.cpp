@@ -128,7 +128,7 @@ void Map::addEnemyAnt(EnemyAnt const& ant) {
 //returns the new location from moving in a given direction with the edges wrapped
 Pos Map::getLocation(const Pos &loc, int dir)
 {
-	ASSERT(0<=dir && dir<4);
+	ASSERT(0<=dir && dir<=4); // 4==STAY is ok.
 	return Pos( (loc[0] + DIRECTIONS[dir][0] + m_size[0]) % m_size[0],
 				(loc[1] + DIRECTIONS[dir][1] + m_size[1]) % m_size[1] );
 }

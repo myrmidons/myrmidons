@@ -21,7 +21,7 @@ const int STAY = 4;
 const int TDIRECTIONS = 4;
 //const char CDIRECTIONS[4] = {'N', 'E', 'S', 'W'};
 const char CDIRECTIONS[4] = {'W', 'S', 'E', 'N'};
-const int DIRECTIONS[4][2] = { {-1, 0}, {0, 1}, {1, 0}, {0, -1}};      //{W, S, E, N}
+const int DIRECTIONS[5][2] = { {-1, 0}, {0, 1}, {1, 0}, {0, -1}, {0, 0}};      //{W, S, E, N}. And STAY
 
 typedef std::vector<int> DirVec;
 

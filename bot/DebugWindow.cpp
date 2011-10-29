@@ -188,6 +188,7 @@ void DebugWindow::redrawImg() {
 					/*/
 					Room* antRoom = g_map->roomAt(ant->pos());
 					QPointF p = pos;
+					painter.drawEllipse(p, 1, 1);
 					const WPList& wayPoints = path.wayPoints();
 					bool draw=false;
 					for (int i=0; i<(int)wayPoints.size(); ++i) {
@@ -208,6 +209,12 @@ void DebugWindow::redrawImg() {
 		}
 
 		// TODO Draw food
+		const PosList& food = g_tracker->getAllFood();
+		ITC(PosList, pit, food) {
+			painter.setPen(Qt::green);
+			QPointF pos = toQP(*pit);
+			painter.drawEllipse(pos, 2, 2);
+		}
 	}
 
 	/////////////////////////

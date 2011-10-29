@@ -80,8 +80,8 @@ void Ant::updateState() {
 
 	if (m_state==STATE_GOING_TO_FOOD) {
 		Square& s = g_map->square(m_path.dest());
-		if (s.isVisible && !s.isFood) {
-			LOG_ANT(this, "FOOD GONE!");
+		if (s.visible() && !s.isFood) {
+			LOG_DEBUG("FOOD GONE!");
 			stop();
 		}
 	}

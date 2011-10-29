@@ -75,7 +75,7 @@ ostream& operator<<(ostream &os, const State &state)
 				os << (char)('A' + g_map->square(pos).hillPlayer);
 			else if(g_map->square(pos).ant >= 0)
 				os << (char)('a' + g_map->square(pos).ant);
-			else if(g_map->square(pos).isVisible)
+			else if(g_map->square(pos).visible())
                 os << '.';
             else
                 os << '?';

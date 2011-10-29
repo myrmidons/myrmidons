@@ -63,6 +63,17 @@ bool colorClose(QRgb x, QRgb y) {
 			compClose(qBlue(x),  qBlue(y));
 }
 
+int darkenComp(int c) {
+	return c/2;
+}
+
+QRgb darken(QRgb color) {
+	return qRgb(
+				darkenComp(qRed(color)),
+				darkenComp(qGreen(color)),
+				darkenComp(qBlue(color)));
+}
+
 QRgb randomColor(Room* room) {
 	//srand(reinterpret_cast<long>(room));
 	int id = room->id;
@@ -142,6 +153,9 @@ void DebugWindow::redrawImg() {
 				color = WallColor;
 			else
 				continue; // Undiscovered
+
+			if (!s.visible())
+				color = darken(color);
 
 			for (int xi=0; xi<Zoom; ++xi)
 				for (int yi=0; yi<Zoom; ++yi)

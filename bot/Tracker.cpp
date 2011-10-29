@@ -136,6 +136,10 @@ void Tracker::updateMapInfo() {
 
 	/////////////////////////////////////////////////////
 
+	// Remove ants, and re-add them later if still alive. This ensures consistent dynamic data (ant, team, etc).
+	ITC(AntSet, ait, m_ants)
+		g_map->removeAnt(*ait);
+
 	// Our ants at buf.myAnts now. Update our m_ants by: moving, killing, spawning.
 	PosSet unaccountedAntPos; // will be shrunk as the position is set to a new ant.
 	unaccountedAntPos.insert(buf.myAnts.begin(), buf.myAnts.end());
@@ -148,7 +152,6 @@ void Tracker::updateMapInfo() {
 		if (unaccountedAntPos.count(expected)) {
 			// There is an ant where this ant went. It must be this ant.
 			// Update map/room info about ant.
-			g_map->removeAnt(ant);
 			ant->setPos(expected);
 			g_map->addAnt(ant);
 
@@ -169,9 +172,10 @@ void Tracker::updateMapInfo() {
 			if (unaccountedAntPos.count(ant->pos())) {
 				LOG_TRACKER("Ant found at old (expected) positions - its movement was probably denied.");
 
-				// No need to move it - just marked as "tracked":
-				g_map->addAnt(ant); // Update dynamic data
+				// Update dynamic data (team etc)
+				g_map->addAnt(ant);
 
+				// Mark as "tracked"
 				unaccountedAntPos.erase(ant->pos());
 				doneAnts.insert(ant);
 			}
@@ -195,7 +199,6 @@ void Tracker::updateMapInfo() {
 				Ant* ant = *ait;
 				// Dead ant
 				LOG_TRACKER("Killing ant at " << ant->pos() << " (expected " << ant->expectedPos() << ")");
-				g_map->removeAnt(ant);
 				m_ants.erase(ant);
 				delete ant; // RIP.
 			}
@@ -218,7 +221,7 @@ void Tracker::updateMapInfo() {
 
 	/////////////////////////////////////////////////////
 
-	// Set ant positions in map.
+	// Set ant teams (reset by resetDynamics)
 	IT(PosList, it, buf.myAnts)
 		g_map->square(*it).antTeam = 0;
 

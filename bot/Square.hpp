@@ -6,6 +6,8 @@
 class Room;
 class Ant;
 
+const int NO_TEAM = -1;
+
 /* One grid cell on the map.
 It's hip to be...              */
 struct Square
@@ -29,9 +31,9 @@ struct Square
 	Square() : m_lastVisible(-1)
 	{
 		discovered = isWater = isHill = isFood = false;
-		antTeam = hillTeam = -1;
 		pAnt = destinyAnt = NULL;
 		room = NULL;
+		antTeam = hillTeam = NO_TEAM;
 		resetDynamics();
 	}
 
@@ -40,6 +42,7 @@ struct Square
 	{
 		m_isVisible = false;
 		isFood = false;
+		antTeam = NO_TEAM; // Ants can move. Tracker will set each turn.
 		deadAnts.clear();
 	}
 

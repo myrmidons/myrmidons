@@ -29,8 +29,10 @@ PosPath Map::getOptimalPathTo(const Pos &from, const Pos &to) {
 }
 
 void Map::removeAnt(Ant* ant) {
+	LOG_DEBUG("removeAnt(" << *ant << ") from pos " << ant->pos());
+
 	Square& sq = square(ant->pos());
-	sq.antTeam = -1;
+	sq.antTeam = NO_TEAM;
 	ASSERT(sq.pAnt == ant);
 	sq.pAnt = 0;
 	sq.room->contents()->removeMyrmidon(ant);
@@ -38,8 +40,10 @@ void Map::removeAnt(Ant* ant) {
 
 // Tell the map that an ant has spawned.
 void Map::addAnt(Ant* ant) {
+	LOG_DEBUG("addAnt(" << *ant << ") to pos " << ant->pos());
+
 	Square& sq = square(ant->pos());
-	ASSERT(sq.pAnt==NULL);
+	ASSERT(sq.pAnt == NULL);
 	sq.antTeam = 0;
 	sq.pAnt = ant;
 	sq.room->contents()->addMyrmidon(ant);

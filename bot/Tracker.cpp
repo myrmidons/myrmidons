@@ -2,6 +2,7 @@
 #include "Ant.hpp"
 #include "Map.hpp"
 #include "Util.hpp"
+#include "Logger.hpp"
 #include <sstream>
 #include <sys/time.h>
 #include <set>
@@ -25,6 +26,7 @@ inline size_t Tracker::indexOf(Ant* ant) const {
 
 void Tracker::beginTurnInput(int n) {
 	m_turn = n;
+	Logger::instance()->newTurn(n); // Start new logfile
 	TRACKER_LOG("turn " << n << ":" << std::endl << "----------------");
 	buf.resetDynamics();
 	ASSERT(g_map);

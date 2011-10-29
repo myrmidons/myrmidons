@@ -5,7 +5,9 @@
 #include "Room.hpp"
 #include "RoomContents.hpp"
 #include "Util.hpp"
+#include "Logger.hpp"
 #include <cmath>
+#include <queue>
 
 Map* g_map = NULL;
 
@@ -16,7 +18,7 @@ Map::Map() {
 void Map::initMap(Vec2 const& dim) {
 
 	m_size = dim;
-	g_state->bug << "Map size: " << m_size << std::endl;
+	LOG_DEBUG("Map size: " << m_size);
 	m_grid = std::vector<std::vector<Square> >(m_size.x(),
 											   std::vector<Square>(m_size.y(), Square()));
 }
@@ -29,11 +31,11 @@ PosPath Map::getOptimalPathTo(const Pos &from, const Pos &to) {
 void Map::removeAnt(Ant* ant) {
 	if(!antpos.count(ant)) {
 		// FAIL!
-		g_state->bug << "FAIL in Map::removeAnt: Ant already removed! (or never added)" << std::endl;
+		LOG_ERROR("FAIL in Map::removeAnt: Ant already removed! (or never added)");
 	}
 	else if(!posant.count(ant->pos())) {
 		// FAIL!
-		g_state->bug << "FAIL in Map::removeAnt: Ant postion already removed! (or never added)" << std::endl;
+		LOG_ERROR("FAIL in Map::removeAnt: Ant postion already removed! (or never added)");
 	}
 	else {
 		posant.erase(ant->pos());
@@ -50,11 +52,11 @@ void Map::removeAnt(Ant* ant) {
 void Map::addAnt(Ant* ant) {
 	if(antpos.count(ant)) {
 		// FAIL!
-		g_state->bug << "FAIL in Map::addAnt: Ant already added!" << std::endl;
+		LOG_ERROR("FAIL in Map::addAnt: Ant already added!");
 	}
 	else if(posant.count(ant->pos())) {
 		// FAIL!
-		g_state->bug << "FAIL in Map::addAnt: Ant position already added!" << std::endl;
+		LOG_ERROR("FAIL in Map::addAnt: Ant position already added!");
 	}
 	else {
 		antpos[ant] = ant->pos();
@@ -78,18 +80,18 @@ Ant* Map::getAntAt(Pos const& pos) {
 }
 
 void Map::moveAnt(Pos const& from, Pos const& to) {
-	g_tracker->log << "Looking for ant at " << from << ": ";
+	TRACKER_LOG("Looking for ant at " << from << ": ");
 	Ant* ant = getAntAt(from);
 
 	if(ant) {
-		g_tracker->log << "and moving it from " <<  ant->pos() << " to ";
+		TRACKER_LOG("and moving it from " <<  ant->pos() << " to ");
 		removeAnt(ant);
 		ant->pos() = to;
 		addAnt(ant);
-		g_tracker->log << ant->pos() << std::endl;
+		TRACKER_LOG(ant->pos());
 	}
 	else {
-		g_tracker->log << " without finding it." << std::endl;
+		TRACKER_LOG(" without finding it.");
 	}
 }
 
@@ -198,7 +200,7 @@ void Map::updateVisionInformation(const PosList& antsPos) {
 		}
 	}
 
-	g_state->bug << discoveries.size() << " new discoveries." << std::endl;
+	LOG_DEBUG(discoveries.size() << " new discoveries.");
 
 	g_rooms->expandWith(discoveries);
 }

@@ -3,6 +3,9 @@
 #include "Room.hpp"
 #include "State.hpp"
 #include "Util.hpp"
+#include "Logger.hpp"
+
+#define LOG_ANT(a, x) LOG_DEBUG(*a << " " << x)
 
 Ant::Ant(const Pos &loc)
 	: id(getID<Ant>()), m_state(STATE_NONE), m_position(loc) {
@@ -20,19 +23,20 @@ bool Ant::goTo(Pos dest) {
 	m_path = Path::findPath(this->pos(), dest);
 	if (m_path.isValid()) {
 		// Win
+		LOG_ANT(this, "goTo " << dest);
 		m_state = STATE_GOING_TO_ROOM;
 		g_map->square(dest).destinyAnt = this;
 		return true;
 	} else {
 		// Fail
-		LOG_DEBUG("Ant::goTo failed");
+		LOG_ANT(this, "goTo failed");
 		stop();
 		return false;
 	}
 }
 
 bool Ant::goToFoodAt(Pos dest) {
-	LOG_DEBUG("Ant::goToFoodAt " << dest);
+	LOG_ANT(this, "goToFoodAt " << dest);
 	if (goTo(dest)) {
 		// Win
 		m_state = STATE_GOING_TO_FOOD;
@@ -45,11 +49,11 @@ bool Ant::goToRoom(Room* room) {
 	stop();
 
 	if (room == g_map->roomAt(pos()))
-		LOG_DEBUG("Asked to go to room it is in");
+		LOG_ANT(this, "Asked to go to room it is in");
 
-	LOG_DEBUG("Ant::goToRoom " << room);
+	LOG_ANT(this, "goToRoom " << room);
 	if (goTo(room->centerPos())) {
-		LOG_DEBUG("Going to room");
+		LOG_ANT(this, "Going to room");
 		m_state = STATE_GOING_TO_ROOM;
 		return true;
 	}
@@ -67,31 +71,31 @@ void Ant::stop() {
 }
 
 void Ant::updateState() {
-	LOG_DEBUG("Ant::updateState");
+	LOG_ANT(this, "Ant::updateState");
 
 	if (!m_path.isValid()) {
-		LOG_DEBUG("Invalid path, stopping");
+		LOG_ANT(this, "Invalid path, stopping");
 		stop();
 	}
 
 	if (m_state==STATE_GOING_TO_FOOD) {
 		Square& s = g_map->square(m_path.dest());
 		if (s.isVisible && !s.isFood) {
-			LOG_DEBUG("FOOD GONE!");
+			LOG_ANT(this, "FOOD GONE!");
 			stop();
 		}
 	}
 
 	if (m_state==STATE_GOING_TO_ROOM) {
 		if (g_map->roomAt(pos()) == g_map->roomAt(m_path.dest())) {
-			LOG_DEBUG("Arrived to room");
+			LOG_ANT(this, "Arrived to room");
 			m_state = STATE_NONE;
 		}
 	}
 }
 
 void Ant::calcDesire() {
-	LOG_DEBUG("Ant::calcDesire");
+	LOG_ANT(this, "calcDesire");
 
 	m_desire.clear();
 
@@ -102,7 +106,7 @@ void Ant::calcDesire() {
 		m_desire = m_path.getNextStep(pos());
 
 		if (m_desire.size()==0 || (m_desire.size()==1 && m_desire[0]==pos())) {
-			LOG_DEBUG("Resetting state - at target?");
+			LOG_ANT(this, "Resetting state - at target?");
 			stop();
 		}
 	}

@@ -6,6 +6,7 @@
 #include "State.hpp"
 #include "Util.hpp"
 #include "Tracker.hpp"
+#include "Logger.hpp"
 #include <QPainter>
 
 const int Zoom = 12; // pixels per grid cell
@@ -237,9 +238,8 @@ void DebugWindow::redrawImg() {
 
 	/////////////////////////
 
-	static int s_nr = 0;
 	char nameBuf[100] = {};
-	sprintf(nameBuf, "rooms_%05d.png", s_nr++);
+	sprintf(nameBuf, "rooms_%04d.png", g_tracker->turn());
 	LOG_DEBUG("Dumping rooms to " << nameBuf);
 	m_img.save(nameBuf);
 

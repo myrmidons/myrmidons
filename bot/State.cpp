@@ -1,7 +1,9 @@
 #include "State.hpp"
 #include "Tracker.hpp"
+#include "Logger.hpp"
 #include "Map.hpp"
 #include <cassert>
+#include <cmath>
 #include "Ant.hpp"
 
 #include <sstream>
@@ -28,17 +30,11 @@ State::State(std::ostream& output)
     gameover = 0;
 	turn = 0;
 	ASSERT(!g_state && "more than one State constructed");
-
-	// Random logfile name....
-	std::stringstream ss;
-	ss << "debug_" << (rand()+clock()) << ".txt";
-	bug.open(ss.str());
 }
 
 //deconstructor
 State::~State()
 {
-    bug.close();
 }
 
 //sets the state up
@@ -98,13 +94,13 @@ istream& operator>>(istream &is, State &state)
 
     //finds out which turn it is
 	while(is >> inputType) {
-		if(inputType == "end") {
+		if (inputType == "end") {
             state.gameover = 1;
             break;
         }
-		else if(inputType == "turn") {
+		else if (inputType == "turn") {
 			is >> state.turn;
-			state.bug << "turn " << state.turn << ":" << std::endl << "----------------" << std::endl;
+			LOG_DEBUG("turn " << state.turn << ":" << std::endl << "----------------");
 			g_tracker->beginTurnInput(state.turn);
             break;
         }

@@ -2,8 +2,10 @@
 #include "RoomContents.hpp"
 #include "Util.hpp"
 #include "Map.hpp"
-#include "State.hpp" // LOG_DEBUG
+#include "State.hpp"
+#include "Logger.hpp"
 #include <limits>
+#include <cmath>
 
 #ifdef DEBUG
 #	include <QImage>
@@ -14,10 +16,13 @@
 
 Rooms* g_rooms = NULL;
 
+#define ROOM_SPAM(x) LOG_DEBUG("Room: " << x);
+//#define ROOM_SPAM(x)
+
 ///////////////////////////////////////////////////////////////////////
 
 bool operator<(const Interest& a, const Interest& b) {
-	//LOG_DEBUG("Interest operator <");
+	//ROOM_SPAM("Interest operator <");
 
 	// Expand into where we have many neighbors first
 	if (a.neighbors > b.neighbors) return true;
@@ -122,9 +127,8 @@ Pos Room::closestPosInNeighbor(Pos from, Room* neighbor, int* outDist) const {
 	}
 
 	// What the hell - this shouldnt happen
-	LOG_DEBUG("closestPosInNeighbor failed goin from " << from << ", with closest at " << closest);
-	LOG_DEBUG("Room is " << this << ", neighbor is " << neighbor);
-
+	LOG_ERROR("closestPosInNeighbor failed goin from " << from << ", with closest at " << closest);
+	LOG_ERROR("Room is " << this << ", neighbor is " << neighbor);
 
 	ASSERT(false && "Room connections broken");
 
@@ -151,7 +155,7 @@ bool Room::isClosable(Pos pos) const {
 		if (s.room==NULL && (!s.isWater || !s.discovered))
 			return false; // We could expand here!
 	}
-	LOG_DEBUG("Closing cell " << pos << " in room " << this);
+	ROOM_SPAM("Closing cell " << pos << " in room " << this);
 	return true;
 }
 
@@ -175,7 +179,7 @@ int bcRad2(int currentBest, Pos pos, const PosList& cells) {
 }
 
 void Room::add(Pos pos) {
-	LOG_DEBUG("Room::add " << pos);
+	ROOM_SPAM("Room::add " << pos);
 
 	m_cells.insert(pos);
 	m_open.insert(pos);
@@ -188,7 +192,7 @@ void Room::add(Pos pos) {
 	// Expand boundingbox
 	m_bb.expandTo(pos, g_map->size());
 
-	LOG_DEBUG("bb is now from " << m_bb.m_min << " to " << m_bb.m_max);
+	ROOM_SPAM("bb is now from " << m_bb.m_min << " to " << m_bb.m_max);
 
 	// Check to see if we can close anything in m_open
 	PosSet closeThese;
@@ -224,19 +228,19 @@ void Room::add(Pos pos) {
 		if (Room* r = g_map->square(g_map->getLocation(pos, i)).room)
 			r->m_dirty = true;
 
-	LOG_DEBUG("Room::add DONE");
+	ROOM_SPAM("Room::add DONE");
 }
 
 bool Room::isFinished() const {
-	LOG_DEBUG("Room::isFinished (this = " << this << ")");
+	ROOM_SPAM("Room::isFinished (this = " << this << ")");
 
 	if (m_open.empty()) {
-		LOG_DEBUG("Room::isFinished: m_open.empty()");
+		ROOM_SPAM("Room::isFinished: m_open.empty()");
 		return true;
 	}
 
 	if (getArea() >= g_rooms->maxRoomArea()) {
-		LOG_DEBUG("Room::isFinished: maxRoomArea");
+		ROOM_SPAM("Room::isFinished: maxRoomArea");
 		return true;
 	}
 
@@ -256,25 +260,25 @@ bool Room::isFinished() const {
 
 // Calculate m_interests that coincides with given positions.
 void Room::calcInterests(const PosSet& unassigned) {
-	LOG_DEBUG("Room::calcInterests (this = " << this << ")");
+	ROOM_SPAM("Room::calcInterests (this = " << this << ")");
 
-	//LOG_DEBUG("clearing m_interestPos...");
+	//ROOM_SPAM("clearing m_interestPos...");
 	m_interestPos.clear();
 
-	//LOG_DEBUG("clearing m_interests...");
+	//ROOM_SPAM("clearing m_interests...");
 	m_interests.clear();
 
-	//LOG_DEBUG("cleared");
+	//ROOM_SPAM("cleared");
 
 	if (isFinished()) {
-		LOG_DEBUG("Room::calcInterests - bailing out - we're finished!");
+		ROOM_SPAM("Room::calcInterests - bailing out - we're finished!");
 		return; // We have no interests - we are content.
 	}
 
 	typedef std::map<Pos, int> NeighMap;
 	NeighMap neighs; // all neighbor cells
 
-	LOG_DEBUG("Finding neighbors to room...");
+	ROOM_SPAM("Finding neighbors to room...");
 
 	ITC(PosSet, pit, m_open) {
 		ASSERT(g_map->square(*pit).isGround());
@@ -287,7 +291,7 @@ void Room::calcInterests(const PosSet& unassigned) {
 		}
 	}
 
-	LOG_DEBUG("Culling " << neighs.size() << " neighbors...");
+	ROOM_SPAM("Culling " << neighs.size() << " neighbors...");
 
 	Vec2 mapSize = g_map->size();
 
@@ -319,7 +323,7 @@ void Room::calcInterests(const PosSet& unassigned) {
 				int axis = (d.x() > d.y() ? 0 : 1);
 
 				if (bbSize[axis] >= g_rooms->maxRoomWidth()) {
-					LOG_DEBUG("Ignoring neighbor at " << intr.pos << " expanding bb too much");
+					ROOM_SPAM("Ignoring neighbor at " << intr.pos << " expanding bb too much");
 					continue; // We may not expand this way!
 				}
 
@@ -330,18 +334,18 @@ void Room::calcInterests(const PosSet& unassigned) {
 			intr.centerDistSq = g_map->euclidDistSq(m_center, intr.pos);
 
 			if (intr.centerDistSq > g_rooms->maxRoomRadiusSq()) {
-				LOG_DEBUG("Ignoring neighbor at " << intr.pos << " going outside max radius");
+				ROOM_SPAM("Ignoring neighbor at " << intr.pos << " going outside max radius");
 				continue; // We may not expand this way!
 			}
 
-			LOG_DEBUG("Adding neighbor cell at " << nit->first << " to interests...");
+			ROOM_SPAM("Adding neighbor cell at " << nit->first << " to interests...");
 
 			m_interests.insert(intr);
 			m_interestPos.insert(intr.pos);
 		}
 	}
 
-	LOG_DEBUG("Room::calcInterests DONE");
+	ROOM_SPAM("Room::calcInterests DONE");
 }
 
 ///////////////////////////////////////////////////////////////////////
@@ -368,7 +372,7 @@ int Rooms::maxRoomArea() const {
 
 int Rooms::maxRoomWidth() const {
 	//return 10; // TODO: base on g-state view distance.
-	return (int)ceil(2 * maxRoomRadius());
+	return (int)std::ceil(2 * maxRoomRadius());
 }
 
 float Rooms::maxRoomRadius() const {
@@ -392,7 +396,7 @@ void Rooms::expandWith(const PosSet& posArg) {
 	}
 #endif
 
-	LOG_DEBUG("-" << std::endl << "Rooms::expandWith");
+	ROOM_SPAM("-" << std::endl << "Rooms::expandWith");
 
 	PosSet unassigned = posArg; // Copy so we can take away one at the time.
 
@@ -414,11 +418,11 @@ void Rooms::expandWith(const PosSet& posArg) {
 	}
 
 	while (!unassigned.empty()) {
-		LOG_DEBUG(unassigned.size() << " unassigned left");
+		ROOM_SPAM(unassigned.size() << " unassigned left");
 
 		Room* room; // To which we assign a position.
 		if (!interests.empty()) {
-			LOG_DEBUG("A");
+			ROOM_SPAM("A");
 
 			// Assign room with best fit:
 			Interest intr = *interests.begin();
@@ -426,11 +430,11 @@ void Rooms::expandWith(const PosSet& posArg) {
 
 			ASSERT(rooms.count(room)); // How could we have gooten interest in this if not true?
 
-			LOG_DEBUG("Assigning position " << intr.pos << " to room " << room);
+			ROOM_SPAM("Assigning position " << intr.pos << " to room " << room);
 
 			/*
 			// IMPORTANT: do this before add, since add chages size of room, which interest uses.
-			LOG_DEBUG("Erasing interests...");
+			ROOM_SPAM("Erasing interests...");
 			ITC(InterestSet, iit, room->m_interests)
 				interests.erase(*iit);
 				*/
@@ -438,28 +442,28 @@ void Rooms::expandWith(const PosSet& posArg) {
 			room->add(intr.pos);
 			unassigned.erase(intr.pos); // No more!
 
-			LOG_DEBUG("Updating interests...");
+			ROOM_SPAM("Updating interests...");
 
 			// This cell may have been the interest of my rooms.
 			// Make sure we re-evaluates the interests of affected rooms:
 			ITC(RoomSet, rit, rooms) {
 				Room* ar = *rit;
 				if (ar->m_interestPos.count(intr.pos)) {
-					LOG_DEBUG("Erasing old interests...");
+					ROOM_SPAM("Erasing old interests...");
 					ITC(InterestSet, iit, ar->m_interests)
 						interests.erase(*iit);
 
-					LOG_DEBUG("Calculating new interests...");
+					ROOM_SPAM("Calculating new interests...");
 					ar->calcInterests(unassigned);
 
-					LOG_DEBUG("Adding new interests...");
+					ROOM_SPAM("Adding new interests...");
 					interests.insert(ar->m_interests.begin(), ar->m_interests.end());
 				}
 			}
 
-			LOG_DEBUG("Interests updated (" << interests.size() << " left)");
+			ROOM_SPAM("Interests updated (" << interests.size() << " left)");
 		} else {
-			LOG_DEBUG("B");
+			ROOM_SPAM("B");
 
 			// No interest taken - create a new room!
 			// FIXME: this is the worst possible choice - guaranteed to be a corner!
@@ -485,15 +489,15 @@ void Rooms::expandWith(const PosSet& posArg) {
 			m_open.insert(room);
 			rooms.insert(room);
 
-			LOG_DEBUG("Creating room " << room << " at " << pos);
+			ROOM_SPAM("Creating room " << room << " at " << pos);
 
 			room->calcInterests(unassigned);
-			LOG_DEBUG("New room has " << room->m_interests.size() << " interests");
+			ROOM_SPAM("New room has " << room->m_interests.size() << " interests");
 			interests.insert(room->m_interests.begin(), room->m_interests.end());
 		}
 
 		if (room->isFinished()) {
-			LOG_DEBUG("Removing finished room " << room);
+			ROOM_SPAM("Removing finished room " << room);
 			m_open.erase(room);
 			rooms.erase(room); // No longer intersting for us
 		}
@@ -501,7 +505,7 @@ void Rooms::expandWith(const PosSet& posArg) {
 
 	// TODO: cull finished rooms from m_open
 
-	LOG_DEBUG("Rooms::expandWith DONE" << std::endl << "-");
+	ROOM_SPAM("Rooms::expandWith DONE" << std::endl << "-");
 }
 
 void Rooms::resetDynamicContent() {

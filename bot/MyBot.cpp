@@ -2,6 +2,7 @@
 #include "Room.hpp"
 #include "Map.hpp"
 #include "Tracker.hpp"
+#include "Logger.hpp"
 
 using namespace std;
 
@@ -99,6 +100,9 @@ int main(int argc, char *argv[])
 	bot.playGame();
 #endif
 
-	g_state->bug << "Reached the end." << std::endl;
+	LOG_DEBUG("Reached the end of main().");
+
+	Logger::free();
+
     return 0;
 }

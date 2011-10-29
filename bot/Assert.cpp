@@ -1,5 +1,6 @@
 #include "Assert.hpp"
 #include "State.hpp"
+#include "Logger.hpp"
 #include <sstream>
 
 #ifdef THIS_IS_MAC
@@ -39,7 +40,7 @@ void AssertionFailed(const char* expr,
 
 	std::string msg = ss.str();
 
-	LOG_DEBUG( msg );
+	LOG_ERROR( msg );
 
 #ifdef DEBUG
 	qFatal("%s", msg.c_str());

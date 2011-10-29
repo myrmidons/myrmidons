@@ -91,6 +91,11 @@ Path Path::findPath(Pos start, Pos end)
 	ITC(std::set<SearchNode*>, wpit, allSearchNodes)
 		delete *wpit;
 
+	if (!retPath.isValid()) {
+		LOG_WARNING("Path::findPath FAILED to find path from " << start << " to " << end);
+		LOG_WARNING("closedRooms.size() == " << closedRooms.size());
+	}
+
 	LOG_DEBUG("Path::findPath returning");
 
 	return retPath; // invalid if fail

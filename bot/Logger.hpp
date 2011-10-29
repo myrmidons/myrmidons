@@ -12,6 +12,7 @@ public:
 	static void free();
 
 	void newTurn(int turn);
+	void endGame();
 
 	Bug& getBugger() { return m_bug; }
 

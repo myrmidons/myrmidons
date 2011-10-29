@@ -47,8 +47,8 @@ public:
 	Bug log;
 
 private:
-
 	void updateMapInfo();
+	void updateAnts();
 
 	struct Buffer {
 

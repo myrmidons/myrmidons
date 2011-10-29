@@ -271,7 +271,10 @@ void DebugWindow::redrawImg() {
 	/////////////////////////
 
 	char nameBuf[100] = {};
-	sprintf(nameBuf, "rooms_%04d.png", g_tracker->turn());
+	if (g_state->gameover)
+		strcpy(nameBuf, "rooms__endgame.png");
+	else
+		sprintf(nameBuf, "rooms_%04d.png", g_tracker->turn());
 	LOG_DEBUG("Dumping rooms to " << nameBuf);
 	m_img.save(nameBuf);
 

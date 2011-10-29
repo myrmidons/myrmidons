@@ -42,4 +42,10 @@ void Logger::newTurn(int turn) {
 	m_bug.open(nameBuf);
 }
 
+
+void Logger::endGame() {
+	m_bug.close();
+	m_bug.open("log__endgame.txt");
+}
+
 #endif

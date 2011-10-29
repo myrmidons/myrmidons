@@ -58,8 +58,8 @@ macx {
 
 QMAKE_CXXFLAGS += -Wall -pedantic -Wextra -Wno-long-long
 
-DEFINES += \
-	BOT_WITH_QT
+#DEFINES += \
+#	BOT_WITH_QT
 
 CONFIG += qt
 QT += network

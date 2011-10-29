@@ -28,18 +28,11 @@ void Coordinator::moveAntsAfterDesire(AntSet ants) {
 		AntMove move;
 		move.ant = *it;
 		move.choice = 0; // First choice if possible
-
 		move.ant->calcDesire();
-
 		move.nDesires = move.ant->getDesire().size();
 		PosList desires = move.ant->getDesire();
-
-		ITC(PosList, dit, desires) {
-			LOG_COORD(*move.ant << " " << *dit);
-		}
 		move.ant->setExpectedPos(move.ant->pos()); // until we say otherwise
 		q.push_back(move);
-		LOG_COORD(*move.ant << " has " << move.nDesires << " desires");
 	}
 
 	AntSet unassigned; // Ants that can't go anywhere
@@ -62,7 +55,7 @@ void Coordinator::moveAntsAfterDesire(AntSet ants) {
 
 		// Try to find a place for this ant...
 		if (!move.isApatic()) {
-			LOG_COORD(*move.ant << " is not apathic");
+			LOG_COORD(*move.ant << " has desires");
 
 			// Try next desire
 			const PosList& desires = move.ant->getDesire();
@@ -120,7 +113,7 @@ void Coordinator::moveAntsAfterDesire(AntSet ants) {
 			}
 
 			if (!assigned) {
-				LOG_COORD("WARNING: Ant " << *move.ant << " has no freedoms - it will DIIIIEEEE!");
+				LOG_COORD("WARNING: Ant " << *move.ant << " has no freedoms - it will DIE!");
 				unassigned.insert(move.ant);
 			}
 		}
@@ -141,6 +134,7 @@ void Coordinator::moveAntsAfterDesire(AntSet ants) {
 		// TODO: go to where they to least damage.
 		Ant* ant = *ait;
 		ant->setExpectedPos(ant->pos()); // Stay and wait for death.
+		LOG_COORD("Have unassigned ant " << *ant);
 	}
 
 	///////////////////////////////////////////////////////////////////
@@ -158,11 +152,11 @@ void Coordinator::moveAntsAfterDesire(AntSet ants) {
 		else if (d.y()<0) dir = NORTH;
 		else if (d.y()>0) dir = SOUTH;
 		if (dir != STAY) {
-			LOG_COORD(*ant << " will try to go from " << current << " to " << desire);
+			LOG_COORD(*ant << " moving to" << desire);
 			g_state->makeMove(current, dir);
 		}
 		else {
-			LOG_COORD(*ant << " : ants desire is to stand still. Want to go from " << current << " to " << desire);
+			LOG_COORD(*ant << " : ants desire is to stand still.");
 		}
 	}
 }

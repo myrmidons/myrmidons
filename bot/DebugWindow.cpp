@@ -9,7 +9,7 @@
 #include "Logger.hpp"
 #include <QPainter>
 
-const int Zoom = 12; // pixels per grid cell
+const int Zoom = 9; // pixels per grid cell
 
 DebugWindow* DebugWindow::s_instance = NULL;
 

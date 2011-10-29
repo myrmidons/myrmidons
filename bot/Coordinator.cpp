@@ -28,8 +28,18 @@ void Coordinator::moveAntsAfterDesire(AntSet ants) {
 		AntMove move;
 		move.ant = *it;
 		move.choice = 0; // First choice if possible
+
+		move.ant->calcDesire();
+
 		move.nDesires = move.ant->getDesire().size();
+		PosList desires = move.ant->getDesire();
+
+		ITC(PosList, dit, desires) {
+			LOG_COORD(*move.ant << " " << *dit);
+		}
 		move.ant->setExpectedPos(move.ant->pos()); // until we say otherwise
+		q.push_back(move);
+		LOG_COORD(*move.ant << " has " << move.nDesires << " desires");
 	}
 
 	AntSet unassigned; // Ants that can't go anywhere
@@ -52,6 +62,8 @@ void Coordinator::moveAntsAfterDesire(AntSet ants) {
 
 		// Try to find a place for this ant...
 		if (!move.isApatic()) {
+			LOG_COORD(*move.ant << " is not apathic");
+
 			// Try next desire
 			const PosList& desires = move.ant->getDesire();
 			Pos desire = desires[move.choice];
@@ -63,6 +75,7 @@ void Coordinator::moveAntsAfterDesire(AntSet ants) {
 				q.push_back(move);
 			}
 			else if (m_grid.count(desire)==0) {
+				LOG_COORD(*move.ant << " has been chosen for pos " << desire);
 				// Wohoo - go there!
 				m_grid[desire] = move;
 				continue;
@@ -82,6 +95,7 @@ void Coordinator::moveAntsAfterDesire(AntSet ants) {
 					q.push_back(other);
 					m_grid[desire] = move; // We move there!
 				} else {
+					LOG_COORD(*move.ant << " wants to go to " << desire << " but is already occupied by " << *other.ant);
 					// We can't push him. We reinsert ourselves.
 					move.nextChoice();
 					q.push_back(move);
@@ -91,7 +105,7 @@ void Coordinator::moveAntsAfterDesire(AntSet ants) {
 		} else {
 			// We're apatic - move to any free square.
 			// prefer standing still - often best (not a step backward).
-
+			LOG_COORD(*move.ant << " is apatic");
 			bool assigned = false;
 
 			for (int i=0; i<5; ++i) {
@@ -148,7 +162,7 @@ void Coordinator::moveAntsAfterDesire(AntSet ants) {
 			g_state->makeMove(current, dir);
 		}
 		else {
-			LOG_COORD(*ant << " : ants desire is to stand still");
+			LOG_COORD(*ant << " : ants desire is to stand still. Want to go from " << current << " to " << desire);
 		}
 	}
 }

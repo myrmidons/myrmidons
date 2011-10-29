@@ -189,3 +189,7 @@ void Tracker::Buffer::resetDynamics() {
 AntSet const& Tracker::getLiveAnts() {
 	return m_liveAnts;
 }
+
+const PosList& Tracker::getAllFood() const {
+	return this->buf.food; // FIXME: Mattias - is this right?
+}

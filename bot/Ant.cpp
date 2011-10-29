@@ -65,8 +65,8 @@ void Ant::stop() {
 	m_state = STATE_NONE;
 }
 
-void Ant::calcDesire() {
-	LOG_DEBUG("Ant::calcDesire");
+void Ant::updateState() {
+	LOG_DEBUG("Ant::updateState");
 
 	if (!m_path.isValid()) {
 		LOG_DEBUG("Invalid path, stopping");
@@ -74,7 +74,8 @@ void Ant::calcDesire() {
 	}
 
 	if (m_state==STATE_GOING_TO_FOOD) {
-		if (!g_map->square(m_path.dest()).isFood) {
+		Square& s = g_map->square(m_path.dest());
+		if (s.isVisible && !s.isFood) {
 			LOG_DEBUG("FOOD GONE!");
 			stop();
 		}
@@ -86,6 +87,10 @@ void Ant::calcDesire() {
 			m_state = STATE_NONE;
 		}
 	}
+}
+
+void Ant::calcDesire() {
+	LOG_DEBUG("Ant::calcDesire");
 
 	m_desire.clear();
 

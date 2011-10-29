@@ -26,6 +26,9 @@ public:
 	bool goToRoom(Room* room);
 	void stop(); // Stop going towards currnet goal.
 
+	// Ensure our goals are still sound, etc.
+	void updateState();
+
 	// update desire
 	void calcDesire();
 

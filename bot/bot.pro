@@ -16,7 +16,8 @@ HEADERS += \
 	Tracker.hpp \
 	Path.hpp \
 	CommInterface.hpp \
-    DebugWindow.hpp
+    DebugWindow.hpp \
+    RoomContents.hpp
 
 SOURCES += \
     Ant.cpp \
@@ -56,3 +57,4 @@ macx {
 }
 
 QMAKE_CXXFLAGS += -Wall -pedantic -Wextra -Wno-long-long
+

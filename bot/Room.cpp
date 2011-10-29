@@ -1,4 +1,5 @@
 #include "Room.hpp"
+#include "RoomContents.hpp"
 #include "Util.hpp"
 #include "Map.hpp"
 #include "State.hpp" // LOG_DEBUG

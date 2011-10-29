@@ -5,48 +5,10 @@
 #include "Ant.hpp"
 #include <map>
 
-// This class handles the contents of a room.
-// Everything about a room except its connectivity is put into here.
-// Implementations in RoomContent.cpp
-
-
-class RoomContents {
-public:
-
-	void addMyrmidon(Ant* ant);
-	void removeMyrmidon(Ant* ant);
-
-	size_t getNumFood();
-	size_t getNumMyrmidons(); // The number of enemies in the room this turn.
-	size_t getNumEnemies(); // The number of enemies in the room this turn.
-	size_t getNumFallenMyrmidons(); // Give me the number of Myrmidons that has fallen this turn. (See you in valhalla!)
-	size_t getNumFallenEnemies(); // Give me the number of enemies that have fallen this turn.
-
-	void resetDynamic();
-
-	// Tell the room that it contains an enemy hill and take appropriate action.
-	// STUB
-	void enemyHillDiscovered(Pos const& pos, int team);
-
-	// Tell the room that it contains a myrmidon hill and take appropriate action.
-	// STUB
-	void myrmidonHillDiscovered(Pos const& pos);
-
-	void insertFoodAt(Pos const& pos);
-	void insertEnemyAt(Pos const& pos, int team);
-
-	const AntSet& ants() const { return m_pAnts; }
-
-	AntSet m_pAnts;
-	PosSet m_enemies;
-	PosSet m_food;
-	PosSet m_enemyHills;
-	PosSet m_myrmidonHills;
-};
-
 //////////////////////////////////////////////////////////////////
 
 class Room;
+class RoomContents;
 
 // Rooms volenteer interest in unassigned cells.
 // This interest is kept track of using this:
@@ -82,6 +44,7 @@ public:
 typedef std::vector<Room*> RoomList;
 typedef std::set<Room*, RoomComp> RoomSet;
 
+// Only Emil may code here!
 // This class only contains connectivity data. For contents, see 'contents'.
 // A room shuld be small enough so that an ant in any part of the room can see
 // any other part. This means that an ant will see 2-3 rooms at once.
@@ -106,7 +69,8 @@ public:
 
 	const BB& getBB() const { return m_bb; }
 
-	// The "best" point in the room.
+	/* A point in the room from which all parts of the room can
+	   be seen by an ant. */
 	Pos centerPos() const;
 
 	const RoomSet& neighborRooms() const;

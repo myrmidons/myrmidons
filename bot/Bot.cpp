@@ -3,6 +3,7 @@
 #include "Map.hpp"
 #include "Tracker.hpp"
 #include "Room.hpp"
+#include "RoomContents.hpp"
 #include "Util.hpp"
 
 #include <algorithm>
@@ -129,18 +130,57 @@ void Bot::makeMoves()
 {
 	LOG_DEBUG("Bot::makeMoves");
 
+	// Update current ant states
+	const AntSet& ants = g_tracker->getLiveAnts();
+	ITC(AntSet, it, ants)
+		(*it)->updateState();
+
+	// Distribute food to close ants
+	const PosList& food = g_tracker->getAllFood();
+	ITC(PosList, pit, food) {
+		// Find closest ant to this
+		Pos foodPos = *pit;
+		if (g_map->square(foodPos).destinyAnt)
+			continue; // Someone is already heading for this food.
+
+		LOG_DEBUG("Looking for ant close to food...");
+
+		Ant* closest=NULL;
+		int dist = std::numeric_limits<int>::max();
+
+		ITC(AntSet, it, ants) {
+			Ant* a = *it;
+			if (a->state()!=Ant::STATE_GOING_TO_FOOD) {
+				int d = g_map->manhattanDist(a->pos(), foodPos);
+				if (d < dist) {
+					dist = d;
+					closest = a;
+				}
+			}
+		}
+
+		if (closest) {
+			LOG_DEBUG("sending and to food.");
+			closest->goToFoodAt(foodPos);
+		}
+	}
+
+
 	// Find crowded rooms, send ants out of them...
 	ITC(RoomList, rit, g_rooms->rooms()) {
 		Room* room = *rit;
 		RoomContents* rc = room->contents();
-		const AntSet& ants = rc->ants();
+		const AntSet& roomAnts = rc->ants();
 
 		const RoomSet& neighRooms = room->neighborRooms();
 
-		if (!ants.empty() && !neighRooms.empty()) {
+		if (!roomAnts.empty() && !neighRooms.empty()) {
+			/* TODO: base on the number of food expected to be found, related to:
+			foodExp = room->area() * room->timeSinceLastVisit();
+			 */
 			RoomList cands;
 			ITC(RoomSet, rit, neighRooms) {
-				if ((*rit)->contents()->ants().size() <= ants.size()) {
+				if ((*rit)->contents()->ants().size() <= roomAnts.size()) {
 					// less crowded
 					if ((*rit)->getArea() > 4) // Don't bother with small rooms
 						cands.push_back(*rit);
@@ -150,10 +190,10 @@ void Bot::makeMoves()
 			if (cands.empty())
 				continue;
 
-			if (ants.size()==1)
-				lookForFood(*ants.begin());
+			if (roomAnts.size()==1)
+				lookForFood(*roomAnts.begin());
 
-			ITC(AntSet, ait, ants) {
+			ITC(AntSet, ait, roomAnts) {
 				Ant* a = *ait;
 				if (a->state() == Ant::STATE_NONE) {
 					//lookForFood(a);
@@ -166,7 +206,6 @@ void Bot::makeMoves()
 
 	STAMP_;
 
-	AntSet const& ants = g_tracker->getLiveAnts();
 	ITC(AntSet, it, ants) {
 		LOG_DEBUG("Deciding ant move...");
 

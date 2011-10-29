@@ -1,4 +1,4 @@
-#include "Room.hpp"
+#include "RoomContents.hpp"
 #include "Assert.hpp"
 
 void RoomContents::addMyrmidon(Ant* ant) {

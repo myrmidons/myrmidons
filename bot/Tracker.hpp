@@ -44,6 +44,8 @@ public:
 
 	AntSet const& getLiveAnts();
 
+	// All known food, wether visible or not.
+	const PosList& getAllFood() const;
 
 	Bug log;
 

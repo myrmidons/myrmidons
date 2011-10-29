@@ -13,18 +13,21 @@ public:
 		STATE_GOING_TO_ROOM
 	};
 
-
-	Ant(Pos const& loc = Pos());
-	Ant(Ant const& ant);
-	Ant& operator=(Ant const& ant);
+	explicit Ant(Pos const& loc = Pos());
+	~Ant();
 
 	Pos& pos();
 	State state() const { return m_state; }
+	const Path& path() const { return m_path; }
 
 	// Returns false on fail.
 	bool goTo(Pos pos);
 	bool goToFoodAt(Pos pos);
 	bool goToRoom(Room* room);
+	void stop(); // Stop going towards currnet goal.
+
+	// Ensure our goals are still sound, etc.
+	void updateState();
 
 	// update desire
 	void calcDesire();

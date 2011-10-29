@@ -196,10 +196,9 @@ AntSet& Tracker::getAnts() {
 	return m_liveAnts;
 }
 
-EnemySet& Tracker::getEnemies() {
+EnemySet const& Tracker::getEnemies() const {
 	return buf.enemyAnts;
 }
-
-PosSet& Tracker::getFood() {
-	return buf.food;
+const PosSet& Tracker::getFood() const {
+	return this->buf.food; // FIXEDME: Mattias - is this right? Yep. - Mattias
 }

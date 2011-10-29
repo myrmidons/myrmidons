@@ -11,16 +11,21 @@ class Ant;
 */
 struct Square
 {
-	bool discovered,isVisible, isWater, isHill, isFood;
-    int ant, hillPlayer;
+	bool discovered; // Been seen at least once.
+	bool isVisible; // Being seen right now
+	bool isWater, isHill, isFood;
+
+	int ant, hillPlayer; // What is this? team?
 	Ant* pAnt;
-    std::vector<int> deadAnts;
+	std::vector<int> deadAnts;
 	Room* room;
+	Ant* destinyAnt; // Ant heading here.
 
 	Square()
 	{
 		discovered = isVisible = isWater = isHill = isFood = false;
-        ant = hillPlayer = -1;
+		ant = hillPlayer = -1;
+		destinyAnt = NULL;
 		room = NULL;
 	}
 
@@ -31,11 +36,11 @@ struct Square
 	 //   isHill = 0;
         isFood = 0;
 	//    ant = hillPlayer = -1;
-        deadAnts.clear();
+		deadAnts.clear();
 	}
 
 	// Are we sure this is ground?
-	bool isGround() const {
+		bool isGround() const {
 		return discovered && !isWater;
 	}
 };

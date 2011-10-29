@@ -44,9 +44,11 @@ public:
 	void endTurnInput();
 
 	AntSet&   getAnts();
-	EnemySet& getEnemies();
-	PosSet&   getFood();
+	EnemySet const& getEnemies() const;
+	PosSet const&   getFood() const;
 
+	// All known food, wether visible or not.
+	//const PosList& getAllFood() const;
 
 	Bug log;
 

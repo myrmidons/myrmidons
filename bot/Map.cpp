@@ -3,6 +3,7 @@
 #include "State.hpp"
 #include "Tracker.hpp"
 #include "Room.hpp"
+#include "RoomContents.hpp"
 #include "Util.hpp"
 #include <cmath>
 

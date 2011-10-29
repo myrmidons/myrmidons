@@ -3,12 +3,16 @@
 #include "Map.hpp"
 #include "Tracker.hpp"
 #include "Room.hpp"
+#include "RoomContents.hpp"
 #include "Util.hpp"
 
 #include <algorithm>
 #include <iostream>
+#include <limits>
 
-/// Kc testar
+#ifdef DEBUG
+#	include "DebugWindow.hpp"
+#endif
 
 
 using namespace std;
@@ -107,37 +111,95 @@ int Bot::closestLocation(const Pos& loc, const vector<Pos>& location) {
 	return result;
 }
 
+void lookForFood(Ant* ant) {
+	// Try find food in room:
+	Vec2 pos = ant->pos();
+	RoomContents* rc = g_map->roomContentAt(pos);
+	const PosSet& food = rc->m_food;
 
+	if (!food.empty()) {
+		// Go to random food:
+		LOG_DEBUG("Going to food");
+		PosSet::const_iterator it = food.begin();
+		advance(it, rand()%food.size());
+		ant->goToFoodAt(*it);
+	}
+}
 
 //makes the bots moves for the turn
 void Bot::makeMoves()
 {
 	LOG_DEBUG("Bot::makeMoves");
 
+	// Update current ant states
+	AntSet& ants = g_tracker->getAnts();
+	IT(AntSet, it, ants)
+		(*it)->updateState();
+
+	// Distribute food to close ants
+	const PosSet& food = g_tracker->getFood();
+	ITC(PosSet, pit, food) {
+		// Find closest ant to this
+		Pos foodPos = *pit;
+		if (g_map->square(foodPos).destinyAnt)
+			continue; // Someone is already heading for this food.
+
+		LOG_DEBUG("Looking for ant close to food...");
+
+		Ant* closest=NULL;
+		int dist = std::numeric_limits<int>::max();
+
+		ITC(AntSet, it, ants) {
+			Ant* a = *it;
+			if (a->state()!=Ant::STATE_GOING_TO_FOOD) {
+				int d = g_map->manhattanDist(a->pos(), foodPos);
+				if (d < dist) {
+					dist = d;
+					closest = a;
+				}
+			}
+		}
+
+		if (closest) {
+			LOG_DEBUG("sending and to food.");
+			closest->goToFoodAt(foodPos);
+		}
+	}
+
+
 	// Find crowded rooms, send ants out of them...
 	ITC(RoomList, rit, g_rooms->rooms()) {
 		Room* room = *rit;
 		RoomContents* rc = room->contents();
-		const AntSet& ants = rc->ants();
+		const AntSet& roomAnts = rc->ants();
 
 		const RoomSet& neighRooms = room->neighborRooms();
 
-		if (ants.size()>1 && !neighRooms.empty()) {
+		if (!roomAnts.empty() && !neighRooms.empty()) {
+			/* TODO: base on the number of food expected to be found, related to:
+			foodExp = room->area() * room->timeSinceLastVisit();
+			 */
 			RoomList cands;
 			ITC(RoomSet, rit, neighRooms) {
-				if ((*rit)->contents()->ants().size() < ants.size()) {
+				if ((*rit)->contents()->ants().size() <= roomAnts.size()) {
 					// less crowded
-					cands.push_back(*rit);
+					if ((*rit)->getArea() > 4) // Don't bother with small rooms
+						cands.push_back(*rit);
 				}
 			}
 
 			if (cands.empty())
 				continue;
 
-			ITC(AntSet, ait, ants) {
+			if (roomAnts.size()==1)
+				lookForFood(*roomAnts.begin());
+
+			ITC(AntSet, ait, roomAnts) {
 				Ant* a = *ait;
 				if (a->state() == Ant::STATE_NONE) {
-					a->goToRoom(cands[rand() % cands.size()]);
+					//lookForFood(a);
+					if (a->state() == Ant::STATE_NONE)
+						a->goToRoom(cands[rand() % cands.size()]);
 				}
 			}
 		}
@@ -145,32 +207,21 @@ void Bot::makeMoves()
 
 	STAMP_;
 
-	AntSet& ants = g_tracker->getAnts();
+//	AntSet& ants = g_tracker->getAnts();
 	ITC(AntSet, it, ants) {
 		LOG_DEBUG("Deciding ant move...");
 
 		Ant* ant = *it;
 		Pos pos = ant->pos();
 
-		if (ant->state() == Ant::STATE_NONE) {
-			// Try find food in room:
-			RoomContents* rc = g_map->roomContentAt(pos);
-			const PosSet& food = rc->m_food;
-
-			if (!food.empty()) {
-				// Go to random food:
-				LOG_DEBUG("Going to food");
-				PosSet::const_iterator it = food.begin();
-				advance(it, rand()%food.size());
-				ant->goToFoodAt(*it);
-			}
-		}
+		if (ant->state() == Ant::STATE_NONE)
+			lookForFood(ant);
 
 		ant->calcDesire();
 		PosList desire = ant->getDesire();
 
 		if (desire.empty() || ant->state() == Ant::STATE_NONE) {
-			// Rando walk
+			// Random walk
 			DirVec const& dirs = randomDirVec();
 
 			int bestMove = 0, bestRank = -10000000;
@@ -205,6 +256,10 @@ void Bot::makeMoves()
 			}
 		}
 	}
+
+#ifdef DEBUG
+	DebugWindow::instance()->redraw();
+#endif
 
     state.bug << "time taken: " << state.timer.getTime() << "ms" << endl << endl;
 }

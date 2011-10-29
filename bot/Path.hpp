@@ -40,6 +40,8 @@ public:
 	const Pos& start() const { return m_start; }
 	const Pos& dest() const { return m_end; }
 
+	const WPList& wayPoints() const { return m_points; }
+
 private:
 	explicit Path(int dist, Pos start, Pos end, const WPList& rooms);
 

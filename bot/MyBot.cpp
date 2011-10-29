@@ -99,10 +99,6 @@ int main(int argc, char *argv[])
 	bot.playGame();
 #endif
 
-#ifdef DEBUG
-	g_rooms->dumpImage();
-#endif
-
 	g_state->bug << "Reached the end." << std::endl;
     return 0;
 }

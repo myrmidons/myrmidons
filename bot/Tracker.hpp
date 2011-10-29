@@ -6,8 +6,8 @@
 #include "State.hpp"
 #include "Pos.hpp"
 #include "Bug.hpp"
+#include "Ant.hpp"
 
-class Ant;
 class Food; // Not yet.
 class Map;
 
@@ -33,35 +33,41 @@ public:
 
 	inline size_t indexOf(Ant* ant) const;
 
-	void turn(int n);
-	void water(Pos const& pos);
-	void food(Pos const& pos);
-	void ant(Pos const& pos, int team);
-	void deadAnt(Pos const& pos, int team);
-	void hill(Pos const& pos, int team);
+	void beginTurnInput(int n);
 
-	void go();
+	void bufferWater(Pos const& pos);
+	void bufferFood(Pos const& pos);
+	void bufferAnt(Pos const& pos, int team);
+	void bufferDeadAnt(Pos const& pos, int team);
+	void bufferHill(Pos const& pos, int team);
 
-	AntSet const& getLiveAnts();
+	void endTurnInput();
+
+	AntSet&   getAnts();
+	EnemySet const& getEnemies() const;
+	PosSet const&   getFood() const;
 
 	// All known food, wether visible or not.
-	const PosList& getAllFood() const;
+	//const PosList& getAllFood() const;
 
 	Bug log;
 
 private:
 
-	void update();
+	void updateMapInfo();
 
 	struct Buffer {
-		std::vector<Pos> myAnts, enemyAnts, myHills, food, deadAnts, deadEnemies;
-		std::vector<int> enemyTeams, deadEnemyTeams;
 
-		typedef std::pair<Pos, int> EnemyHill;
-		typedef std::set<EnemyHill> EnemyHillSet;
-
+		// Dynamic buffers
+		PosSet food;
+		PosList water;
+		PosList myAnts, deadAnts;
+		EnemySet enemyAnts, deadEnemyAnts;
 		EnemyHillSet newEnemyHills;
-		PosSet newHills;
+		PosSet    newHills;
+
+		// Static buffers.
+		PosSet myHills, enemyHills;
 
 		void resetDynamics();
 	};

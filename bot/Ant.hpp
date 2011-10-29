@@ -48,4 +48,26 @@ private:
 typedef std::set<Ant*> AntSet;
 typedef std::vector<Ant> AntVec;
 
+struct EnemyAnt {
+	Pos pos;
+	int team;
+	EnemyAnt(Pos const& p, int t)
+		:pos(p),team(t) {
+	}
+	EnemyAnt(EnemyAnt const& ea)
+		:pos(ea.pos),team(ea.team) {
+	}
+};
+
+inline bool operator < (EnemyAnt const& a, EnemyAnt const& b) {
+	return (a.team < b.team)||((a.team == b.team) && (a.pos < b.pos));
+}
+inline bool operator == (EnemyAnt const& a, EnemyAnt const& b) {
+	return (a.team == b.team) && (a.pos == b.pos);
+}
+
+typedef EnemyAnt EnemyHill;
+typedef std::vector<EnemyAnt> EnemyList;
+typedef std::set<EnemyAnt> EnemyHillSet, EnemySet;
+
 #endif // ANT_HPP

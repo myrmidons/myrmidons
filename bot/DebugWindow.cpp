@@ -164,7 +164,7 @@ void DebugWindow::redrawImg() {
 		//////////////////////////////////////////////////
 		// Draw ants
 
-		const AntSet& ants = g_tracker->getLiveAnts();
+		const AntSet& ants = g_tracker->getAnts();
 		ITC(AntSet, ait, ants) {
 			Ant* ant = *ait;
 			QPointF pos = toQP(ant->pos());

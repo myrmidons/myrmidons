@@ -8,6 +8,7 @@
 
 #include <algorithm>
 #include <iostream>
+#include <limits>
 
 #ifdef DEBUG
 #	include "DebugWindow.hpp"
@@ -131,13 +132,13 @@ void Bot::makeMoves()
 	LOG_DEBUG("Bot::makeMoves");
 
 	// Update current ant states
-	const AntSet& ants = g_tracker->getLiveAnts();
-	ITC(AntSet, it, ants)
+	AntSet& ants = g_tracker->getAnts();
+	IT(AntSet, it, ants)
 		(*it)->updateState();
 
 	// Distribute food to close ants
-	const PosList& food = g_tracker->getAllFood();
-	ITC(PosList, pit, food) {
+	const PosSet& food = g_tracker->getFood();
+	ITC(PosSet, pit, food) {
 		// Find closest ant to this
 		Pos foodPos = *pit;
 		if (g_map->square(foodPos).destinyAnt)
@@ -206,6 +207,7 @@ void Bot::makeMoves()
 
 	STAMP_;
 
+//	AntSet& ants = g_tracker->getAnts();
 	ITC(AntSet, it, ants) {
 		LOG_DEBUG("Deciding ant move...");
 

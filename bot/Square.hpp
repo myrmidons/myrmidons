@@ -32,10 +32,10 @@ struct Square
 	// reset dynamic information
 	void resetDynamics()
 	{
-		isVisible = 0;
-		isHill = 0;
-		isFood = 0;
-		//    ant = hillPlayer = -1;
+        isVisible = 0;
+	 //   isHill = 0;
+        isFood = 0;
+	//    ant = hillPlayer = -1;
 		deadAnts.clear();
 	}
 

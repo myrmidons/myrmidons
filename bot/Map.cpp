@@ -69,7 +69,7 @@ void Map::addAnt(Ant* ant) {
 }
 
 // Get the ant that occupies a specific position.
-Ant* Map::getAnt(Pos const& pos) {
+Ant* Map::getAntAt(Pos const& pos) {
 	//return square(pos).pAnt;
 	if(posant.count(pos)) {
 		return posant[pos];
@@ -79,7 +79,7 @@ Ant* Map::getAnt(Pos const& pos) {
 
 void Map::moveAnt(Pos const& from, Pos const& to) {
 	g_tracker->log << "Looking for ant at " << from << ": ";
-	Ant* ant = getAnt(from);
+	Ant* ant = getAntAt(from);
 
 	if(ant) {
 		g_tracker->log << "and moving it from " <<  ant->pos() << " to ";
@@ -97,15 +97,15 @@ void Map::enemyHill(Pos const& pos, int team) {
 	square(pos).room->contents()->enemyHillDiscovered(pos, team);
 }
 
-void Map::hill(Pos const& pos) {
+void Map::addHill(Pos const& pos) {
 	square(pos).room->contents()->myrmidonHillDiscovered(pos);
 }
 
-void Map::water(const Pos &pos) {
+void Map::addWater(const Pos &pos) {
 	square(pos).isWater = true;
 }
 
-void Map::food(Pos const& pos) {
+void Map::addFood(Pos const& pos) {
 	STAMP("Begin");
 	square(pos).isFood = true;
 	ASSERT(square(pos).discovered);
@@ -113,6 +113,14 @@ void Map::food(Pos const& pos) {
 	ASSERT(square(pos).room->contents());
 	square(pos).room->contents()->insertFoodAt(pos);
 	STAMP("End");
+}
+
+void Map::addEnemyHill(EnemyHill const& hill) {
+	square(hill.pos).hillPlayer = hill.team;
+}
+
+void Map::addEnemyAnt(EnemyAnt const& ant) {
+	square(ant.pos).ant = ant.team;
 }
 
 //returns the new location from moving in a given direction with the edges wrapped
@@ -199,7 +207,7 @@ bool Map::isOccupied(const Pos& loc) {
 	return square(loc).ant != -1;
 }
 
-//resets all non-water squares to land and clears the bots ant vector
+//resets all non-water squares to land
 void Map::resetDynamics()
 {
 	STAMP("Map::resetDynamics");

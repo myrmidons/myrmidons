@@ -162,7 +162,7 @@ void Bot::makeMoves()
 		}
 
 		if (closest) {
-			LOG_DEBUG("sending and to food.");
+			LOG_DEBUG("sending ant to food.");
 			closest->goToFoodAt(foodPos);
 		}
 	}

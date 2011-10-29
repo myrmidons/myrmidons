@@ -35,7 +35,8 @@ SOURCES += \
     RoomContents.cpp \
     Path.cpp \
     DebugWindow.cpp \
-    Logger.cpp
+    Logger.cpp \
+    Square.cpp
 
 # Add annoying warning disables below, e.g. -Wno-cats-allowed
 # QMAKE_CXXFLAGS_WARN_ON = \
@@ -65,6 +66,7 @@ QMAKE_CXXFLAGS += -Wall -pedantic -Wextra -Wno-long-long
 
 CONFIG += qt
 QT += network
+
 
 
 

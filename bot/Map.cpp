@@ -171,7 +171,7 @@ void Map::updateVisionInformation(const PosList& antsPos) {
 		locQueue.push(sLoc);
 
 		std::vector<std::vector<bool> > visited(size().x(), std::vector<bool>(size().y(), 0));
-		m_grid[sLoc[0]][sLoc[1]].isVisible = 1;
+		m_grid[sLoc[0]][sLoc[1]].markAsVisible();
 		visited[sLoc[0]][sLoc[1]] = 1;
 
 		if (!m_grid[sLoc[0]][sLoc[1]].discovered) {
@@ -187,7 +187,7 @@ void Map::updateVisionInformation(const PosList& antsPos) {
 				nLoc = getLocation(cLoc, d);
 
 				if (!visited[nLoc[0]][nLoc[1]] && euclidDist(sLoc, nLoc) <= g_state->viewradius) {
-					m_grid[nLoc[0]][nLoc[1]].isVisible = 1;
+					m_grid[nLoc[0]][nLoc[1]].markAsVisible();
 					if(!m_grid[nLoc[0]][nLoc[1]].discovered) {
 						m_grid[nLoc[0]][nLoc[1]].discovered = true;
 						discoveries.insert(nLoc);

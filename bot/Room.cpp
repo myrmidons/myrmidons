@@ -16,8 +16,8 @@
 
 Rooms* g_rooms = NULL;
 
-#define ROOM_SPAM(x) LOG_DEBUG("Room: " << x);
-//#define ROOM_SPAM(x)
+//#define ROOM_SPAM(x) LOG_DEBUG("Room: " << x);
+#define ROOM_SPAM(x)
 
 ///////////////////////////////////////////////////////////////////////
 
@@ -28,7 +28,7 @@ bool operator<(const Interest& a, const Interest& b) {
 	if (a.neighbors > b.neighbors) return true;
 	if (a.neighbors < b.neighbors) return false;
 
-	// Prioritize things close to center. Will keep squareness and roundness, and proprotize small rooms.
+	// Prioritize things close to center. Will keep squareness and roundness, and priotize small rooms.
 	if (a.centerDistSq != b.centerDistSq) return a.centerDistSq < b.centerDistSq;
 /*
 	// Try to keep squareness:
@@ -392,7 +392,7 @@ void Rooms::expandWith(const PosSet& posArg) {
 		Square& s = g_map->square(*pit);
 		ASSERT(s.room==NULL);
 		ASSERT(s.discovered);
-		ASSERT(s.isVisible);
+		ASSERT(s.visible());
 	}
 #endif
 

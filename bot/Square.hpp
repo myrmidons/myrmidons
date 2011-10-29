@@ -20,15 +20,16 @@ struct Square
 	int m_lastVisible; // Which turn was we last visible?
 	bool isFood;
 
-	int ant, hillPlayer; // What is this? team?
 	Ant* pAnt;
+	int antTeam;  // The ant at this position is team...
+	int hillTeam; // the hill at this position is team...
 	std::vector<int> deadAnts;
 	Ant* destinyAnt; // Ant heading here (may still be a long way away though).
 
 	Square() : m_lastVisible(-1)
 	{
 		discovered = isWater = isHill = isFood = false;
-		ant = hillPlayer = -1;
+		antTeam = hillTeam = -1;
 		destinyAnt = NULL;
 		room = NULL;
 		resetDynamics();
@@ -39,7 +40,6 @@ struct Square
 	{
 		m_isVisible = false;
 		isFood = false;
-	//    ant = hillPlayer = -1;
 		deadAnts.clear();
 	}
 

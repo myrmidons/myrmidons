@@ -508,7 +508,7 @@ void Rooms::expandWith(const PosSet& posArg) {
 	ROOM_SPAM("Rooms::expandWith DONE" << std::endl << "-");
 }
 
-void Rooms::resetDynamicContent() {
+void Rooms::resetDynamics() {
 	IT(RoomList, it, m_rooms) {
 		(*it)->contents()->resetDynamic();
 	}

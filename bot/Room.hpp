@@ -145,7 +145,7 @@ public:
 	// Called by g_map upon uncovering new grid cells.
 	void expandWith(const PosSet& pos);
 
-	void resetDynamicContent();
+	void resetDynamics();
 
 private:
 	RoomList m_rooms;

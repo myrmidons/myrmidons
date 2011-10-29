@@ -13,14 +13,9 @@ class Map;
 
 typedef std::set<size_t> IndexSet;
 typedef std::set<Ant*> AntSet;
-typedef std::vector<Ant> AntVec;
 
 class Tracker {
-
-	size_t m_numAnts;
-	AntVec m_antStorage;
-	AntSet m_liveAnts;
-	IndexSet m_deadIndices;
+	AntSet m_ants; // All our ants. new-borns and kills done in endTurnInput
 
 	PosSet m_enemyHills;
 	PosSet m_hills;
@@ -28,10 +23,7 @@ class Tracker {
 	int m_turn;
 
 public:
-
 	Tracker();
-
-	inline size_t indexOf(Ant* ant) const;
 
 	void beginTurnInput(int n);
 
@@ -80,10 +72,12 @@ private:
 extern Tracker* g_tracker;
 
 #ifdef DEBUG
-#	define TRACKER_LOG(msg) g_tracker->log << msg << std::endl << std::flush
-#	define TRACKER_LOG_(msg) g_tracker->log << msg
+//#	define LOG_TRACKER(msg) g_tracker->log << msg << std::endl << std::flush
+//#	define TRACKER_LOG_(msg) g_tracker->log << msg
+#	define LOG_TRACKER(msg) LOG_DEBUG(msg)
+#	define TRACKER_LOG_(msg) LOG_DEBUG(msg)
 #else
-#	define TRACKER_LOG(msg)
+#	define LOG_TRACKER(msg)
 #	define TRACKER_LOG_(msg)
 #endif
 

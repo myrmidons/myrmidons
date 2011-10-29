@@ -75,8 +75,6 @@ public:
 
 private:
 	std::vector<std::vector<Square> > m_grid; // x/y
-	std::map<Ant*, Pos> antpos;
-	std::map<Pos, Ant*> posant;
 	Vec2 m_size;
 
 };

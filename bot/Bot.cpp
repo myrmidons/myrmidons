@@ -221,6 +221,8 @@ void Bot::makeMoves()
 		ant->calcDesire();
 		PosList desire = ant->getDesire();
 
+		ant->setExpectedPos(ant->pos());
+
 		if (desire.empty() || ant->state() == Ant::STATE_NONE) {
 			// Random walk
 			DirVec const& dirs = randomDirVec();
@@ -236,8 +238,7 @@ void Bot::makeMoves()
 			}
 			if (bestRank > -100) {
 				LOG_DEBUG("Random move");
-				// This will not be needed. Just for testing the identifyer as things stand at the moment.
-				g_map->moveAnt(pos, g_map->getLocation(pos, bestMove));
+				ant->setExpectedPos(g_map->getLocation(pos, bestMove));
 				state.makeMove(pos, bestMove); // Needed because the map is still just a dummy.
 			}
 		} else {
@@ -252,7 +253,7 @@ void Bot::makeMoves()
 			else if (d.y()>0) dir = SOUTH;
 			if (dir != -1) {
 				LOG_DEBUG("Following desire");
-				g_map->moveAnt(pos, dest);
+				ant->setExpectedPos(dest);
 				state.makeMove(pos, dir);
 			}
 		}

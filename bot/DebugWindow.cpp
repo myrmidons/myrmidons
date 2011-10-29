@@ -47,26 +47,42 @@ void DebugWindow::paintEvent(QPaintEvent* event) {
 	painter.drawImage(0, 0, m_img);
 }
 
+const QRgb FoodColor = qRgb(0, 128, 0); // Dark green. Inviting.
+const QRgb VoidColor = qRgb(60,60, 60); // Undiscovered
+const QRgb WallColor = qRgb(0, 0,  0);
+
+bool compClose(int x, int y) {
+	return Abs(x-y) < 75;
+}
+
+bool colorClose(QRgb x, QRgb y) {
+	return
+			compClose(qRed(x),   qRed(y))   &&
+			compClose(qGreen(x), qGreen(y)) &&
+			compClose(qBlue(x),  qBlue(y));
+}
+
 QRgb randomColor(Room* room) {
 	//srand(reinterpret_cast<long>(room));
 	int id = room->id;
 
-	int r,g,b;
+	QRgb color;
 	do {
 		/*
 		r = rand()%255;
 		g = rand()%255;
 		b = rand()%255;
 		/*/
-		r = (12345   * id) % 255;
-		g = (123456  * id) % 255;
-		b = (1234578 * id) % 255;
+		int r = (12345   * id) % 255;
+		int g = (123456  * id) % 255;
+		int b = (1234578 * id) % 255;
+		color = qRgb(r,g,b);
 		id += 78901;
 		/**/
-	} while (r+g+b < 200 || r+g+b > 650); // avoid blacks and whites
+	} while (colorClose(color, FoodColor) || colorClose(color, VoidColor) || colorClose(color, WallColor));
 	//} while (r+g+b < 250); // Racist code (avoid blacks)
 
-	return qRgb(r,g,b);
+	return color;
 }
 
 QPointF toQP(Vec2 pos) {
@@ -106,12 +122,9 @@ void drawWrappedLine(QPainter& painter, QPointF a, QPointF b) {
 void DebugWindow::redrawImg() {
 	LOG_DEBUG("Rooms::dumpImage");
 
-	const QRgb voidColor = qRgb(60,60,60);
-	const QRgb wallColor = qRgb(0,0,0);
-
 	Vec2 size = g_map->size();
 	m_img = QImage(Zoom*size.x(), Zoom*size.y(), QImage::Format_ARGB32);
-	m_img.fill(voidColor);
+	m_img.fill(VoidColor);
 
 	std::map<Room*, QRgb, RoomComp> colorMap;
 	RoomList rooms = g_rooms->rooms();
@@ -125,7 +138,7 @@ void DebugWindow::redrawImg() {
 			if (s.room)
 				color = colorMap[s.room];
 			else if (s.isWater)
-				color = wallColor;
+				color = WallColor;
 			else
 				continue; // Undiscovered
 
@@ -203,6 +216,9 @@ void DebugWindow::redrawImg() {
 
 						p = wpPos;
 					}
+					QPointF wpPos = toQP(path.dest());
+					drawWrappedLine(painter, p, wpPos);
+					painter.drawEllipse(wpPos, destRad, destRad);
 					/**/
 				}
 			}
@@ -211,9 +227,11 @@ void DebugWindow::redrawImg() {
 		// Draw food
 		const PosSet& food = g_tracker->getFood();
 		ITC(PosSet, pit, food) {
-			painter.setPen(Qt::green);
+			painter.setPen(FoodColor);
 			QPointF pos = toQP(*pit);
+			painter.drawEllipse(pos, 1, 1);
 			painter.drawEllipse(pos, 2, 2);
+			painter.drawEllipse(pos, 3, 3);
 		}
 	}
 

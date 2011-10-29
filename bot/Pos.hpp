@@ -54,6 +54,12 @@ inline bool operator == (Pos const& a, Pos const& b) {
 	return a.x() == b.x() && a.y() == b.y();
 }
 
+inline bool operator != (Pos const& a, Pos const& b) {
+	return !(a == b);
+}
+
+// No arithmetic like subtract and add - to risky in wrapped world! Use convenience functions in g_map.
+
 inline std::ostream& operator<<(std::ostream &os, const Pos& pos) {
 	return os << "(" << pos[0] << ", " << pos[1] << ")";
 }

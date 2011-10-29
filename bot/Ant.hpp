@@ -13,18 +13,22 @@ public:
 		STATE_GOING_TO_ROOM
 	};
 
-
-	Ant(Pos const& loc = Pos());
-	Ant(Ant const& ant);
-	Ant& operator=(Ant const& ant);
-
-	Pos& pos();
+	explicit Ant(Pos const& loc = Pos());
+	~Ant();
+	/*const*/ int id; // Unique id per ant. deterministic.
+	Pos pos();
+	Pos expectedPos();
 	State state() const { return m_state; }
+	const Path& path() const { return m_path; }
 
 	// Returns false on fail.
 	bool goTo(Pos pos);
 	bool goToFoodAt(Pos pos);
 	bool goToRoom(Room* room);
+	void stop(); // Stop going towards currnet goal.
+
+	// Ensure our goals are still sound, etc.
+	void updateState();
 
 	// update desire
 	void calcDesire();
@@ -32,10 +36,15 @@ public:
 	// Where we would most want to go, based on current state.
 	const PosList& getDesire() const { return m_desire; }
 
+	// Sets the expected position for next round, should only be used by the coordinator
+	void setExpectedPos(Pos p);
+
+	// Only used by tracker!
+	void setPos(Pos p);
 private:
 	State m_state;
 	Pos m_position;
-
+	Pos m_expectedPosition; // What pos do this ant expect to be at the next turn? (used for tracking)
 	Path m_path; // Walking along this.
 
 	// Updated each turn:
@@ -44,5 +53,30 @@ private:
 
 typedef std::set<Ant*> AntSet;
 typedef std::vector<Ant> AntVec;
+
+struct EnemyAnt {
+	Pos pos;
+	int team;
+	EnemyAnt(Pos const& p, int t)
+		:pos(p),team(t) {
+	}
+	EnemyAnt(EnemyAnt const& ea)
+		:pos(ea.pos),team(ea.team) {
+	}
+};
+
+inline bool operator < (EnemyAnt const& a, EnemyAnt const& b) {
+	return (a.team < b.team)||((a.team == b.team) && (a.pos < b.pos));
+}
+inline bool operator == (EnemyAnt const& a, EnemyAnt const& b) {
+	return (a.team == b.team) && (a.pos == b.pos);
+}
+inline std::ostream& operator<<(std::ostream &os, const Ant& ant) {
+	return os << "Ant[" << ant.id << "]";
+}
+
+typedef EnemyAnt EnemyHill;
+typedef std::vector<EnemyAnt> EnemyList;
+typedef std::set<EnemyAnt> EnemyHillSet, EnemySet;
 
 #endif // ANT_HPP

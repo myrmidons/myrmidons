@@ -6,8 +6,8 @@
 #include "Square.hpp"
 #include "AntStar.hpp"
 #include "Assert.hpp"
+#include "Ant.hpp"
 
-class Ant;
 class RoomContents;
 
 class Map
@@ -17,18 +17,22 @@ public:
 	void initMap(Vec2 const& dim);
 
 	// Friendly ants
-	void hill(Pos const& pos);
+	void addHill(Pos const& pos);
 	void removeAnt(Ant* ant);
 	void addAnt(Ant* ant);
-	Ant* getAnt(Pos const& pos);
+	Ant* getAntAt(Pos const& pos);
+
+	// Enemy ants
+	void addEnemyHill(EnemyHill const& hill);
+	void addEnemyAnt(EnemyAnt const& ant);
 
 	// Terrain
-	void water(Pos const& pos);
+	void addWater(Pos const& pos);
 
 	// Food
-	void food(Pos const& pos);
+	void addFood(Pos const& pos);
 
-	//resets all non-water squares to land and clears the bots ant vector
+	//resets all non-water squares to land
 	void resetDynamics();
 
 	void updateVisionInformation(const PosList& myAnts);
@@ -71,8 +75,6 @@ public:
 
 private:
 	std::vector<std::vector<Square> > m_grid; // x/y
-	std::map<Ant*, Pos> antpos;
-	std::map<Pos, Ant*> posant;
 	Vec2 m_size;
 
 };

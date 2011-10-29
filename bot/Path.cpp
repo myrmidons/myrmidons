@@ -2,7 +2,7 @@
 #include "Map.hpp"
 #include "Room.hpp"
 #include "Util.hpp"
-#include "State.hpp" // LOG_DEBUG
+#include "Logger.hpp"
 #include <algorithm>
 
 struct SearchNode {
@@ -16,11 +16,13 @@ struct SearchNode {
 
 struct SearchNodeComp {
 	bool operator()(const SearchNode* a, const SearchNode* b) const {
+		//if (a->dist != b->dist)
+		//	return a->dist < b->dist
 		return a->dist < b->dist;
 	}
 };
 
-typedef std::set<SearchNode*, SearchNodeComp> SearchNodeSet;
+typedef std::multiset<SearchNode*, SearchNodeComp> SearchNodeQueue;
 
 Path Path::findPath(Pos start, Pos end)
 {
@@ -35,8 +37,8 @@ Path Path::findPath(Pos start, Pos end)
 		return Path(g_map->manhattanDist(start, end), start, end, WPList());
 	}
 
-	SearchNodeSet q;
-	SearchNodeSet allSearchNodes; // For freeing
+	SearchNodeQueue q;
+	std::set<SearchNode*> allSearchNodes; // For freeing
 
 	SearchNode* startNode = new SearchNode(NULL, start, 0);
 
@@ -45,7 +47,6 @@ Path Path::findPath(Pos start, Pos end)
 	allSearchNodes.insert(startNode);
 
 	RoomSet closedRooms;
-	closedRooms.insert(startRoom);
 
 	Path retPath;
 
@@ -53,6 +54,7 @@ Path Path::findPath(Pos start, Pos end)
 		// Get closest
 		SearchNode* p = *q.begin();
 		q.erase(q.begin());
+		closedRooms.insert(p->room);
 
 		if (p->room != endRoom) {
 			// I still haven't found what I've been looking for.
@@ -61,9 +63,9 @@ Path Path::findPath(Pos start, Pos end)
 			ITC(RoomSet, rit, neighs) {
 				Room* r = *rit;
 				if (!closedRooms.count(r)) {
-					closedRooms.insert(r);
 					int dist=0;
 					Pos pos = p->room->closestPosInNeighbor(p->pos, r, &dist);
+					ASSERT(dist>0);
 					SearchNode* newNode = new SearchNode(p, pos, p->dist + dist);
 					q.insert(newNode);
 					allSearchNodes.insert(newNode);
@@ -86,7 +88,7 @@ Path Path::findPath(Pos start, Pos end)
 		}
 	}
 
-	ITC(SearchNodeSet, wpit, allSearchNodes)
+	ITC(std::set<SearchNode*>, wpit, allSearchNodes)
 		delete *wpit;
 
 	LOG_DEBUG("Path::findPath returning");
@@ -105,18 +107,25 @@ Vec2 deltaAlong(Vec2 pos, int axis, Vec2 d) {
 	return g_map->wrapPos( pos );
 }
 
+void testAndAdd(PosList& dest, Room* room, Pos pos) {
+	Square& s = g_map->square(pos);
+	if (s.isWater || s.room!=room)
+		return;
+	dest.push_back(pos);
+}
+
 // Assumes in same room
-PosList prioritizeWalk(Pos from, Pos to) {
+PosList prioritizeWalk(Room* room, Pos from, Pos to) {
 	Vec2 d = g_map->difference(from, to);
 	if (d==Vec2(0,0))
 		return PosList(1, to); // We have arrived
 
 	int prioAxis = (Abs(d[0]) > Abs(d[1]) ? 0 : 1);
 	PosList ret;
-	ret.push_back(deltaAlong(from, prioAxis, d));
+	testAndAdd(ret, room, deltaAlong(from, prioAxis, d));
 
 	if (d[1-prioAxis] != 0)
-		ret.push_back(deltaAlong(from, 1-prioAxis, d));
+		testAndAdd(ret, room, deltaAlong(from, 1-prioAxis, d));
 
 	return ret;
 }
@@ -126,15 +135,17 @@ PosList Path::getNextStep(Pos pos) const {
 
 	ASSERT(this->isValid());
 
-	if (pos==m_end)
+	if (pos==m_end) {
+		LOG_DEBUG("getNextStep has arrived");
 		return PosList(1, pos); // We have arrived
+	}
 
 	Room* room = g_map->roomAt(pos);
 
 	if (room == g_map->roomAt(m_end)) {
 		// We're in last room
 		LOG_DEBUG("In goal room");
-		return prioritizeWalk(pos, m_end);
+		return prioritizeWalk(room, pos, m_end);
 	}
 
 	// See where along path we are:
@@ -171,5 +182,5 @@ PosList Path::getNextStep(Pos pos) const {
 
 	// Find good path to neighbor room.
 	Pos targetCell = room->closestPosNearNeighbor(pos, nextRoom);
-	return prioritizeWalk(pos, targetCell);
+	return prioritizeWalk(room, pos, targetCell);
 }

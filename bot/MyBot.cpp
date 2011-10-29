@@ -2,7 +2,8 @@
 #include "Room.hpp"
 #include "Map.hpp"
 #include "Tracker.hpp"
-
+#include "Logger.hpp"
+#include "Coordinator.hpp"
 using namespace std;
 
 #ifdef BOT_WITH_QT
@@ -79,6 +80,9 @@ int main(int argc, char *argv[])
 	Map map;
 	g_map = &map; // Must be before g_tracker.
 
+	Coordinator coord;
+	g_coordinator = &coord;
+
 	Tracker tracker;
 	g_tracker = &tracker;
 
@@ -99,10 +103,9 @@ int main(int argc, char *argv[])
 	bot.playGame();
 #endif
 
-#ifdef DEBUG
-	g_rooms->dumpImage();
-#endif
+	LOG_DEBUG("Reached the end of main().");
 
-	g_state->bug << "Reached the end." << std::endl;
+	Logger::free();
+
     return 0;
 }

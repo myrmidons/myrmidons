@@ -3,8 +3,11 @@
 #include "State.hpp"
 #include "Tracker.hpp"
 #include "Room.hpp"
+#include "RoomContents.hpp"
 #include "Util.hpp"
+#include "Logger.hpp"
 #include <cmath>
+#include <queue>
 
 Map* g_map = NULL;
 
@@ -15,7 +18,7 @@ Map::Map() {
 void Map::initMap(Vec2 const& dim) {
 
 	m_size = dim;
-	g_state->bug << "Map size: " << m_size << std::endl;
+	LOG_DEBUG("Map size: " << m_size);
 	m_grid = std::vector<std::vector<Square> >(m_size.x(),
 											   std::vector<Square>(m_size.y(), Square()));
 }
@@ -26,69 +29,43 @@ PosPath Map::getOptimalPathTo(const Pos &from, const Pos &to) {
 }
 
 void Map::removeAnt(Ant* ant) {
-	if(!antpos.count(ant)) {
-		// FAIL!
-		g_state->bug << "FAIL in Map::removeAnt: Ant already removed! (or never added)" << std::endl;
-	}
-	else if(!posant.count(ant->pos())) {
-		// FAIL!
-		g_state->bug << "FAIL in Map::removeAnt: Ant postion already removed! (or never added)" << std::endl;
-	}
-	else {
-		posant.erase(ant->pos());
-		antpos.erase(ant);
+	LOG_DEBUG("removeAnt(" << *ant << ") from pos " << ant->pos());
 
-		Square& sq = square(ant->pos());
-		sq.ant = -1;
-		sq.pAnt = 0;
-		sq.room->contents()->removeMyrmidon(ant);
-	}
+	Square& sq = square(ant->pos());
+	sq.antTeam = NO_TEAM;
+	ASSERT(sq.pAnt == ant);
+	sq.pAnt = 0;
+	sq.room->contents()->removeMyrmidon(ant);
 }
 
 // Tell the map that an ant has spawned.
 void Map::addAnt(Ant* ant) {
-	if(antpos.count(ant)) {
-		// FAIL!
-		g_state->bug << "FAIL in Map::addAnt: Ant already added!" << std::endl;
-	}
-	else if(posant.count(ant->pos())) {
-		// FAIL!
-		g_state->bug << "FAIL in Map::addAnt: Ant position already added!" << std::endl;
-	}
-	else {
-		antpos[ant] = ant->pos();
-		posant[ant->pos()] = ant;
+	LOG_DEBUG("addAnt(" << *ant << ") to pos " << ant->pos());
 
-		Square& sq = square(ant->pos());
-		sq.ant = 0;
-		sq.pAnt = ant;
-		sq.room->contents()->addMyrmidon(ant);
-
-	}
+	Square& sq = square(ant->pos());
+	ASSERT(sq.pAnt == NULL);
+	sq.antTeam = 0;
+	sq.pAnt = ant;
+	sq.room->contents()->addMyrmidon(ant);
 }
 
 // Get the ant that occupies a specific position.
-Ant* Map::getAnt(Pos const& pos) {
-	//return square(pos).pAnt;
-	if(posant.count(pos)) {
-		return posant[pos];
-	}
-	return 0;
+Ant* Map::getAntAt(Pos const& pos) {
+	return square(pos).pAnt;
 }
 
 void Map::moveAnt(Pos const& from, Pos const& to) {
-	g_tracker->log << "Looking for ant at " << from << ": ";
-	Ant* ant = getAnt(from);
+	LOG_TRACKER("Map::moveAnt from: " << from << ", to: " << to);
+	Ant* ant = getAntAt(from);
 
-	if(ant) {
-		g_tracker->log << "and moving it from " <<  ant->pos() << " to ";
+	if (ant) {
 		removeAnt(ant);
 		ant->pos() = to;
 		addAnt(ant);
-		g_tracker->log << ant->pos() << std::endl;
+		LOG_TRACKER(ant->pos());
 	}
 	else {
-		g_tracker->log << " without finding it." << std::endl;
+		LOG_ERROR("Map::moveAnt failed to find ant!");
 	}
 }
 
@@ -96,22 +73,32 @@ void Map::enemyHill(Pos const& pos, int team) {
 	square(pos).room->contents()->enemyHillDiscovered(pos, team);
 }
 
-void Map::hill(Pos const& pos) {
+void Map::addHill(Pos const& pos) {
 	square(pos).room->contents()->myrmidonHillDiscovered(pos);
 }
 
-void Map::water(const Pos &pos) {
+void Map::addWater(const Pos &pos) {
 	square(pos).isWater = true;
 }
 
-void Map::food(Pos const& pos) {
-	STAMP("Begin");
+void Map::addFood(Pos const& pos) {
+	//STAMP("Begin");
 	square(pos).isFood = true;
 	ASSERT(square(pos).discovered);
 	ASSERT(square(pos).room);
 	ASSERT(square(pos).room->contents());
 	square(pos).room->contents()->insertFoodAt(pos);
-	STAMP("End");
+	//STAMP("End");
+}
+
+void Map::addEnemyHill(EnemyHill const& hill) {
+	square(hill.pos).hillTeam = hill.team;
+}
+
+void Map::addEnemyAnt(EnemyAnt const& ant) {
+	Square& s = square(ant.pos);
+	ASSERT(s.antTeam<0);
+	s.antTeam = ant.team;
 }
 
 //returns the new location from moving in a given direction with the edges wrapped
@@ -160,7 +147,7 @@ void Map::updateVisionInformation(const PosList& antsPos) {
 		locQueue.push(sLoc);
 
 		std::vector<std::vector<bool> > visited(size().x(), std::vector<bool>(size().y(), 0));
-		m_grid[sLoc[0]][sLoc[1]].isVisible = 1;
+		m_grid[sLoc[0]][sLoc[1]].markAsVisible();
 		visited[sLoc[0]][sLoc[1]] = 1;
 
 		if (!m_grid[sLoc[0]][sLoc[1]].discovered) {
@@ -176,7 +163,7 @@ void Map::updateVisionInformation(const PosList& antsPos) {
 				nLoc = getLocation(cLoc, d);
 
 				if (!visited[nLoc[0]][nLoc[1]] && euclidDist(sLoc, nLoc) <= g_state->viewradius) {
-					m_grid[nLoc[0]][nLoc[1]].isVisible = 1;
+					m_grid[nLoc[0]][nLoc[1]].markAsVisible();
 					if(!m_grid[nLoc[0]][nLoc[1]].discovered) {
 						m_grid[nLoc[0]][nLoc[1]].discovered = true;
 						discoveries.insert(nLoc);
@@ -189,16 +176,16 @@ void Map::updateVisionInformation(const PosList& antsPos) {
 		}
 	}
 
-	g_state->bug << discoveries.size() << " new discoveries." << std::endl;
+	LOG_DEBUG(discoveries.size() << " new discoveries.");
 
 	g_rooms->expandWith(discoveries);
 }
 
 bool Map::isOccupied(const Pos& loc) {
-	return square(loc).ant != -1;
+	return square(loc).antTeam >= 0;
 }
 
-//resets all non-water squares to land and clears the bots ant vector
+//resets all non-water squares to land
 void Map::resetDynamics()
 {
 	STAMP("Map::resetDynamics");

@@ -2,17 +2,9 @@
 #define STATE_HPP
 
 #include <iostream>
-#include <stdio.h>
-#include <cstdlib>
-#include <cmath>
-#include <string>
 #include <vector>
-#include <queue>
-#include <stack>
 
 #include "Timer.hpp"
-#include "Bug.hpp"
-#include "Square.hpp"
 #include "Pos.hpp"
 
 
@@ -24,11 +16,12 @@ const int WEST  = 0;
 const int SOUTH = 1;
 const int EAST  = 2;
 const int NORTH = 3;
+const int STAY = 4;
 
 const int TDIRECTIONS = 4;
 //const char CDIRECTIONS[4] = {'N', 'E', 'S', 'W'};
 const char CDIRECTIONS[4] = {'W', 'S', 'E', 'N'};
-const int DIRECTIONS[4][2] = { {-1, 0}, {0, 1}, {1, 0}, {0, -1} };      //{W, S, E, N}
+const int DIRECTIONS[4][2] = { {-1, 0}, {0, 1}, {1, 0}, {0, -1}};      //{W, S, E, N}
 
 typedef std::vector<int> DirVec;
 
@@ -52,8 +45,7 @@ struct State
     std::vector<double> scores;
     bool gameover;
 
-    Timer timer;
-    Bug bug;
+	Timer timer;
 
     /*
         Functions
@@ -71,16 +63,5 @@ std::ostream& operator<<(std::ostream &os, const State &state);
 std::istream& operator>>(std::istream &is, State &state);
 
 extern State* g_state;
-
-#ifdef DEBUG
-#	define LOG_DEBUG(msg) g_state->bug << msg << std::endl << std::flush
-#	define STAMP_BODY "STAMP: Function " << __FUNCTION__ << " in file " __FILE__ << " on row " <<  __LINE__
-#	define STAMP_ LOG_DEBUG(STAMP_BODY)
-#	define STAMP(foo) LOG_DEBUG(STAMP_BODY << ": " << foo)
-#else
-#	define LOG_DEBUG(msg)
-#	define STAMP_
-#	define STAMP(foo)
-#endif
 
 #endif //STATE_H_

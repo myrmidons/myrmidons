@@ -15,7 +15,11 @@ HEADERS += \
     Assert.hpp \
 	Tracker.hpp \
 	Path.hpp \
-	CommInterface.hpp
+	CommInterface.hpp \
+    DebugWindow.hpp \
+    RoomContents.hpp \
+    Logger.hpp \
+    Coordinator.hpp
 
 SOURCES += \
     Ant.cpp \
@@ -30,13 +34,23 @@ SOURCES += \
     Assert.cpp \
     Tracker.cpp \
     RoomContents.cpp \
-    Path.cpp
+    Path.cpp \
+    DebugWindow.cpp \
+    Logger.cpp \
+    Square.cpp \
+    Coordinator.cpp
 
 # Add annoying warning disables below, e.g. -Wno-cats-allowed
 # QMAKE_CXXFLAGS_WARN_ON = \
 
 debug {
     DEFINES += DEBUG
+
+	DEFINES += \
+		BOT_WITH_QT
+
+	CONFIG += qt
+	QT += network
 }
 
 macx {
@@ -49,8 +63,14 @@ macx {
 
 QMAKE_CXXFLAGS += -Wall -pedantic -Wextra -Wno-long-long
 
-DEFINES += \
-	BOT_WITH_QT
+#DEFINES += \
+#	BOT_WITH_QT
 
 CONFIG += qt
 QT += network
+
+
+
+
+
+

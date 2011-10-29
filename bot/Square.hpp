@@ -6,38 +6,54 @@
 class Room;
 class Ant;
 
-/*
-    struct for representing a square in the grid.
-*/
+const int NO_TEAM = -1;
+
+/* One grid cell on the map.
+It's hip to be...              */
 struct Square
 {
-	bool discovered,isVisible, isWater, isHill, isFood;
-    int ant, hillPlayer;
-	Ant* pAnt;
-    std::vector<int> deadAnts;
+	// Static (once discovered, does not change).
+	bool discovered; // Been seen at least once.
+	bool isWater, isHill;
 	Room* room;
 
-	Square()
+	// Dynamic (may change):
+	bool m_isVisible; // Being seen right now
+	int m_lastVisible; // Which turn was we last visible?
+	bool isFood;
+
+	Ant* pAnt;
+	int antTeam;  // The ant at this position is team...
+	int hillTeam; // the hill at this position is team...
+	std::vector<int> deadAnts;
+	Ant* destinyAnt; // Ant heading here (may still be a long way away though).
+
+	Square() : m_lastVisible(-1)
 	{
-		discovered = isVisible = isWater = isHill = isFood = false;
-        ant = hillPlayer = -1;
+		discovered = isWater = isHill = isFood = false;
+		pAnt = destinyAnt = NULL;
 		room = NULL;
+		antTeam = hillTeam = NO_TEAM;
+		resetDynamics();
 	}
 
 	// reset dynamic information
 	void resetDynamics()
 	{
-        isVisible = 0;
-        isHill = 0;
-        isFood = 0;
-	//    ant = hillPlayer = -1;
-        deadAnts.clear();
+		m_isVisible = false;
+		isFood = false;
+		antTeam = NO_TEAM; // Ants can move. Tracker will set each turn.
+		deadAnts.clear();
 	}
 
 	// Are we sure this is ground?
 	bool isGround() const {
 		return discovered && !isWater;
 	}
+
+	bool visible() const { return m_isVisible; }
+
+	void markAsVisible();
 };
 
 #endif //SQUARE_H_

@@ -1,7 +1,9 @@
 #include "State.hpp"
 #include "Tracker.hpp"
+#include "Logger.hpp"
 #include "Map.hpp"
 #include <cassert>
+#include <cmath>
 #include "Ant.hpp"
 
 #include <sstream>
@@ -11,16 +13,6 @@ using namespace std;
 // initialized in main
 State* g_state = NULL;
 
-
-//////////////////////////
-
-/*bool State::isOccupied(const Pos& loc) {
-	return grid[loc[0]][loc[1]].ant != -1;
-}*/
-
-//////////////////////////
-
-
 //constructor
 State::State(std::ostream& output)
 	: output(output)
@@ -28,17 +20,11 @@ State::State(std::ostream& output)
     gameover = 0;
 	turn = 0;
 	ASSERT(!g_state && "more than one State constructed");
-
-	// Random logfile name....
-	std::stringstream ss;
-	ss << "debug_" << (rand()+clock()) << ".txt";
-	bug.open(ss.str());
 }
 
 //deconstructor
 State::~State()
 {
-    bug.close();
 }
 
 //sets the state up
@@ -76,10 +62,10 @@ ostream& operator<<(ostream &os, const State &state)
 			else if(g_map->square(pos).isFood)
                 os << '*';
 			else if(g_map->square(pos).isHill)
-				os << (char)('A' + g_map->square(pos).hillPlayer);
-			else if(g_map->square(pos).ant >= 0)
-				os << (char)('a' + g_map->square(pos).ant);
-			else if(g_map->square(pos).isVisible)
+				os << (char)('A' + g_map->square(pos).hillTeam);
+			else if(g_map->square(pos).antTeam >= 0)
+				os << (char)('a' + g_map->square(pos).antTeam);
+			else if(g_map->square(pos).visible())
                 os << '.';
             else
                 os << '?';
@@ -97,18 +83,14 @@ istream& operator>>(istream &is, State &state)
     string inputType, junk;
 
     //finds out which turn it is
-    while(is >> inputType)
-    {
-        if(inputType == "end")
-        {
+	while(is >> inputType) {
+		if (inputType == "end") {
             state.gameover = 1;
             break;
         }
-        else if(inputType == "turn")
-		{
+		else if (inputType == "turn") {
 			is >> state.turn;
-			state.bug << "turn " << state.turn << ":" << std::endl << "----------------" << std::endl;
-			g_tracker->turn(state.turn);
+			g_tracker->beginTurnInput(state.turn);
             break;
         }
         else //unknown line
@@ -169,31 +151,31 @@ istream& operator>>(istream &is, State &state)
             {
 				//STAMP_;
                 is >> row >> col;
-				g_tracker->water(Pos(col, row));
+				g_tracker->bufferWater(Pos(col, row));
             }
             else if(inputType == "f") //food square
             {
-				STAMP("Food");
+				//STAMP("Food");
                 is >> row >> col;
-				g_tracker->food(Pos(col, row));
+				g_tracker->bufferFood(Pos(col, row));
             }
             else if(inputType == "a") //live ant square
             {
 				//STAMP;
                 is >> row >> col >> player;
-				g_tracker->ant(Pos(col, row), player);
+				g_tracker->bufferAnt(Pos(col, row), player);
             }
 			else if(inputType == "d") //dead ant square
             {
-				STAMP("Dead ant");
+				//STAMP("Dead ant");
                 is >> row >> col >> player;
-				g_tracker->deadAnt(Pos(col, row), player);
+				g_tracker->bufferDeadAnt(Pos(col, row), player);
 			}
             else if(inputType == "h")
             {
 				//STAMP;
                 is >> row >> col >> player;
-				g_tracker->hill(Pos(col, row), player);
+				g_tracker->bufferHill(Pos(col, row), player);
             }
             else if(inputType == "players") //player information
 			{
@@ -207,7 +189,7 @@ istream& operator>>(istream &is, State &state)
             }
             else if(inputType == "go") //end of turn input
             {
-				g_tracker->go();
+				g_tracker->endTurnInput();
                 if(state.gameover)
                     is.setstate(std::ios::failbit);
                 else

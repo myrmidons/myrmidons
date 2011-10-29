@@ -178,32 +178,9 @@ void Bot::makeMoves()
 		Ant* ant = *it;
 		if (ant->state() == Ant::STATE_NONE)
 			lookForFood(ant);
-
-		Pos pos = ant->pos();
-		ant->calcDesire();
-		PosList desire = ant->getDesire();
-
-		ant->setExpectedPos(ant->pos());
-
-		if (!desire.empty()) {
-			// Follow desire.
-			Pos dest = desire.front();
-			LOG_DEBUG("Desire to go from " << pos << " to " << dest);
-			Vec2 d = g_map->difference(pos, dest);
-			int dir = -1;
-			if (d.x()<0)      dir = WEST;
-			else if (d.x()>0) dir = EAST;
-			else if (d.y()<0) dir = NORTH;
-			else if (d.y()>0) dir = SOUTH;
-			if (dir != -1) {
-				LOG_DEBUG("Following desire");
-				ant->setExpectedPos(dest);
-				state.makeMove(pos, dir);
-			}
-		}
 	}
 
-	//g_coordinator->moveAntsAfterDesire(ants); // all ants desires are calculated, so they should all have a plan/goal/mission/objective
+	g_coordinator->moveAntsAfterDesire(ants); // all ants desires are calculated, so they should all have a plan/goal/mission/objective
 
 #ifdef DEBUG
 	// Draw map with desires and plans.

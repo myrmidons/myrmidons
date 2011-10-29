@@ -12,76 +12,143 @@ Coordinator::Coordinator()
 {
 }
 
+bool mayMoveTo(Pos pos) {
+	Square& s = g_map->square(pos);
+	return !s.isWater;
+}
+
 void Coordinator::moveAntsAfterDesire(AntSet ants) {
+	m_grid.clear();
 
+	typedef std::vector<AntMove> Queue;
+
+	Queue q;
+	// Add all ants to queue
 	ITC(AntSet, it, ants) {
-		LOG_COORD("Deciding ant move...");
+		AntMove move;
+		move.ant = *it;
+		move.choice = 0; // First choice if possible
+		move.nDesires = move.ant->getDesire().size();
+		move.ant->setExpectedPos(move.ant->pos()); // until we say otherwise
+	}
 
-		Ant* ant = *it;
-		Pos pos = ant->pos();
-		AnAntMove move;
-		move.ant = ant;
+	AntSet unassigned; // Ants that can't go anywhere
 
-		ant->calcDesire();
-		PosList desire = ant->getDesire();
-		bool validMove = false;
-		int desirecounter = 0;
-		while(!validMove) {
-			Pos dest = Pos(-1,-1); // should not be
+	// When apatic - which directions should we try? STILL must be first, the rest can be better (individual)
+	int apaticDirs[5] = {STAY, NORTH, EAST, SOUTH, WEST};
 
-			// move the ant depending on desire (or if none, dont do nathing)
-			if (desire.empty() || ant->state() == Ant::STATE_NONE) {
-				dest = pos;
-				move.wasIndifferent = true;
-				LOG_COORD(*ant << " : no desire. Standing still");
-			}
-			else {
-				if(desirecounter < desire.size()) { // have we tried all the ants desires?
-					dest = desire[desirecounter];
-					Vec2 d = g_map->difference(pos, dest);
-					int dir = STAY;
-					if (d.x()<0)      dir = WEST;
-					else if (d.x()>0) dir = EAST;
-					else if (d.y()<0) dir = NORTH;
-					else if (d.y()>0) dir = SOUTH;
-				}
-			}
-			if(movesThisTurn[dest]) {
+	int iter=0;
+	const int MaxIter = ants.size() * 5; // We should have resolved by this time...
 
-			}
-			desirecounter++;
+	while (!q.empty()) {
+		++iter;
+		if (iter >= MaxIter) { // SAFETY FIRST
+			LOG_ERROR("Coordinator::moveAntsAfterDesire did not converge! Ants will move... intrestingly.");
+			break;
 		}
 
-		if (desire.empty() || ant->state() == Ant::STATE_NONE) {
-			move.wasIndifferent = true;
-			LOG_COORD(*ant << " : no desire. Standing still");
-		} else {
-			// Follow desire.
-			Pos dest = desire.front();
-			LOG_COORD(*ant << " desire to go from " << pos << " to " << dest);
-			Vec2 d = g_map->difference(pos, dest);
-			int dir = -1;
-			if (d.x()<0)      dir = WEST;
-			else if (d.x()>0) dir = EAST;
-			else if (d.y()<0) dir = NORTH;
-			else if (d.y()>0) dir = SOUTH;
-			if (dir != -1) {
-				LOG_COORD(*ant << " : following desire");
-				if(!movesThisTurn[dest]) {
-					// no ant has moved here yet(i).
-				}
+		AntMove move = q.back();
+		q.pop_back();
 
-				ant->setExpectedPos(dest);
-				g_state->makeMove(pos, dir);
+		// Try to find a place for this ant...
+		if (!move.isApatic()) {
+			// Try next desire
+			const PosList& desires = move.ant->getDesire();
+			Pos desire = desires[move.choice];
+
+			// May we go there?
+			if (!mayMoveTo(desire)) {
+				LOG_WARNING(*move.ant << " desired to move to water");
+				move.nextChoice();
+				q.push_back(move);
 			}
-			else {
-				LOG_COORD(*ant << " : ants desire is to stand still");
+			else if (m_grid.count(desire)==0) {
+				// Wohoo - go there!
+				m_grid[desire] = move;
+				continue;
+			} else {
+				// Grid occupied - should we push him?
+				AntMove other = m_grid[desire];
+
+				// If the guy was apatic to start iwth - push him.
+				// or, if we have no options left and he does: push him.
+				bool push = (other.nDesires==0 ||
+							(move.desiresLeft()==0 && other.desiresLeft()>0));
+				if (push) {
+					LOG_COORD(*move.ant << " pushing " << *other.ant << " at " << desire);
+
+					// We push him
+					other.nextChoice();
+					q.push_back(other);
+					m_grid[desire] = move; // We move there!
+				} else {
+					// We can't push him. We reinsert ourselves.
+					move.nextChoice();
+					q.push_back(move);
+					// Dont assign to grid this turn.
+				}
+			}
+		} else {
+			// We're apatic - move to any free square.
+			// prefer standing still - often best (not a step backward).
+
+			bool assigned = false;
+
+			for (int i=0; i<5; ++i) {
+				int dir = apaticDirs[i];
+				Pos desire = g_map->getLocation(move.ant->pos(), dir);
+				if (mayMoveTo(desire) && m_grid.count(desire)==0) {
+					// yay
+					m_grid[desire] = move;
+					assigned = true;
+					break;
+				}
+			}
+
+			if (!assigned) {
+				LOG_COORD("WARNING: Ant " << *move.ant << " has no freedoms - it will DIIIIEEEE!");
+				unassigned.insert(move.ant);
 			}
 		}
 	}
-}
 
-AnAntMove* IsMoveTaken(Pos p){
-	//movesThisTurn.
-	return 0;
+	// All ants been assigned a place to go. Send out these commands.
+
+	ITC(AntMoves, mit, m_grid) {
+		Pos pos = mit->first;
+		AntMove move = mit->second;
+
+		// inform ant..
+		move.ant->setExpectedPos(pos);
+	}
+
+	ITC(AntSet, ait, unassigned) {
+		// Our failures
+		// TODO: go to where they to least damage.
+		Ant* ant = *ait;
+		ant->setExpectedPos(ant->pos()); // Stay and wait for death.
+	}
+
+	///////////////////////////////////////////////////////////////////
+	// All ants have expected positions - commit!
+
+	ITC(AntSet, ait, ants) {
+		Ant* ant = *ait;
+		Pos current = ant->pos();
+		Pos desire = ant->expectedPos();
+
+		Vec2 d = g_map->difference(current, desire);
+		int dir = STAY;
+		if (d.x()<0)      dir = WEST;
+		else if (d.x()>0) dir = EAST;
+		else if (d.y()<0) dir = NORTH;
+		else if (d.y()>0) dir = SOUTH;
+		if (dir != STAY) {
+			LOG_COORD(*ant << " will try to go from " << current << " to " << desire);
+			g_state->makeMove(current, dir);
+		}
+		else {
+			LOG_COORD(*ant << " : ants desire is to stand still");
+		}
+	}
 }

@@ -15,7 +15,7 @@ Ant::~Ant() {
 	stop(); // Clear Square.destinyAnt
 }
 
-Pos Ant::pos() {
+Pos Ant::pos() const {
 	return m_position;
 }
 Pos Ant::expectedPos() {

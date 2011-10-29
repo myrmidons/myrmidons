@@ -25,12 +25,14 @@ private:
 
 #	define LOG_DEBUG(msg) Logger::instance()->getBugger() << msg << std::endl << std::flush
 #	define LOG_ERROR(msg) LOG_DEBUG("ERROR: " << msg)
+#	define LOG_WARNING(msg) LOG_DEBUG("WARNING: " << msg)
 #	define STAMP_BODY "STAMP: Function " << __FUNCTION__ << " in file " __FILE__ << " on row " <<  __LINE__
 #	define STAMP_ LOG_DEBUG(STAMP_BODY)
 #	define STAMP(foo) LOG_DEBUG(STAMP_BODY << ": " << foo)
 #else
 #	define LOG_DEBUG(msg)
 #	define LOG_ERROR(msg)
+#	define LOG_WARNING(msg)
 #	define STAMP_
 #	define STAMP(foo)
 #endif

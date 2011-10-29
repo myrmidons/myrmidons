@@ -35,7 +35,7 @@ bool Ant::goTo(Pos dest) {
 		// Win - there is a path
 		m_path = newPath;
 		LOG_ANT(this, "goTo " << dest);
-		m_state = STATE_GOING_TO_ROOM;
+		m_state = STATE_GOING_TO_POS;
 		g_map->square(dest).destinyAnt = this;
 		return true;
 	} else {
@@ -87,6 +87,13 @@ void Ant::updateState() {
 	if (!m_path.isValid()) {
 		LOG_ANT(this, "Invalid path, stopping");
 		stop();
+	}
+
+	if (m_state==STATE_GOING_TO_POS) {
+		if (pos() == m_path.dest()) {
+			LOG_DEBUG("At destination");
+			stop();
+		}
 	}
 
 	if (m_state==STATE_GOING_TO_FOOD) {

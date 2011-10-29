@@ -107,6 +107,7 @@ void Tracker::updateMapInfo() {
 	LOG_TRACKER("Reporting new myrmidon hills to map.");
 	IT(PosSet, it, buf.newHills) {
 		g_map->addHill(*it);
+		m_ourHills.insert(*it);
 	}
 	LOG_TRACKER(buf.newHills.size() << " hills reported.");
 
@@ -114,6 +115,7 @@ void Tracker::updateMapInfo() {
 	LOG_TRACKER("Reporting new enemy hills to map.");
 	IT(EnemySet, it, buf.newEnemyHills) {
 		g_map->addEnemyHill(*it);
+		m_enemyHills.insert(*it);
 	}
 	LOG_TRACKER(buf.newEnemyHills.size() << " hills reported.");
 

@@ -180,6 +180,16 @@ void Bot::makeMoves()
 			lookForFood(ant);
 	}
 
+	// Kill enemy hills:
+	ITC(AntSet, it, ants) {
+		Ant* ant = *it;
+		RoomContents* rc = g_map->roomContentAt(ant->pos());
+		if (!rc->m_enemyHills.empty()) {
+			// There is an enemy hill in this room - storm it berserk style!
+			ant->goTo(*rc->m_enemyHills.begin());
+		}
+	}
+
 	////////////////////////////////////////////////////////////
 	// TEST CODE! Push all ants onto one food:
 	/*if (food.size()>0) {

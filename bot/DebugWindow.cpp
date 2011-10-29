@@ -53,6 +53,7 @@ const QRgb VoidColor = qRgb(60,60, 60); // Undiscovered
 const QRgb WallColor = qRgb(0, 0,  0);
 const QRgb FriendColor = qRgb(0, 0,  255);
 const QRgb EnemyColor = qRgb(255, 0,  0);
+const QRgb EnemyHillColor = qRgb(255, 0,  0);
 
 bool compClose(int x, int y) {
 	return Abs(x-y) < 75;
@@ -94,7 +95,7 @@ QRgb randomColor(Room* room) {
 		id += 78901;
 		/**/
 	} while (colorClose(color, FoodColor) || colorClose(color, VoidColor) || colorClose(color, WallColor) ||
-			 colorClose(color, FriendColor) || colorClose(color, EnemyColor));
+			 colorClose(color, FriendColor) || colorClose(color, EnemyColor) || colorClose(color, EnemyHillColor));
 	//} while (r+g+b < 250); // Racist code (avoid blacks)
 
 	return color;
@@ -134,12 +135,14 @@ void drawWrappedLine(QPainter& painter, QPointF a, QPointF b) {
 	}
 }
 
-void drawSquare(QPainter& painter, QPointF pos, float r, QRgb color) {
+void drawSquare(QPainter& painter, QPointF pos, float r, QRgb color, bool outline=true) {
 	QRectF rect(pos.x()-r, pos.y()-r, 2*r, 2*r);
 	painter.fillRect(rect, color);
 
-	painter.setPen(Qt::white);
-	painter.drawRect(rect);
+	if (outline) {
+		painter.setPen(Qt::white);
+		painter.drawRect(rect);
+	}
 }
 
 void DebugWindow::redrawImg() {
@@ -171,7 +174,8 @@ void DebugWindow::redrawImg() {
 
 			for (int xi=0; xi<Zoom; ++xi)
 				for (int yi=0; yi<Zoom; ++yi)
-					m_img.setPixel(x*Zoom+xi, y*Zoom+yi, ((yi/2+1)%2) ? color : oddColor);
+					//m_img.setPixel(x*Zoom+xi, y*Zoom+yi, ((yi/2+1)%2) ? color : oddColor);
+					m_img.setPixel(x*Zoom+xi, y*Zoom+yi, (yi%2) ? color : oddColor);
 		}
 	}
 
@@ -203,7 +207,8 @@ void DebugWindow::redrawImg() {
 
 		//////////////////////////////////////////////////
 		// Draw ants
-		float antRad = 0.35f*Zoom;
+		const float antRad = 0.35f*Zoom;
+		const float antHillRad = 0.4f*Zoom;
 
 		const EnemySet& enemies = g_tracker->getEnemies();
 		ITC(EnemySet, eit, enemies)
@@ -265,6 +270,19 @@ void DebugWindow::redrawImg() {
 			painter.drawEllipse(pos, 1, 1);
 			painter.drawEllipse(pos, 2, 2);
 			painter.drawEllipse(pos, 3, 3);
+		}
+
+		// Draw hills
+		const EnemyHillSet& enemyHills = g_tracker->enemyHills();
+		if (!enemyHills.empty()) {
+			LOG_DEBUG("Drawing " << enemyHills.size() << " enemy hills!");
+			ITC(EnemyHillSet, hit, enemyHills) {
+				drawSquare(painter, toQP(hit->pos), antHillRad, EnemyHillColor, false);
+			}
+		}
+		const PosSet& ourHills = g_tracker->ourHills();
+		ITC(PosSet, hit, ourHills) {
+			drawSquare(painter, toQP(*hit), antHillRad, FriendColor, false);
 		}
 	}
 

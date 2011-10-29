@@ -73,6 +73,36 @@ QPointF toQP(Vec2 pos) {
 	return Zoom*QPointF(pos.x()+.5f, pos.y()+.5f);
 }
 
+void drawWrappedLine(QPainter& painter, QPointF a, QPointF b) {
+	int w = painter.device()->width();
+	int h = painter.device()->height();
+
+	bool xwrap = (Abs(a.x()-b.x()) > w/2);
+	bool ywrap = (Abs(a.y()-b.y()) > h/2);
+
+	if (xwrap && ywrap) {
+		if (a.x() < b.x())
+			std::swap(a,b);
+
+		painter.drawLine(a, b + QPointF(w, h));
+		painter.drawLine(a - QPointF(w, h), b);
+	} else if (xwrap) {
+		if (a.x() < b.x())
+			std::swap(a,b);
+
+		painter.drawLine(a, b + QPointF(w, 0));
+		painter.drawLine(a - QPointF(w, 0), b);
+	} else if (ywrap) {
+		if (a.y() < b.y())
+			std::swap(a,b);
+
+		painter.drawLine(a, b + QPointF(0, h));
+		painter.drawLine(a - QPointF(0, h), b);
+	} else {
+		painter.drawLine(a,b);
+	}
+}
+
 void DebugWindow::redrawImg() {
 	LOG_DEBUG("Rooms::dumpImage");
 
@@ -122,31 +152,7 @@ void DebugWindow::redrawImg() {
 			const RoomSet& neighs = r->neighborRooms();
 			ITC(RoomSet, rit2, neighs) {
 				QPointF b = centers[*rit2];
-
-				bool xwrap = (Abs(a.x()-b.x()) > m_img.width()/2);
-				bool ywrap = (Abs(a.y()-b.y()) > m_img.height()/2);
-
-				if (xwrap && ywrap) {
-					if (a.x() < b.x())
-						std::swap(a,b);
-
-					painter.drawLine(a, b + QPointF(m_img.width(), m_img.height()));
-					painter.drawLine(a - QPointF(m_img.width(), m_img.height()), b);
-				} else if (xwrap) {
-					if (a.x() < b.x())
-						std::swap(a,b);
-
-					painter.drawLine(a, b + QPointF(m_img.width(), 0));
-					painter.drawLine(a - QPointF(m_img.width(), 0), b);
-				} else if (ywrap) {
-					if (a.y() < b.y())
-						std::swap(a,b);
-
-					painter.drawLine(a, b + QPointF(0, m_img.height()));
-					painter.drawLine(a - QPointF(0, m_img.height()), b);
-				} else {
-					painter.drawLine(a,b);
-				}
+				drawWrappedLine(painter, a, b);
 			}
 		}
 
@@ -174,7 +180,7 @@ void DebugWindow::redrawImg() {
 				if (path.isValid()) {
 					QPointF dest = toQP(path.dest());
 					painter.setPen(Qt::black);
-					painter.drawLine(pos, dest);
+					drawWrappedLine(painter, pos, dest);
 					float destRad = 0.15f * Zoom;
 					painter.drawEllipse(dest, destRad, destRad);
 				}

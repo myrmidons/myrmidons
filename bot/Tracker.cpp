@@ -4,10 +4,11 @@
 #include "Util.hpp"
 #include <sstream>
 #include <sys/time.h>
+#include <set>
 
 Tracker* g_tracker = 0;
 
-typedef enum {TheGoodGuys = 0} Team;
+typedef enum {Myrmidons = 0} Team;
 
 Tracker::Tracker()
 	:m_numAnts(0) {
@@ -22,39 +23,34 @@ inline size_t Tracker::indexOf(Ant* ant) const {
 	return (ant - &m_antStorage[0]);
 }
 
-void Tracker::turn(int n) {
+void Tracker::beginTurnInput(int n) {
 	m_turn = n;
 	TRACKER_LOG("turn " << n << ":" << std::endl << "----------------");
 	buf.resetDynamics();
+	ASSERT(g_map);
 	g_map->resetDynamics();
-	ASSERT(g_map);
 }
 
-void Tracker::water(Pos const& pos) {
-	ASSERT(g_map);
-	g_map->water(pos);
+void Tracker::bufferWater(Pos const& pos) {
+	buf.water.push_back(pos);
 }
 
-void Tracker::food(Pos const& pos) {
-	buf.food.push_back(pos);
+void Tracker::bufferFood(Pos const& pos) {
+	buf.food.insert(pos);
 }
 
-void Tracker::ant(Pos const& pos, int team) {
-	ASSERT(g_map);
-	g_map->square(pos).ant = team;
-	if(team != TheGoodGuys) {
-		buf.enemyAnts.push_back(pos);
-		buf.enemyTeams.push_back(team);
+void Tracker::bufferAnt(Pos const& pos, int team) {
+	if(team != Myrmidons) {
+		buf.enemyAnts.insert(EnemyAnt(pos,team));
 	}
 	else {
 		buf.myAnts.push_back(pos);
 	}
 }
 
-void Tracker::deadAnt(Pos const& pos, int team) {
-	if(team != TheGoodGuys) {
-		buf.deadEnemies.push_back(pos);
-		buf.deadEnemyTeams.push_back(team);
+void Tracker::bufferDeadAnt(Pos const& pos, int team) {
+	if(team != Myrmidons) {
+		buf.deadEnemyAnts.insert(EnemyAnt(pos,team));
 	}
 	else {
 		buf.deadAnts.push_back(pos);
@@ -64,78 +60,82 @@ void Tracker::deadAnt(Pos const& pos, int team) {
 // Track the hills and remember which ones we have already seen.
 // buffer the new ones for reporting when the maps visuals have been updated,
 // i.e. until the newly discovered hill-position have valid room-affinity.
-void Tracker::hill(Pos const& pos, int team) {
-
-	if(team != TheGoodGuys) {
-		if(m_enemyHills.find(pos) != m_enemyHills.end()) {
-			// This is a newly discovered anemy hill!
-			m_enemyHills.insert(pos);
-			TRACKER_LOG("Enemy hill for team " << team << " at " << pos);
-			buf.newEnemyHills.insert(Buffer::EnemyHill(pos,team));
+void Tracker::bufferHill(Pos const& pos, int team) {
+	TRACKER_LOG("bufferHill(" << pos << ", " << team << ")");
+	if(team != Myrmidons) {
+		if(buf.enemyHills.find(pos) == buf.enemyHills.end()) {
+			TRACKER_LOG("Discovered new enemy hill for team " << team << " at " << pos);
+			buf.newEnemyHills.insert(EnemyHill(pos,team));
+			buf.enemyHills.insert(pos); // Keep forever
 		}
 	}
 	else {
-		if(m_hills.find(pos) != m_hills.end()) {
-			// This is a new hill, horray!
-			m_hills.insert(pos);
-			TRACKER_LOG("We have a hill at " << pos);
+		if(buf.myHills.find(pos) == buf.myHills.end()) {
+			TRACKER_LOG("Discovered that we have a hill at " << pos);
 			buf.newHills.insert(pos);
+			buf.myHills.insert(pos); // Keep forever
 		}
-		buf.myHills.push_back(pos);
 	}
 }
 
-void Tracker::go() {
-	STAMP("Before updateVisualInformation");
-	g_map->updateVisionInformation(buf.myAnts);
+void Tracker::endTurnInput() {
 
 	STAMP("Before update");
-	update();
+	updateMapInfo();
 	STAMP("After update");
 
-	TRACKER_LOG(getLiveAnts().size() << " live ants.");
+	TRACKER_LOG(getAnts().size() << " live ants.");
 }
 
-void Tracker::update() {
-	STAMP("Tracker::update");
-	// Water have already been reported.
-
-	STAMP_;
-	// Report myrmidon hills to map.
-	IT(Buffer::EnemyHillSet, it, buf.newEnemyHills) {
-		g_map->enemyHill(it->first, it->second);
+void Tracker::updateMapInfo() {
+	TRACKER_LOG("Reporting new water to map.");
+	IT(PosList, it, buf.water) {
+		g_map->addWater(*it);
 	}
+	TRACKER_LOG(buf.water.size() << " water cells reported.");
 
-	STAMP_;
-	// Report enemy hills to map.
+
+	TRACKER_LOG("Updating visual information");
+	g_map->updateVisionInformation(buf.myAnts);
+
+
+	TRACKER_LOG("Reporting new myrmidon hills to map.");
 	IT(PosSet, it, buf.newHills) {
-		g_map->hill(*it);
+		g_map->addHill(*it);
 	}
+	TRACKER_LOG(buf.newHills.size() << " hills reported.");
 
-	STAMP_;
-	// Report food to map
-	IT(PosVec, it, buf.food) {
-		g_map->food(*it);
+
+	TRACKER_LOG("Reporting new enemy hills to map.");
+	IT(EnemySet, it, buf.newEnemyHills) {
+		g_map->addEnemyHill(*it);
 	}
+	TRACKER_LOG(buf.newEnemyHills.size() << " hills reported.");
 
-	STAMP_;
-	// Find free anthills.
+
+	TRACKER_LOG("Reporting food to map.");
+	IT(PosSet, it, buf.food) {
+		g_map->addFood(*it);
+	}
+	TRACKER_LOG(buf.food.size() << " food items reported.");
+
+
 	TRACKER_LOG_("Looking for free ant hills...");
 	PosSet freeHills;
-	for(size_t i = 0; i < buf.myHills.size(); ++i) {
-		Pos pos = buf.myHills[i];
-		if(0 == g_map->getAnt(pos)) {
+	ITC(PosSet, it, buf.myHills) {
+		Pos pos = *it;
+		if(0 == g_map->getAntAt(pos)) {
 			// This hill is not occupied, and may spawn an ant.
 			freeHills.insert(pos);
 		}
 	}
 	TRACKER_LOG(" Found " << freeHills.size());
 
-	STAMP_;
+	TRACKER_LOG("Reporting dead ants.");
 	// Remove dead ants.
 	for(size_t i = 0; i < buf.deadAnts.size(); ++i) {
 		TRACKER_LOG_("Dead ant at " << buf.deadAnts[i]);
-		Ant* pAnt = g_map->getAnt(buf.deadAnts[i]);
+		Ant* pAnt = g_map->getAntAt(buf.deadAnts[i]);
 		if(!pAnt) {
 			TRACKER_LOG("Not found in map :\\");
 			continue;
@@ -147,8 +147,13 @@ void Tracker::update() {
 		m_deadIndices.insert(j);
 	}
 
-	STAMP_;
-	// Spawn new ants.
+	TRACKER_LOG("Spawning dead ants.");
+
+	// Set ant positions in map.
+	IT(PosList, it, buf.myAnts) {
+		g_map->square(*it).ant = 0;
+	}
+
 	for(PosSet::iterator hill = freeHills.begin(); hill != freeHills.end(); ++hill) {
 		if(g_map->square(*hill).ant == 0) {
 			// There is a new ant on this hill!! Horray!
@@ -176,16 +181,25 @@ void Tracker::update() {
 
 void Tracker::Buffer::resetDynamics() {
 	STAMP("Tracker::Buffer::resetDynamics");
-	myAnts.clear();
-	enemyAnts.clear();
-	myHills.clear();
 	food.clear();
+	water.clear();
+	myAnts.clear();
 	deadAnts.clear();
-	deadEnemies.clear();
-	enemyTeams.clear();
-	deadEnemyTeams.clear();
+	enemyAnts.clear();
+	deadEnemyAnts.clear();
+
+	newEnemyHills.clear();
+	newHills.clear();
 }
 
-AntSet const& Tracker::getLiveAnts() {
+AntSet& Tracker::getAnts() {
 	return m_liveAnts;
+}
+
+EnemySet& Tracker::getEnemies() {
+	return buf.enemyAnts;
+}
+
+PosSet& Tracker::getFood() {
+	return buf.food;
 }

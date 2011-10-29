@@ -145,7 +145,7 @@ void Bot::makeMoves()
 
 	STAMP_;
 
-	AntSet const& ants = g_tracker->getLiveAnts();
+	AntSet& ants = g_tracker->getAnts();
 	ITC(AntSet, it, ants) {
 		LOG_DEBUG("Deciding ant move...");
 

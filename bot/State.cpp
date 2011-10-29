@@ -97,18 +97,15 @@ istream& operator>>(istream &is, State &state)
     string inputType, junk;
 
     //finds out which turn it is
-    while(is >> inputType)
-    {
-        if(inputType == "end")
-        {
+	while(is >> inputType) {
+		if(inputType == "end") {
             state.gameover = 1;
             break;
         }
-        else if(inputType == "turn")
-		{
+		else if(inputType == "turn") {
 			is >> state.turn;
 			state.bug << "turn " << state.turn << ":" << std::endl << "----------------" << std::endl;
-			g_tracker->turn(state.turn);
+			g_tracker->beginTurnInput(state.turn);
             break;
         }
         else //unknown line
@@ -169,31 +166,31 @@ istream& operator>>(istream &is, State &state)
             {
 				//STAMP_;
                 is >> row >> col;
-				g_tracker->water(Pos(col, row));
+				g_tracker->bufferWater(Pos(col, row));
             }
             else if(inputType == "f") //food square
             {
 				STAMP("Food");
                 is >> row >> col;
-				g_tracker->food(Pos(col, row));
+				g_tracker->bufferFood(Pos(col, row));
             }
             else if(inputType == "a") //live ant square
             {
 				//STAMP;
                 is >> row >> col >> player;
-				g_tracker->ant(Pos(col, row), player);
+				g_tracker->bufferAnt(Pos(col, row), player);
             }
 			else if(inputType == "d") //dead ant square
             {
 				STAMP("Dead ant");
                 is >> row >> col >> player;
-				g_tracker->deadAnt(Pos(col, row), player);
+				g_tracker->bufferDeadAnt(Pos(col, row), player);
 			}
             else if(inputType == "h")
             {
 				//STAMP;
                 is >> row >> col >> player;
-				g_tracker->hill(Pos(col, row), player);
+				g_tracker->bufferHill(Pos(col, row), player);
             }
             else if(inputType == "players") //player information
 			{
@@ -207,7 +204,7 @@ istream& operator>>(istream &is, State &state)
             }
             else if(inputType == "go") //end of turn input
             {
-				g_tracker->go();
+				g_tracker->endTurnInput();
                 if(state.gameover)
                     is.setstate(std::ios::failbit);
                 else

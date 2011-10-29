@@ -54,3 +54,7 @@ DEFINES += \
 
 CONFIG += qt
 QT += network
+
+
+
+

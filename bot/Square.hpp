@@ -28,7 +28,7 @@ struct Square
 	void resetDynamics()
 	{
         isVisible = 0;
-        isHill = 0;
+	 //   isHill = 0;
         isFood = 0;
 	//    ant = hillPlayer = -1;
         deadAnts.clear();

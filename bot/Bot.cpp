@@ -180,6 +180,25 @@ void Bot::makeMoves()
 			lookForFood(ant);
 	}
 
+	////////////////////////////////////////////////////////////
+	// TEST CODE! Push all ants onto one food:
+	/*if (food.size()>0) {
+		LOG_DEBUG("TEST:   SENDING ALL ANTS TO ONE FOOD!!!!");
+		ITC(PosSet, fit, food) {
+			Pos p = *fit;
+			bool anyWin=false;
+			ITC(AntSet, ait, ants) {
+				if ((*ait)->goToFoodAt(p))
+					anyWin = true;
+			}
+			if (anyWin)
+				break;
+		}
+	}
+	*/
+	////////////////////////////////////////////////////////////
+
+
 	g_coordinator->moveAntsAfterDesire(ants); // all ants desires are calculated, so they should all have a plan/goal/mission/objective
 
 #ifdef DEBUG

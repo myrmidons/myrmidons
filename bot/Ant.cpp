@@ -30,9 +30,10 @@ void Ant::setPos(Pos p) {
 }
 
 bool Ant::goTo(Pos dest) {
-	m_path = Path::findPath(this->pos(), dest);
-	if (m_path.isValid()) {
-		// Win
+	Path newPath = Path::findPath(this->pos(), dest);
+	if (newPath.isValid()) {
+		// Win - there is a path
+		m_path = newPath;
 		LOG_ANT(this, "goTo " << dest);
 		m_state = STATE_GOING_TO_ROOM;
 		g_map->square(dest).destinyAnt = this;
@@ -40,7 +41,7 @@ bool Ant::goTo(Pos dest) {
 	} else {
 		// Fail
 		LOG_ANT(this, "goTo failed");
-		stop();
+		//stop();
 		return false;
 	}
 }

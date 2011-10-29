@@ -18,6 +18,12 @@ Ant::~Ant() {
 Pos& Ant::pos() {
 	return m_position;
 }
+Pos Ant::expectedPos() {
+	return m_expectedPosition;
+}
+void Ant::setExpectedPos(Pos p) {
+	m_expectedPosition = p;
+}
 
 bool Ant::goTo(Pos dest) {
 	m_path = Path::findPath(this->pos(), dest);

@@ -18,7 +18,8 @@ HEADERS += \
 	CommInterface.hpp \
     DebugWindow.hpp \
     RoomContents.hpp \
-    Logger.hpp
+    Logger.hpp \
+    Coordinator.hpp
 
 SOURCES += \
     Ant.cpp \
@@ -36,7 +37,8 @@ SOURCES += \
     Path.cpp \
     DebugWindow.cpp \
     Logger.cpp \
-    Square.cpp
+    Square.cpp \
+    Coordinator.cpp
 
 # Add annoying warning disables below, e.g. -Wno-cats-allowed
 # QMAKE_CXXFLAGS_WARN_ON = \
@@ -66,6 +68,8 @@ QMAKE_CXXFLAGS += -Wall -pedantic -Wextra -Wno-long-long
 
 CONFIG += qt
 QT += network
+
+
 
 
 

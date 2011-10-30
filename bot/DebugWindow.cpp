@@ -185,25 +185,31 @@ void DebugWindow::redrawImg() {
 		QPainter painter(&m_img);
 		painter.setPen(Qt::white);
 
-		// Add graph info
-		std::map<Room*, QPointF> centers;
-		ITC(RoomList, rit, rooms)
-			centers[*rit] = toQP((*rit)->centerPos());
+		{
+			painter.setOpacity(0.125f); // Room grpah info is drawn vaguely.
 
-		ITC(RoomList, rit, rooms) {
-			Room* r = *rit;
-			QPointF a = centers[r];
-			const RoomSet& neighs = r->neighborRooms();
-			ITC(RoomSet, rit2, neighs) {
-				QPointF b = centers[*rit2];
-				drawWrappedLine(painter, a, b);
+			// Add graph info
+			std::map<Room*, QPointF> centers;
+			ITC(RoomList, rit, rooms)
+				centers[*rit] = toQP((*rit)->centerPos());
+
+			ITC(RoomList, rit, rooms) {
+				Room* r = *rit;
+				QPointF a = centers[r];
+				const RoomSet& neighs = r->neighborRooms();
+				ITC(RoomSet, rit2, neighs) {
+					QPointF b = centers[*rit2];
+					drawWrappedLine(painter, a, b);
+				}
 			}
+
+			float roomCenterRad = 0.3f*Zoom;
+
+			ITC(RoomList, rit, rooms)
+				painter.drawEllipse(centers[*rit], roomCenterRad, roomCenterRad);
+
+			painter.setOpacity(1);
 		}
-
-		float roomCenterRad = 0.3f*Zoom;
-
-		ITC(RoomList, rit, rooms)
-			painter.drawEllipse(centers[*rit], roomCenterRad, roomCenterRad);
 
 		//////////////////////////////////////////////////
 		// Draw ants

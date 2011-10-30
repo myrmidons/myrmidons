@@ -8,7 +8,7 @@
 //////////////////////////////////////////////////////////////////
 
 class Room;
-class RoomContents;
+class RoomContent;
 
 // Rooms volenteer interest in unassigned cells.
 // This interest is kept track of using this:
@@ -40,7 +40,7 @@ typedef std::vector<Room*> RoomList;
 typedef std::set<Room*, IdComp> RoomSet;
 
 // Only Emil may code here!
-// This class only contains connectivity data. For contents, see 'contents'.
+// This class only contains connectivity data. For content, see 'content'.
 // A room shuld be small enough so that an ant in any part of the room can see
 // any other part. This means that an ant will see 2-3 rooms at once.
 // Implementation in Room.cpp
@@ -57,7 +57,7 @@ public:
 		PosSet cells;
 	};
 
-	RoomContents* contents() { return m_contents; }
+	RoomContent* content() { return m_content; }
 
 	// Give me the number of Pos the room currently contains.
 	int getArea() const { return m_cells.size(); }
@@ -97,7 +97,7 @@ private:
 
 	///////////////////////////////////////////////
 
-	RoomContents* m_contents;
+	RoomContent* m_content;
 
 	PosSet m_cells; // All positions in this Room.
 	PosSet m_open; // Positions bordering to unassigned cells.

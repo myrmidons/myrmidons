@@ -1,5 +1,5 @@
 #include "Room.hpp"
-#include "RoomContents.hpp"
+#include "RoomContent.hpp"
 #include "Util.hpp"
 #include "Map.hpp"
 #include "State.hpp"
@@ -136,12 +136,12 @@ Pos Room::closestPosInNeighbor(Pos from, Room* neighbor, int* outDist) const {
 
 Room::Room(Pos seed) : id(getID<Room>()), m_center(seed), m_dirty(true) {
 	m_bb.m_min = m_bb.m_max = seed;
-	m_contents = new RoomContents();
+	m_content = new RoomContent();
 	add(seed);
 }
 
 Room::~Room() {
-	delete m_contents;
+	delete m_content;
 }
 
 bool Room::isClosable(Pos pos) const {
@@ -506,6 +506,6 @@ void Rooms::expandWith(const PosSet& posArg) {
 
 void Rooms::resetDynamics() {
 	IT(RoomList, it, m_rooms) {
-		(*it)->contents()->resetDynamic();
+		(*it)->content()->resetDynamic();
 	}
 }

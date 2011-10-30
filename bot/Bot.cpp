@@ -4,7 +4,7 @@
 #include "Logger.hpp"
 #include "Tracker.hpp"
 #include "Room.hpp"
-#include "RoomContents.hpp"
+#include "RoomContent.hpp"
 #include "Util.hpp"
 #include "Coordinator.hpp"
 #include <algorithm>
@@ -83,7 +83,7 @@ int Bot::closestLocation(const Pos& loc, const vector<Pos>& location) {
 void lookForFood(Ant* ant) {
 	// Try find food in room:
 	Vec2 pos = ant->pos();
-	RoomContents* rc = g_map->roomContentAt(pos);
+	RoomContent* rc = g_map->roomContentAt(pos);
 	const PosSet& food = rc->m_food;
 
 	if (!food.empty()) {
@@ -139,7 +139,7 @@ void Bot::makeMoves()
 	// Find crowded rooms, send ants out of them...
 	ITC(RoomList, rit, g_rooms->rooms()) {
 		Room* room = *rit;
-		RoomContents* rc = room->contents();
+		RoomContent* rc = room->content();
 		const AntSet& roomAnts = rc->ants();
 
 		const RoomSet& neighRooms = room->neighborRooms();
@@ -150,7 +150,7 @@ void Bot::makeMoves()
 			 */
 			RoomList cands;
 			ITC(RoomSet, rit, neighRooms) {
-				if ((*rit)->contents()->ants().size() <= roomAnts.size()) {
+				if ((*rit)->content()->ants().size() <= roomAnts.size()) {
 					// less crowded
 					if ((*rit)->getArea() > 4) // Don't bother with small rooms
 						cands.push_back(*rit);
@@ -183,7 +183,7 @@ void Bot::makeMoves()
 	// Kill enemy hills:
 	ITC(AntSet, it, ants) {
 		Ant* ant = *it;
-		RoomContents* rc = g_map->roomContentAt(ant->pos());
+		RoomContent* rc = g_map->roomContentAt(ant->pos());
 		if (!rc->m_enemyHills.empty()) {
 			// There is an enemy hill in this room - storm it berserk style!
 			LOG_DEBUG("STORMING ANT HILL!");

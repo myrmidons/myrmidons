@@ -3,7 +3,7 @@
 #include "State.hpp"
 #include "Tracker.hpp"
 #include "Room.hpp"
-#include "RoomContents.hpp"
+#include "RoomContent.hpp"
 #include "Util.hpp"
 #include "Logger.hpp"
 #include <cmath>
@@ -23,10 +23,12 @@ void Map::initMap(Vec2 const& dim) {
 											   std::vector<Square>(m_size.y(), Square()));
 }
 
+/*
 PosPath Map::getOptimalPathTo(const Pos &from, const Pos &to) {
 	AntStar star = AntStar();
 	return star.findPath(from, to);
 }
+*/
 
 void Map::removeAnt(Ant* ant) {
 	LOG_DEBUG("removeAnt(" << *ant << ") from pos " << ant->pos());
@@ -35,7 +37,7 @@ void Map::removeAnt(Ant* ant) {
 	sq.antTeam = NO_TEAM;
 	ASSERT(sq.pAnt == ant);
 	sq.pAnt = 0;
-	sq.room->contents()->removeMyrmidon(ant);
+	sq.roomContent()->removeAnt(ant);
 }
 
 // Tell the map that an ant has spawned.
@@ -46,7 +48,7 @@ void Map::addAnt(Ant* ant) {
 	ASSERT(sq.pAnt == NULL);
 	sq.antTeam = 0;
 	sq.pAnt = ant;
-	sq.room->contents()->addMyrmidon(ant);
+	sq.roomContent()->addAnt(ant);
 }
 
 // Get the ant that occupies a specific position.
@@ -54,27 +56,11 @@ Ant* Map::getAntAt(Pos const& pos) {
 	return square(pos).pAnt;
 }
 
-void Map::moveAnt(Pos const& from, Pos const& to) {
-	LOG_TRACKER("Map::moveAnt from: " << from << ", to: " << to);
-	Ant* ant = getAntAt(from);
-
-	if (ant) {
-		removeAnt(ant);
-		ant->pos() = to;
-		addAnt(ant);
-		LOG_TRACKER(ant->pos());
-	}
-	else {
-		LOG_ERROR("Map::moveAnt failed to find ant!");
-	}
-}
-
-void Map::enemyHill(Pos const& pos, int team) {
-	square(pos).room->contents()->enemyHillDiscovered(pos, team);
-}
-
-void Map::addHill(Pos const& pos) {
-	square(pos).room->contents()->myrmidonHillDiscovered(pos);
+void Map::addHill(Pos const& pos, int team) {
+	Square& s = square(pos);
+	ASSERT(s.hillTeam==NO_TEAM);
+	s.hillTeam = team;
+	s.roomContent()->addHill(pos, team);
 }
 
 void Map::addWater(const Pos &pos) {
@@ -83,22 +69,17 @@ void Map::addWater(const Pos &pos) {
 
 void Map::addFood(Pos const& pos) {
 	//STAMP("Begin");
-	square(pos).isFood = true;
-	ASSERT(square(pos).discovered);
-	ASSERT(square(pos).room);
-	ASSERT(square(pos).room->contents());
-	square(pos).room->contents()->insertFoodAt(pos);
+	Square& s = square(pos);
+	s.isFood = true;
+	ASSERT(s.discovered);
+	s.roomContent()->addFood(pos);
 	//STAMP("End");
-}
-
-void Map::addEnemyHill(EnemyHill const& hill) {
-	square(hill.pos).hillTeam = hill.team;
 }
 
 void Map::addEnemyAnt(EnemyAnt const& ant) {
 	Square& s = square(ant.pos);
-	ASSERT(s.antTeam<0);
-	s.antTeam = ant.team;
+	ASSERT(s.antTeam==NO_TEAM);
+	s.roomContent()->addEnemy(ant.pos, ant.team);
 }
 
 //returns the new location from moving in a given direction with the edges wrapped
@@ -119,10 +100,10 @@ Room* Map::roomAt(const Pos& pos) {
 	return square(pos).room;
 }
 
-RoomContents* Map::roomContentAt(const Pos& pos) {
+RoomContent* Map::roomContentAt(const Pos& pos) {
 	Room* r = roomAt(pos);
 	ASSERT(r);
-	return r->contents();
+	return r->content();
 }
 
 /*

@@ -4,9 +4,11 @@
 #include <vector>
 
 class Room;
+class RoomContent;
 class Ant;
 
-const int NO_TEAM = -1;
+const int NO_TEAM  = -1;
+const int OUR_TEAM = 0;
 
 /* One grid cell on the map.
 It's hip to be...              */
@@ -52,6 +54,9 @@ struct Square
 	}
 
 	bool visible() const { return m_isVisible; }
+
+	// For easy access
+	RoomContent* roomContent();
 
 	void markAsVisible();
 };

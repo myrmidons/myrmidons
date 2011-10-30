@@ -2,8 +2,22 @@
 #include "Map.hpp"
 #include "Logger.hpp"
 #include "Room.hpp"
+#include "RoomContent.hpp"
 
 PosGoal::PosGoal(Pos pos) : m_pos(pos), m_room(g_map->roomAt(pos)) {
+}
+
+
+bool FoodGoal::findGoalsInRoom(PosList& outPos, Room* room, const Pos& pos, int dist) const {
+	const PosSet& food = room->content()->food();
+	ITC(PosSet, fit, food) {
+		Pos foodPos = *fit;
+		Square& s = g_map->square(foodPos);
+		if (!s.destinyAnt || s.destinyAnt->path().distanceLeft() > dist + g_map->manhattanDist(pos, foodPos)) {
+			outPos.push_back(foodPos);
+		}
+	}
+	return !outPos.empty();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -27,7 +41,30 @@ struct SearchNodeComp {
 
 typedef std::multiset<SearchNode*, SearchNodeComp> SearchNodeQueue;
 
-int PathFinder::findPaths(PathList* outPaths, Pos start, const Goal& goal, int maxAnswers, int maxDist)
+class ManhattanCloseness {
+public:
+	explicit ManhattanCloseness(const Pos& pos) : m_pos(pos) { }
+
+	bool operator()(const Pos& a, const Pos& b) const {
+		return g_map->manhattanDist(m_pos, a) < g_map->manhattanDist(m_pos, b);
+	}
+
+private:
+	Pos m_pos;
+};
+
+// keep only the "n" points in "list" closest to "pos" in manhattan distance.
+void cullClosest(const Pos& pos, PosList& list, int n) {
+	if ((int)list.size()==n)
+		return; // early out
+
+	ASSERT(0<=n && n<=(int)list.size());
+	partial_sort(list.begin(), list.begin()+n, list.end(), ManhattanCloseness(pos));
+	list.resize(n);
+}
+
+
+int PathFinder::findPaths(PathList* outPaths, Pos start, const Goal& goal, int maxAnswers, int maxDist, Flags flags)
 {
 	LOG_DEBUG("PathFinder::findPath");
 	if (outPaths)
@@ -56,7 +93,7 @@ int PathFinder::findPaths(PathList* outPaths, Pos start, const Goal& goal, int m
 
 		// Check room:
 		PosList goalPos;
-		if (goal.findGoalsInRoom(p->room, goalPos)) {
+		if (goal.findGoalsInRoom(goalPos, p->room, p->pos, p->dist)) {
 			LOG_DEBUG("Goal found in room...");
 
 			if (goalPos.empty()) {
@@ -64,12 +101,9 @@ int PathFinder::findPaths(PathList* outPaths, Pos start, const Goal& goal, int m
 				goalPos.push_back(p->pos);
 			}
 
-			/*
-			int keep = std::max((int)goalPos.size(), foundPaths-maxAnswers);
-			if (goalPos.size() > keep) {
-				// TODO: keep the closest ones
-			}
-			*/
+			int keep = std::min((int)goalPos.size(), maxAnswers - foundPaths);
+			if (keep < (int)goalPos.size())
+				cullClosest(p->pos, goalPos, keep); // Keep just the closest
 
 			if (outPaths) {
 				LOG_DEBUG("Building paths to room");
@@ -80,7 +114,7 @@ int PathFinder::findPaths(PathList* outPaths, Pos start, const Goal& goal, int m
 				{
 					SearchNode* node = p;
 					while (node) {
-						wps.push_back(WayPoint(node->room, node->pos));
+						wps.push_back(WayPoint(node->room, node->pos, node->dist));
 						node = node->parent;
 					}
 					std::reverse(wps.begin(), wps.end());
@@ -130,7 +164,11 @@ int PathFinder::findPaths(PathList* outPaths, Pos start, const Goal& goal, int m
 	ITC(std::set<SearchNode*>, wpit, allSearchNodes)
 		delete *wpit;
 
-	LOG_DEBUG("Path::findPath returning " << foundPaths << " path(s)");
+	if (outPaths && (flags & FLAGS_SORT)) {
+		std::sort(outPaths->begin(), outPaths->end(), PathLengthComp());
+	}
+
+	LOG_DEBUG("Path::findPath returning " << foundPaths << " path(s) after searching " << closedRooms.size() << " rooms ");
 
 	return foundPaths;
 }

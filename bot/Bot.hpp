@@ -36,7 +36,6 @@ public:
 	void endTurn();	  //indicates to the engine that it has made its moves
 
 	bool safeLocation(Pos const& loc);
-	int closestLocation(const Pos& loc, const std::vector<Pos>& location);
 	void setupRandomDirections();
 	int rankMove(Pos const& currentLoc, int dir);
 

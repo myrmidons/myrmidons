@@ -2,9 +2,9 @@
 #include "Map.hpp"
 #include "Room.hpp"
 #include "State.hpp"
-#include "Util.hpp"
 #include "Logger.hpp"
 #include "PathFinder.hpp"
+#include "Util.hpp"
 
 #define LOG_ANT(a, x) LOG_DEBUG(*a << " " << x)
 
@@ -38,7 +38,16 @@ bool Ant::goTo(Pos dest) {
 		m_path = newPath;
 		LOG_ANT(this, "goTo " << dest);
 		m_state = STATE_GOING_TO_POS;
-		g_map->square(dest).destinyAnt = this;
+
+		Square& s = g_map->square(dest);
+
+		if (s.destinyAnt) {
+			// Some-one else was header here.
+			if (s.destinyAnt->state() == STATE_GOING_TO_FOOD)
+				s.destinyAnt->stop(); // It should do something else.
+		}
+
+		s.destinyAnt = this;
 		return true;
 	} else {
 		// Fail

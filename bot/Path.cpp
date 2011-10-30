@@ -8,7 +8,7 @@
 ////////////////////////////////////////////////////
 
 Path::Path(int dist, Pos start, Pos end, const WPList& wps)
-	: m_dist(dist), m_start(start), m_end(end), m_points(wps) {
+	: m_dist(dist), m_distLeft(dist), m_start(start), m_end(end), m_points(wps) {
 }
 
 Vec2 deltaAlong(Vec2 pos, int axis, Vec2 d) {
@@ -39,13 +39,14 @@ PosList prioritizeWalk(Room* room, Pos from, Pos to) {
 	return ret;
 }
 
-PosList Path::getNextStep(Pos pos) const {
+PosList Path::getNextStep(Pos pos) {
 	STAMP("Path::getNextStep");
 
 	ASSERT(this->isValid());
 
 	if (pos==m_end) {
 		LOG_DEBUG("getNextStep has arrived");
+		m_distLeft = 0;
 		return PosList(1, pos); // We have arrived
 	}
 
@@ -54,6 +55,7 @@ PosList Path::getNextStep(Pos pos) const {
 	if (room == g_map->roomAt(m_end)) {
 		// We're in last room
 		LOG_DEBUG("In goal room");
+		m_distLeft = g_map->manhattanDist(pos, m_end);
 		return prioritizeWalk(room, pos, m_end);
 	}
 
@@ -70,12 +72,16 @@ PosList Path::getNextStep(Pos pos) const {
 
 	if (wpIx == -1) {
 		LOG_DEBUG("Path::getNextStep failed: not on path");
+		m_distLeft = -1;
 		return PosList();
 	}
 
 	ASSERT(wpIx != (int)m_points.size()-1); // Can't be last - we would be at end then.
 
-	Room* nextRoom = m_points[wpIx+1].room;
+	const WayPoint& nextWP = m_points[wpIx+1];
+	Room* nextRoom = nextWP.room;
+
+	int distLeftInNextRoom = this->length() - nextWP.dist;
 
 	PosList ret;
 
@@ -86,10 +92,15 @@ PosList Path::getNextStep(Pos pos) const {
 			ret.push_back(nc); // We can go here
 	}
 
-	if (!ret.empty())
+	if (!ret.empty()) {
+		m_distLeft = distLeftInNextRoom + g_map->manhattanDist(ret[0], nextWP.pos);
 		return ret; // We can go to neighbor room right now, so let's.
+	}
 
 	// Find good path to neighbor room.
 	Pos targetCell = room->closestPosNearNeighbor(pos, nextRoom);
+
+	m_distLeft = g_map->manhattanDist(pos, targetCell) + 1 + distLeftInNextRoom;
+
 	return prioritizeWalk(room, pos, targetCell);
 }

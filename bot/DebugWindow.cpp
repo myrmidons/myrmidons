@@ -9,7 +9,7 @@
 #include "Logger.hpp"
 #include <QPainter>
 
-const int Zoom = 8; // pixels per grid cell
+const int Zoom = 10; // pixels per grid cell
 
 DebugWindow* DebugWindow::s_instance = NULL;
 
@@ -96,8 +96,12 @@ QRgb randomColor(Room* room) {
 	return color;
 }
 
-QPointF toQP(Vec2 pos) {
+QPointF toQPf(Vec2 pos) {
 	return Zoom*QPointF(pos.x()+.5f, pos.y()+.5f);
+}
+
+QPoint toQPi(Vec2 pos) {
+	return Zoom*QPoint(pos.x(), pos.y());
 }
 
 void drawWrappedLine(QPainter& painter, QPointF a, QPointF b) {
@@ -174,11 +178,31 @@ void DebugWindow::redrawImg() {
 		}
 	}
 
-	//////////////////////////
+	////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 	{
 		QPainter painter(&m_img);
 		painter.setPen(Qt::white);
+
+
+		{
+			painter.setOpacity(0.1f); // Grid is vague
+
+			// Draw helpful grid lines:
+			for (int a=0; a<2; ++a) {
+				for (int i=1; i<size[a]; ++i) {
+					Pos start, end;
+					start[a] = end[a] = i;
+					start[1-a] = 0;
+					end[1-a] = size[1-a];
+					painter.drawLine(toQPi(start), toQPi(end));
+				}
+			}
+
+			painter.setOpacity(1);
+		}
+
+		////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 		{
 			painter.setOpacity(0.125f); // Room grpah info is drawn vaguely.
@@ -186,7 +210,7 @@ void DebugWindow::redrawImg() {
 			// Add graph info
 			std::map<Room*, QPointF> centers;
 			ITC(RoomList, rit, rooms)
-				centers[*rit] = toQP((*rit)->centerPos());
+				centers[*rit] = toQPf((*rit)->centerPos());
 
 			ITC(RoomList, rit, rooms) {
 				Room* r = *rit;
@@ -214,12 +238,12 @@ void DebugWindow::redrawImg() {
 
 		const EnemySet& enemies = g_tracker->getEnemies();
 		ITC(EnemySet, eit, enemies)
-			drawSquare(painter, toQP(eit->pos), antRad, EnemyColor);
+			drawSquare(painter, toQPf(eit->pos), antRad, EnemyColor);
 
 		const AntSet& ants = g_tracker->getAnts();
 		ITC(AntSet, ait, ants) {
 			Ant* ant = *ait;
-			QPointF pos = toQP(ant->pos());
+			QPointF pos = toQPf(ant->pos());
 			drawSquare(painter, pos, antRad, FriendColor);
 
 			if (ant->state() != Ant::STATE_NONE) {
@@ -229,7 +253,7 @@ void DebugWindow::redrawImg() {
 					painter.setPen(Qt::black);
 
 					/*
-					QPointF dest = toQP(path.dest());
+					QPointF dest = toQPf(path.dest());
 					drawWrappedLine(painter, pos, dest);
 					painter.drawEllipse(dest, destRad, destRad);
 					/*/
@@ -243,14 +267,14 @@ void DebugWindow::redrawImg() {
 							draw = (wayPoints[i].room == antRoom);
 							continue; // Start drawing waypoint in next room
 						}
-						QPointF wpPos = toQP(wayPoints[i].pos);
+						QPointF wpPos = toQPf(wayPoints[i].pos);
 
 						drawWrappedLine(painter, p, wpPos);
 						painter.drawEllipse(wpPos, destRad, destRad);
 
 						p = wpPos;
 					}
-					QPointF wpPos = toQP(path.dest());
+					QPointF wpPos = toQPf(path.dest());
 					drawWrappedLine(painter, p, wpPos);
 					painter.drawEllipse(wpPos, destRad, destRad);
 					/**/
@@ -260,14 +284,14 @@ void DebugWindow::redrawImg() {
 			if (ant->expectedPos() != ant->pos()) {
 				// Draw where ant is expected to go
 				painter.setPen(Qt::white);
-				drawWrappedLine(painter, pos, toQP(ant->expectedPos()));
+				drawWrappedLine(painter, pos, toQPf(ant->expectedPos()));
 			}
 		}
 
 		// Draw food
 		const PosSet& food = g_tracker->getFood();
 		ITC(PosSet, pit, food) {
-			QPointF pos = toQP(*pit);
+			QPointF pos = toQPf(*pit);
 			/*
 			painter.setPen(FoodColor);
 			painter.drawEllipse(pos, 1, 1);
@@ -283,12 +307,12 @@ void DebugWindow::redrawImg() {
 		if (!enemyHills.empty()) {
 			LOG_DEBUG("Drawing " << enemyHills.size() << " enemy hills!");
 			ITC(EnemyHillSet, hit, enemyHills) {
-				drawSquare(painter, toQP(hit->pos), antHillRad, EnemyHillColor, false);
+				drawSquare(painter, toQPf(hit->pos), antHillRad, EnemyHillColor, false);
 			}
 		}
 		const PosSet& ourHills = g_tracker->ourHills();
 		ITC(PosSet, hit, ourHills) {
-			drawSquare(painter, toQP(*hit), antHillRad, FriendColor, false);
+			drawSquare(painter, toQPf(*hit), antHillRad, FriendColor, false);
 		}
 	}
 

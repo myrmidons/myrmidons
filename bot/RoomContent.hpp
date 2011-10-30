@@ -13,13 +13,16 @@ class RoomContent {
 public:
 	explicit RoomContent(Room* room);
 
+	/*
 	size_t getNumFood();
 	size_t getNumMyrmidons(); // The number of enemies in the room this turn.
 	size_t getNumEnemies(); // The number of enemies in the room this turn.
 	size_t getNumFallenMyrmidons(); // Give me the number of Myrmidons that has fallen this turn. (See you in valhalla!)
 	size_t getNumFallenEnemies(); // Give me the number of enemies that have fallen this turn.
+	*/
 
 	const AntSet& ants() const { return m_pAnts; }
+	const PosSet& food() const { return m_food; }
 
 	// Is the entire room currently visible?
 	bool visible() const { return m_visible; }

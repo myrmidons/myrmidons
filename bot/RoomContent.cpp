@@ -6,6 +6,7 @@
 
 RoomContent::RoomContent(Room* room) : m_room(room) {}
 
+/*
 size_t RoomContent::getNumMyrmidons() {
 	return m_pAnts.size();
 }
@@ -20,7 +21,7 @@ size_t RoomContent::getNumFood() {
 
 //int getNumFallenMyrmidons(); // Give me the number of Myrmidons that has fallen this turn. (See you in valhalla!)
 //int getNumFallenEnemies();
-
+*/
 
 //////////////////////////////////////////////////////////////////////////
 

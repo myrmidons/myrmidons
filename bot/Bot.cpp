@@ -7,6 +7,7 @@
 #include "RoomContent.hpp"
 #include "Util.hpp"
 #include "Coordinator.hpp"
+#include "PathFinder.hpp"
 #include <algorithm>
 #include <iostream>
 #include <limits>
@@ -66,21 +67,20 @@ bool Bot::playOneTurn()
 	return true;
 }
 
-int Bot::closestLocation(const Pos& loc, const vector<Pos>& location) {
-	int result = -1;
-	float minDist = 10000000;
-	for(size_t i = 0; i < location.size(); ++i) {
-		float dist = g_map->euclidDist(location[i], loc);
-		if(dist < minDist) {
-			minDist = dist;
-			result = (int)i;
-		}
+void lookForFood(Ant* ant) {
+	if (ant->state() != Ant::STATE_NONE && ant->state() != Ant::STATE_GOING_TO_ROOM)
+		return; // Dont abort it!
+
+	PathList paths;
+	int maxDist = 30; // FIXME: search radius.
+	if (PathFinder::findPaths(&paths, ant->pos(), FoodGoal(), 1, maxDist)) {
+		Pos dest = paths[0].dest();
+		LOG_DEBUG("Sending " << *ant << " to food at " << dest);
+		// FIXME: reuse path directly.
+		ant->goToFoodAt(dest);
 	}
 
-	return result;
-}
-
-void lookForFood(Ant* ant) {
+	/*
 	// Try find food in room:
 	Vec2 pos = ant->pos();
 	RoomContent* rc = g_map->roomContentAt(pos);
@@ -93,7 +93,35 @@ void lookForFood(Ant* ant) {
 		advance(it, rand()%food.size());
 		ant->goToFoodAt(*it);
 	}
+	*/
 }
+
+// Finds an ant that is either idle, or going to a food further away than this food
+class HungryAntFinder : public Goal {
+public:
+	virtual bool findGoalsInRoom(PosList& outPos, Room* room, const Pos& pos, int dist) const {
+		const AntSet& ants = room->content()->ants();
+		ITC(AntSet, ait, ants) {
+			Ant* ant = *ait;
+
+			if (ant->state()==Ant::STATE_NONE || ant->state()==Ant::STATE_GOING_TO_ROOM) {
+				outPos.push_back(ant->pos());
+				continue;
+			}
+
+			if (ant->state()==Ant::STATE_GOING_TO_FOOD) {
+				// Is this food coser?
+				int foodDist = dist + g_map->manhattanDist(pos, ant->pos());
+				if (foodDist < ant->path().distanceLeft()) {
+					outPos.push_back(ant->pos());
+					continue;
+				}
+			}
+		}
+
+		return !outPos.empty();
+	}
+};
 
 //makes the bots moves for the turn
 void Bot::makeMoves()
@@ -105,6 +133,10 @@ void Bot::makeMoves()
 	IT(AntSet, it, ants)
 		(*it)->updateState();
 
+	// Send free ants on food mission
+	ITC(AntSet, it, ants)
+		lookForFood(*it);
+
 	// Distribute food to close ants
 	const PosSet& food = g_tracker->getFood();
 	ITC(PosSet, pit, food) {
@@ -115,6 +147,23 @@ void Bot::makeMoves()
 
 		LOG_DEBUG("Looking for ant close to food...");
 
+		PathList paths;
+		HungryAntFinder goal;
+		int maxDist = 25; // FIXME: Search radius.
+		if (PathFinder::findPaths(&paths, foodPos, goal, 1, maxDist)) {
+			LOG_DEBUG("sending ant to food.");
+			Path path = paths[0];
+			Ant* ant = g_map->getAntAt(path.dest());
+			/*
+			  // TODO: (quicker)
+			path.reverse();
+			ant->goToFood(path);
+			/*/
+			ant->goToFoodAt(foodPos);
+			/**/
+		}
+
+		/*
 		Ant* closest=NULL;
 		int dist = std::numeric_limits<int>::max();
 
@@ -133,6 +182,7 @@ void Bot::makeMoves()
 			LOG_DEBUG("sending ant to food.");
 			closest->goToFoodAt(foodPos);
 		}
+		*/
 	}
 
 
@@ -172,12 +222,6 @@ void Bot::makeMoves()
 				}
 			}
 		}
-	}
-
-	ITC(AntSet, it, ants) {
-		Ant* ant = *it;
-		if (ant->state() == Ant::STATE_NONE)
-			lookForFood(ant);
 	}
 
 	// Kill enemy hills:

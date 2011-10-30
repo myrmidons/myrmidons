@@ -14,15 +14,10 @@ struct WayPoint {
 
 typedef std::vector<WayPoint> WPList;
 
+// Create paths with PathFinder
 class Path
 {
 public:
-	// How do we go from 'start' to 'end'?
-	// Returns invalid path if fail.
-	static Path findPath(Pos start, Pos end);
-
-	////////////////////////////////////
-
 	// Invalid path
 	Path() : m_dist(-1) {}
 
@@ -44,10 +39,13 @@ public:
 
 private:
 	explicit Path(int dist, Pos start, Pos end, const WPList& rooms);
+	friend class PathFinder;
 
 	int m_dist;
 	Pos m_start, m_end;
 	WPList m_points;
 };
+
+typedef std::vector<Path> PathList;
 
 #endif // PATH_HPP

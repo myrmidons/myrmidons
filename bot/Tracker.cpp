@@ -94,7 +94,7 @@ void Tracker::endTurnInput() {
 
 void Tracker::updateMapInfo() {
 	IT(PosList, it, buf.water) {
-		LOG_TRACKER("Reporting new water at " << *it);
+		//LOG_TRACKER("Reporting new water at " << *it);
 		g_map->addWater(*it);
 	}
 

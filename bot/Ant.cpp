@@ -4,6 +4,7 @@
 #include "State.hpp"
 #include "Util.hpp"
 #include "Logger.hpp"
+#include "PathFinder.hpp"
 
 #define LOG_ANT(a, x) LOG_DEBUG(*a << " " << x)
 
@@ -31,7 +32,7 @@ void Ant::setPos(Pos p) {
 }
 
 bool Ant::goTo(Pos dest) {
-	Path newPath = Path::findPath(this->pos(), dest);
+	Path newPath = PathFinder::findPath(this->pos(), dest);
 	if (newPath.isValid()) {
 		// Win - there is a path
 		m_path = newPath;

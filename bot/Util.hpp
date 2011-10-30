@@ -26,6 +26,8 @@
 
 /* Usage:
 	Room() : m_id(getID<Room>()) {  }
+
+	std::set<Room*, IdComp>
 */
 
 template<class T>
@@ -33,6 +35,15 @@ int getID() {
 	static int s_id=0;
 	return s_id++;
 }
+
+
+class IdComp {
+public:
+	template<typename T>
+	bool operator()(const T* a, const T* b) const {
+		return a->id < b->id;
+	}
+};
 
 /////////////////////////////////////////////////////////////
 

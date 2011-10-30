@@ -36,13 +36,8 @@ typedef std::set<Interest> InterestSet;
 
 class Room;
 
-class RoomComp {
-public:
-	bool operator()(Room* a, Room *b) const;
-};
-
 typedef std::vector<Room*> RoomList;
-typedef std::set<Room*, RoomComp> RoomSet;
+typedef std::set<Room*, IdComp> RoomSet;
 
 // Only Emil may code here!
 // This class only contains connectivity data. For contents, see 'contents'.
@@ -121,7 +116,7 @@ private:
 
 	mutable bool m_dirty; // For everything below this:
 
-	typedef std::map<Room*, NeighborInfo> Neighbors;
+	typedef std::map<Room*, NeighborInfo, IdComp> Neighbors;
 
 	mutable RoomSet m_neighbors;
 	mutable Neighbors m_neighborInfos;

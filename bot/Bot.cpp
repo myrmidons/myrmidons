@@ -186,6 +186,7 @@ void Bot::makeMoves()
 		RoomContents* rc = g_map->roomContentAt(ant->pos());
 		if (!rc->m_enemyHills.empty()) {
 			// There is an enemy hill in this room - storm it berserk style!
+			LOG_DEBUG("STORMING ANT HILL!");
 			ant->goTo(*rc->m_enemyHills.begin());
 		}
 	}

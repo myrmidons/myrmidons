@@ -9,7 +9,7 @@
 #include "Logger.hpp"
 #include <QPainter>
 
-const int Zoom = 9; // pixels per grid cell
+const int Zoom = 8; // pixels per grid cell
 
 DebugWindow* DebugWindow::s_instance = NULL;
 
@@ -152,7 +152,7 @@ void DebugWindow::redrawImg() {
 	m_img = QImage(Zoom*size.x(), Zoom*size.y(), QImage::Format_ARGB32);
 	m_img.fill(VoidColor);
 
-	std::map<Room*, QRgb, RoomComp> colorMap;
+	std::map<Room*, QRgb> colorMap;
 	RoomList rooms = g_rooms->rooms();
 	ITC(RoomList, rit, rooms)
 		colorMap[*rit] = randomColor(*rit);

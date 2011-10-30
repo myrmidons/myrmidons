@@ -12,7 +12,7 @@ class Food; // Not yet.
 class Map;
 
 typedef std::set<size_t> IndexSet;
-typedef std::set<Ant*> AntSet;
+typedef std::set<Ant*, IdComp> AntSet;
 
 class Tracker {
 	AntSet m_ants; // All our ants. new-borns and kills done in endTurnInput

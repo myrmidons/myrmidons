@@ -43,10 +43,6 @@ bool operator<(const Interest& a, const Interest& b) {
 	return a.room->id < b.room->id; // tie-breaker.
 }
 
-bool RoomComp::operator()(Room* a, Room *b) const {
-	return a->id < b->id;
-}
-
 ///////////////////////////////////////////////////////////////////////
 
 Pos Room::centerPos() const {

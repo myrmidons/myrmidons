@@ -18,6 +18,7 @@ Ant::~Ant() {
 Pos Ant::pos() const {
 	return m_position;
 }
+
 Pos Ant::expectedPos() {
 	return m_expectedPosition;
 }

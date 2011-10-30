@@ -2,9 +2,14 @@
 #define ROOMCONTENTS_HPP
 
 #include "Pos.hpp"
+#include "Util.hpp" // IdComp
 
+//*
+#include "Ant.hpp"
+/*/
 class Ant;
-typedef std::set<Ant*> AntSet;
+typedef std::set<Ant*, IdComp> AntSet;
+/**/
 
 // This class handles the contents of a room.
 // Everything about a room except its connectivity is put into here.

@@ -129,9 +129,9 @@ void Coordinator::moveAntsAfterDesire(AntSet ants) {
 		move.ant->setExpectedPos(pos);
 	}
 
+	// TODO: iterate over these a few hundred times, pushing other ants around as needed.
 	ITC(AntSet, ait, unassigned) {
 		// Our failures
-		// TODO: go to where they to least damage.
 		Ant* ant = *ait;
 		ant->setExpectedPos(ant->pos()); // Stay and wait for death.
 		LOG_COORD("Have unassigned ant " << *ant);

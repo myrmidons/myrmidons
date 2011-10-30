@@ -1,6 +1,28 @@
 #include "RoomContent.hpp"
 #include "Assert.hpp"
 #include "Square.hpp"
+#include "Room.hpp"
+#include "Map.hpp"
+
+RoomContent::RoomContent(Room* room) : m_room(room) {}
+
+size_t RoomContent::getNumMyrmidons() {
+	return m_pAnts.size();
+}
+
+size_t RoomContent::getNumEnemies() {
+	return m_enemies.size();
+}
+
+size_t RoomContent::getNumFood() {
+	return m_food.size();
+}
+
+//int getNumFallenMyrmidons(); // Give me the number of Myrmidons that has fallen this turn. (See you in valhalla!)
+//int getNumFallenEnemies();
+
+
+//////////////////////////////////////////////////////////////////////////
 
 void RoomContent::resetDynamic() {
 	m_food.clear();
@@ -33,17 +55,13 @@ void RoomContent::addHill(Pos const& pos, int team) {
 }
 
 
-size_t RoomContent::getNumMyrmidons() {
-	return m_pAnts.size();
-}
+void RoomContent::update() {
+	m_empty = (m_pAnts.empty() && m_enemies.empty() && m_myrmidonHills.empty() && m_enemyHills.empty() && m_food.empty());
 
-size_t RoomContent::getNumEnemies() {
-	return m_enemies.size();
+	m_visible = true;
+	ITC(PosSet, pit, m_room->positions()) {
+		Square& s = g_map->square(*pit);
+		if (!s.visible())
+			m_visible = false;
+	}
 }
-
-size_t RoomContent::getNumFood() {
-	return m_food.size();
-}
-
-//int getNumFallenMyrmidons(); // Give me the number of Myrmidons that has fallen this turn. (See you in valhalla!)
-//int getNumFallenEnemies();

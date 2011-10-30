@@ -17,12 +17,17 @@ typedef std::set<Ant*, IdComp> AntSet;
 
 class RoomContent {
 public:
+	explicit RoomContent(Room* room);
+
 	size_t getNumFood();
 	size_t getNumMyrmidons(); // The number of enemies in the room this turn.
 	size_t getNumEnemies(); // The number of enemies in the room this turn.
 	size_t getNumFallenMyrmidons(); // Give me the number of Myrmidons that has fallen this turn. (See you in valhalla!)
 	size_t getNumFallenEnemies(); // Give me the number of enemies that have fallen this turn.
 
+	const AntSet& ants() const { return m_pAnts; }
+
+	//////////////////////////////////////////////////////////////////////////
 	// Used by g_map to update room contents:
 
 	// Called each turn:
@@ -35,13 +40,22 @@ public:
 	// Called when first discovered:
 	void addHill(Pos const& pos, int team);
 
-	const AntSet& ants() const { return m_pAnts; }
+	void update(); // Called once a turn to update statistics abotu the room
 
+	//////////////////////////////////////////////////////////////////////////
+
+	Room* m_room; // Parent
+
+	// Given by map:
 	AntSet m_pAnts;
 	PosSet m_enemies;
 	PosSet m_food;
 	PosSet m_enemyHills;
 	PosSet m_myrmidonHills;
+
+	// Collected info in update()
+	bool m_empty;    // As far as we know
+	bool m_visible;  // in entirety.
 };
 
 #endif // ROOMCONTENTS_HPP

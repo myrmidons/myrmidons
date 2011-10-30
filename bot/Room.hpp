@@ -68,6 +68,8 @@ public:
 	   be seen by an ant. */
 	Pos centerPos() const;
 
+	const PosSet& positions() const { return m_cells; }
+
 	const RoomSet& neighborRooms() const;
 
 	// give info about our connection to this room.
@@ -141,6 +143,8 @@ public:
 	void expandWith(const PosSet& pos);
 
 	void resetDynamics();
+
+	void update(); // Updates RoomContent's.
 
 private:
 	RoomList m_rooms;

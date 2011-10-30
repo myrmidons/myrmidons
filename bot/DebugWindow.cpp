@@ -83,17 +83,12 @@ QRgb randomColor(Room* room) {
 
 	QRgb color;
 	do {
-		/*
-		r = rand()%255;
-		g = rand()%255;
-		b = rand()%255;
-		/*/
-		int r = (12345   * id) % 255;
-		int g = (123456  * id) % 255;
-		int b = (1234578 * id) % 255;
+		// Deterministicly pseudo-random colors:
+		int r = (12345   * id) % 256;
+		int g = (123456  * id) % 256;
+		int b = (1234578 * id) % 256;
 		color = qRgb(r,g,b);
 		id += 78901;
-		/**/
 	} while (colorClose(color, FoodColor) || colorClose(color, VoidColor) || colorClose(color, WallColor) ||
 			 colorClose(color, FriendColor) || colorClose(color, EnemyColor) || colorClose(color, EnemyHillColor));
 	//} while (r+g+b < 250); // Racist code (avoid blacks)
@@ -213,8 +208,9 @@ void DebugWindow::redrawImg() {
 
 		//////////////////////////////////////////////////
 		// Draw ants
-		const float antRad = 0.35f*Zoom;
+		const float antRad     = 0.35f*Zoom;
 		const float antHillRad = 0.4f*Zoom;
+		const float foodRad    = 0.4f*Zoom;
 
 		const EnemySet& enemies = g_tracker->getEnemies();
 		ITC(EnemySet, eit, enemies)
@@ -271,11 +267,15 @@ void DebugWindow::redrawImg() {
 		// Draw food
 		const PosSet& food = g_tracker->getFood();
 		ITC(PosSet, pit, food) {
-			painter.setPen(FoodColor);
 			QPointF pos = toQP(*pit);
+			/*
+			painter.setPen(FoodColor);
 			painter.drawEllipse(pos, 1, 1);
 			painter.drawEllipse(pos, 2, 2);
 			painter.drawEllipse(pos, 3, 3);
+			/*/
+			drawSquare(painter, pos, foodRad, FoodColor, false);
+			/**/
 		}
 
 		// Draw hills

@@ -14,7 +14,7 @@ typedef enum {Myrmidons = 0} Team;
 
 Tracker::Tracker() {
 	std::stringstream ss;
-	ss << "d_tracker_" << (rand()+clock()) << ".txt";
+	ss << "d_tracker.txt";
 	log.open(ss.str());
 }
 
@@ -124,6 +124,8 @@ void Tracker::updateMapInfo() {
 
 	ITC(EnemySet, eit, buf.enemyAnts)
 		g_map->addEnemyAnt(*eit);
+
+	g_rooms->update();
 }
 
 void Tracker::updateAnts() {

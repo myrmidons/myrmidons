@@ -45,6 +45,16 @@ bool operator<(const Interest& a, const Interest& b) {
 
 ///////////////////////////////////////////////////////////////////////
 
+Room::Room(Pos seed) : id(getID<Room>()), m_center(seed), m_dirty(true) {
+	m_bb.m_min = m_bb.m_max = seed;
+	m_content = new RoomContent(this);
+	add(seed);
+}
+
+Room::~Room() {
+	delete m_content;
+}
+
 Pos Room::centerPos() const {
 	return m_center;
 }
@@ -132,16 +142,6 @@ Pos Room::closestPosInNeighbor(Pos from, Room* neighbor, int* outDist) const {
 		*outDist = -1;
 
 	return from; // Fail. return w/e.
-}
-
-Room::Room(Pos seed) : id(getID<Room>()), m_center(seed), m_dirty(true) {
-	m_bb.m_min = m_bb.m_max = seed;
-	m_content = new RoomContent();
-	add(seed);
-}
-
-Room::~Room() {
-	delete m_content;
 }
 
 bool Room::isClosable(Pos pos) const {
@@ -462,15 +462,16 @@ void Rooms::expandWith(const PosSet& posArg) {
 			ROOM_SPAM("B");
 
 			// No interest taken - create a new room!
-			// FIXME: this is the worst possible choice - guaranteed to be a corner!
-#if 0
+			// FIXME: what is the best choice here?
+#if 1
 			// Leftmost, topmost
 			PosSet::iterator it = unassigned.begin();
-#elif 1
+#elif 0
 			// Rightmost, bottommost
 			PosSet::iterator it = unassigned.end();
 			--it;
 #else
+			// Random
 			PosSet::iterator it = unassigned.begin();
 			std::advance(it, rand() % unassigned.size());
 #endif
@@ -507,5 +508,11 @@ void Rooms::expandWith(const PosSet& posArg) {
 void Rooms::resetDynamics() {
 	IT(RoomList, it, m_rooms) {
 		(*it)->content()->resetDynamic();
+	}
+}
+
+void Rooms::update() {
+	IT(RoomList, it, m_rooms) {
+		(*it)->content()->update();
 	}
 }

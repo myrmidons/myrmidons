@@ -3,19 +3,23 @@
 
 #include "Pos.hpp"
 #include "Path.hpp"
+#include "Util.hpp" // IdComp
 #include <vector>
 
 class Ant {
 public:
 	enum State {
 		STATE_NONE,
+		STATE_GOING_TO_POS,
 		STATE_GOING_TO_FOOD,
 		STATE_GOING_TO_ROOM
 	};
 
 	explicit Ant(Pos const& loc = Pos());
 	~Ant();
-	/*const*/ int id; // Unique id per ant. deterministic.
+
+	const int id; // Unique id per ant. deterministic.
+
 	Pos pos() const;
 	Pos expectedPos();
 	State state() const { return m_state; }
@@ -51,7 +55,7 @@ private:
 	PosList m_desire; // Neighbor cells we want to walk to.
 };
 
-typedef std::set<Ant*> AntSet;
+typedef std::set<Ant*, IdComp> AntSet;
 typedef std::vector<Ant> AntVec;
 
 struct EnemyAnt {

@@ -14,7 +14,7 @@ typedef enum {Myrmidons = 0} Team;
 
 Tracker::Tracker() {
 	std::stringstream ss;
-	ss << "d_tracker_" << (rand()+clock()) << ".txt";
+	ss << "d_tracker.txt";
 	log.open(ss.str());
 }
 
@@ -81,6 +81,8 @@ void Tracker::bufferHill(Pos const& pos, int team) {
 }
 
 void Tracker::endTurnInput() {
+	if (g_state->gameover)
+		return;
 
 	STAMP("Before update");
 	updateMapInfo();
@@ -91,51 +93,42 @@ void Tracker::endTurnInput() {
 }
 
 void Tracker::updateMapInfo() {
-	LOG_TRACKER("Reporting new water to map.");
 	IT(PosList, it, buf.water) {
+		//LOG_TRACKER("Reporting new water at " << *it);
 		g_map->addWater(*it);
 	}
-	LOG_TRACKER(buf.water.size() << " water cells reported.");
-
 
 	LOG_TRACKER("Updating visual information");
 	g_map->updateVisionInformation(buf.myAnts);
 
-
-	LOG_TRACKER("Reporting new myrmidon hills to map.");
 	IT(PosSet, it, buf.newHills) {
-		g_map->addHill(*it);
+		LOG_TRACKER("Reporting friend hill at " << *it);
+		g_map->addHill(*it, OUR_TEAM);
+		m_ourHills.insert(*it);
 	}
-	LOG_TRACKER(buf.newHills.size() << " hills reported.");
 
-
-	LOG_TRACKER("Reporting new enemy hills to map.");
 	IT(EnemySet, it, buf.newEnemyHills) {
-		g_map->addEnemyHill(*it);
+		LOG_TRACKER("Reporting enemy hill at " << it->pos << " of team " << it->team);
+		g_map->addHill(it->pos, it->team);
+		m_enemyHills.insert(*it);
 	}
-	LOG_TRACKER(buf.newEnemyHills.size() << " hills reported.");
 
-
-	LOG_TRACKER("Reporting food to map.");
 	IT(PosSet, it, buf.food) {
+		//LOG_TRACKER("Reporting food at " << *it);
 		g_map->addFood(*it);
 	}
-	LOG_TRACKER(buf.food.size() << " food items reported.");
-
-
-	TRACKER_LOG_("Looking for free ant hills...");
-	PosSet freeHills;
-	ITC(PosSet, it, buf.myHills) {
-		Pos pos = *it;
-		if(0 == g_map->getAntAt(pos)) {
-			// This hill is not occupied, and may spawn an ant.
-			freeHills.insert(pos);
-		}
-	}
-	LOG_TRACKER(" Found " << freeHills.size());
 
 	/////////////////////////////////////////////////////
 
+	updateAnts();
+
+	ITC(EnemySet, eit, buf.enemyAnts)
+		g_map->addEnemyAnt(*eit);
+
+	g_rooms->update();
+}
+
+void Tracker::updateAnts() {
 	// Remove ants, and re-add them later if still alive. This ensures consistent dynamic data (ant, team, etc).
 	ITC(AntSet, ait, m_ants)
 		g_map->removeAnt(*ait);
@@ -218,15 +211,6 @@ void Tracker::updateMapInfo() {
 	}
 
 	ASSERT(buf.myAnts.size() == m_ants.size());
-
-	/////////////////////////////////////////////////////
-
-	// Set ant teams (reset by resetDynamics)
-	IT(PosList, it, buf.myAnts)
-		g_map->square(*it).antTeam = 0;
-
-	ITC(EnemySet, eit, buf.enemyAnts)
-		g_map->square(eit->pos).antTeam = eit->team;
 }
 
 void Tracker::Buffer::resetDynamics() {

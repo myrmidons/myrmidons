@@ -9,7 +9,7 @@
 #include "Logger.hpp"
 #include <QPainter>
 
-const int Zoom = 12; // pixels per grid cell
+const int Zoom = 10; // pixels per grid cell
 
 DebugWindow* DebugWindow::s_instance = NULL;
 
@@ -38,7 +38,7 @@ void DebugWindow::redraw() {
 	update();
 }
 
-void DebugWindow::paintEvent(QPaintEvent* event) {
+void DebugWindow::paintEvent(QPaintEvent* /*event*/) {
 	LOG_DEBUG("DebugWindow::paintEvent");
 
 	if (m_dirty)
@@ -53,6 +53,7 @@ const QRgb VoidColor = qRgb(60,60, 60); // Undiscovered
 const QRgb WallColor = qRgb(0, 0,  0);
 const QRgb FriendColor = qRgb(0, 0,  255);
 const QRgb EnemyColor = qRgb(255, 0,  0);
+const QRgb EnemyHillColor = qRgb(255, 0,  0);
 
 bool compClose(int x, int y) {
 	return Abs(x-y) < 75;
@@ -82,26 +83,25 @@ QRgb randomColor(Room* room) {
 
 	QRgb color;
 	do {
-		/*
-		r = rand()%255;
-		g = rand()%255;
-		b = rand()%255;
-		/*/
-		int r = (12345   * id) % 255;
-		int g = (123456  * id) % 255;
-		int b = (1234578 * id) % 255;
+		// Deterministicly pseudo-random colors:
+		int r = (12345   * id) % 256;
+		int g = (123456  * id) % 256;
+		int b = (1234578 * id) % 256;
 		color = qRgb(r,g,b);
 		id += 78901;
-		/**/
 	} while (colorClose(color, FoodColor) || colorClose(color, VoidColor) || colorClose(color, WallColor) ||
-			 colorClose(color, FriendColor) || colorClose(color, EnemyColor));
+			 colorClose(color, FriendColor) || colorClose(color, EnemyColor) || colorClose(color, EnemyHillColor));
 	//} while (r+g+b < 250); // Racist code (avoid blacks)
 
 	return color;
 }
 
-QPointF toQP(Vec2 pos) {
+QPointF toQPf(Vec2 pos) {
 	return Zoom*QPointF(pos.x()+.5f, pos.y()+.5f);
+}
+
+QPoint toQPi(Vec2 pos) {
+	return Zoom*QPoint(pos.x(), pos.y());
 }
 
 void drawWrappedLine(QPainter& painter, QPointF a, QPointF b) {
@@ -134,12 +134,14 @@ void drawWrappedLine(QPainter& painter, QPointF a, QPointF b) {
 	}
 }
 
-void drawSquare(QPainter& painter, QPointF pos, float r, QRgb color) {
+void drawSquare(QPainter& painter, QPointF pos, float r, QRgb color, bool outline=true) {
 	QRectF rect(pos.x()-r, pos.y()-r, 2*r, 2*r);
 	painter.fillRect(rect, color);
 
-	painter.setPen(Qt::white);
-	painter.drawRect(rect);
+	if (outline) {
+		painter.setPen(Qt::white);
+		painter.drawRect(rect);
+	}
 }
 
 void DebugWindow::redrawImg() {
@@ -149,7 +151,7 @@ void DebugWindow::redrawImg() {
 	m_img = QImage(Zoom*size.x(), Zoom*size.y(), QImage::Format_ARGB32);
 	m_img.fill(VoidColor);
 
-	std::map<Room*, QRgb, RoomComp> colorMap;
+	std::map<Room*, QRgb> colorMap;
 	RoomList rooms = g_rooms->rooms();
 	ITC(RoomList, rit, rooms)
 		colorMap[*rit] = randomColor(*rit);
@@ -171,48 +173,77 @@ void DebugWindow::redrawImg() {
 
 			for (int xi=0; xi<Zoom; ++xi)
 				for (int yi=0; yi<Zoom; ++yi)
-					m_img.setPixel(x*Zoom+xi, y*Zoom+yi, ((yi/2+1)%2) ? color : oddColor);
+					//m_img.setPixel(x*Zoom+xi, y*Zoom+yi, ((yi/2+1)%2) ? color : oddColor);
+					m_img.setPixel(x*Zoom+xi, y*Zoom+yi, (yi%2) ? color : oddColor);
 		}
 	}
 
-	//////////////////////////
+	////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 	{
 		QPainter painter(&m_img);
 		painter.setPen(Qt::white);
 
-		// Add graph info
-		std::map<Room*, QPointF> centers;
-		ITC(RoomList, rit, rooms)
-			centers[*rit] = toQP((*rit)->centerPos());
 
-		ITC(RoomList, rit, rooms) {
-			Room* r = *rit;
-			QPointF a = centers[r];
-			const RoomSet& neighs = r->neighborRooms();
-			ITC(RoomSet, rit2, neighs) {
-				QPointF b = centers[*rit2];
-				drawWrappedLine(painter, a, b);
+		{
+			painter.setOpacity(0.1f); // Grid is vague
+
+			// Draw helpful grid lines:
+			for (int a=0; a<2; ++a) {
+				for (int i=1; i<size[a]; ++i) {
+					Pos start, end;
+					start[a] = end[a] = i;
+					start[1-a] = 0;
+					end[1-a] = size[1-a];
+					painter.drawLine(toQPi(start), toQPi(end));
+				}
 			}
+
+			painter.setOpacity(1);
 		}
 
-		float roomCenterRad = 0.3f*Zoom;
+		////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-		ITC(RoomList, rit, rooms)
-			painter.drawEllipse(centers[*rit], roomCenterRad, roomCenterRad);
+		{
+			painter.setOpacity(0.125f); // Room grpah info is drawn vaguely.
+
+			// Add graph info
+			std::map<Room*, QPointF> centers;
+			ITC(RoomList, rit, rooms)
+				centers[*rit] = toQPf((*rit)->centerPos());
+
+			ITC(RoomList, rit, rooms) {
+				Room* r = *rit;
+				QPointF a = centers[r];
+				const RoomSet& neighs = r->neighborRooms();
+				ITC(RoomSet, rit2, neighs) {
+					QPointF b = centers[*rit2];
+					drawWrappedLine(painter, a, b);
+				}
+			}
+
+			float roomCenterRad = 0.3f*Zoom;
+
+			ITC(RoomList, rit, rooms)
+				painter.drawEllipse(centers[*rit], roomCenterRad, roomCenterRad);
+
+			painter.setOpacity(1);
+		}
 
 		//////////////////////////////////////////////////
 		// Draw ants
-		float antRad = 0.35f*Zoom;
+		const float antRad     = 0.35f*Zoom;
+		const float antHillRad = 0.4f*Zoom;
+		const float foodRad    = 0.4f*Zoom;
 
 		const EnemySet& enemies = g_tracker->getEnemies();
 		ITC(EnemySet, eit, enemies)
-			drawSquare(painter, toQP(eit->pos), antRad, EnemyColor);
+			drawSquare(painter, toQPf(eit->pos), antRad, EnemyColor);
 
 		const AntSet& ants = g_tracker->getAnts();
 		ITC(AntSet, ait, ants) {
 			Ant* ant = *ait;
-			QPointF pos = toQP(ant->pos());
+			QPointF pos = toQPf(ant->pos());
 			drawSquare(painter, pos, antRad, FriendColor);
 
 			if (ant->state() != Ant::STATE_NONE) {
@@ -222,7 +253,7 @@ void DebugWindow::redrawImg() {
 					painter.setPen(Qt::black);
 
 					/*
-					QPointF dest = toQP(path.dest());
+					QPointF dest = toQPf(path.dest());
 					drawWrappedLine(painter, pos, dest);
 					painter.drawEllipse(dest, destRad, destRad);
 					/*/
@@ -236,14 +267,14 @@ void DebugWindow::redrawImg() {
 							draw = (wayPoints[i].room == antRoom);
 							continue; // Start drawing waypoint in next room
 						}
-						QPointF wpPos = toQP(wayPoints[i].pos);
+						QPointF wpPos = toQPf(wayPoints[i].pos);
 
 						drawWrappedLine(painter, p, wpPos);
 						painter.drawEllipse(wpPos, destRad, destRad);
 
 						p = wpPos;
 					}
-					QPointF wpPos = toQP(path.dest());
+					QPointF wpPos = toQPf(path.dest());
 					drawWrappedLine(painter, p, wpPos);
 					painter.drawEllipse(wpPos, destRad, destRad);
 					/**/
@@ -253,25 +284,45 @@ void DebugWindow::redrawImg() {
 			if (ant->expectedPos() != ant->pos()) {
 				// Draw where ant is expected to go
 				painter.setPen(Qt::white);
-				drawWrappedLine(painter, pos, toQP(ant->expectedPos()));
+				drawWrappedLine(painter, pos, toQPf(ant->expectedPos()));
 			}
 		}
 
 		// Draw food
 		const PosSet& food = g_tracker->getFood();
 		ITC(PosSet, pit, food) {
+			QPointF pos = toQPf(*pit);
+			/*
 			painter.setPen(FoodColor);
-			QPointF pos = toQP(*pit);
 			painter.drawEllipse(pos, 1, 1);
 			painter.drawEllipse(pos, 2, 2);
 			painter.drawEllipse(pos, 3, 3);
+			/*/
+			drawSquare(painter, pos, foodRad, FoodColor, false);
+			/**/
+		}
+
+		// Draw hills
+		const EnemyHillSet& enemyHills = g_tracker->enemyHills();
+		if (!enemyHills.empty()) {
+			LOG_DEBUG("Drawing " << enemyHills.size() << " enemy hills!");
+			ITC(EnemyHillSet, hit, enemyHills) {
+				drawSquare(painter, toQPf(hit->pos), antHillRad, EnemyHillColor, false);
+			}
+		}
+		const PosSet& ourHills = g_tracker->ourHills();
+		ITC(PosSet, hit, ourHills) {
+			drawSquare(painter, toQPf(*hit), antHillRad, FriendColor, false);
 		}
 	}
 
 	/////////////////////////
 
 	char nameBuf[100] = {};
-	sprintf(nameBuf, "rooms_%04d.png", g_tracker->turn());
+	if (g_state->gameover)
+		strcpy(nameBuf, "rooms__endgame.png");
+	else
+		sprintf(nameBuf, "rooms_%04d.png", g_tracker->turn());
 	LOG_DEBUG("Dumping rooms to " << nameBuf);
 	m_img.save(nameBuf);
 

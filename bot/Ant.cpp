@@ -2,8 +2,9 @@
 #include "Map.hpp"
 #include "Room.hpp"
 #include "State.hpp"
-#include "Util.hpp"
 #include "Logger.hpp"
+#include "PathFinder.hpp"
+#include "Util.hpp"
 
 #define LOG_ANT(a, x) LOG_DEBUG(*a << " " << x)
 
@@ -18,6 +19,7 @@ Ant::~Ant() {
 Pos Ant::pos() const {
 	return m_position;
 }
+
 Pos Ant::expectedPos() {
 	return m_expectedPosition;
 }
@@ -30,17 +32,27 @@ void Ant::setPos(Pos p) {
 }
 
 bool Ant::goTo(Pos dest) {
-	m_path = Path::findPath(this->pos(), dest);
-	if (m_path.isValid()) {
-		// Win
+	Path newPath = PathFinder::findPath(this->pos(), dest);
+	if (newPath.isValid()) {
+		// Win - there is a path
+		m_path = newPath;
 		LOG_ANT(this, "goTo " << dest);
-		m_state = STATE_GOING_TO_ROOM;
-		g_map->square(dest).destinyAnt = this;
+		m_state = STATE_GOING_TO_POS;
+
+		Square& s = g_map->square(dest);
+
+		if (s.destinyAnt) {
+			// Some-one else was header here.
+			if (s.destinyAnt->state() == STATE_GOING_TO_FOOD)
+				s.destinyAnt->stop(); // It should do something else.
+		}
+
+		s.destinyAnt = this;
 		return true;
 	} else {
 		// Fail
 		LOG_ANT(this, "goTo failed");
-		stop();
+		//stop();
 		return false;
 	}
 }
@@ -86,6 +98,13 @@ void Ant::updateState() {
 	if (!m_path.isValid()) {
 		LOG_ANT(this, "Invalid path, stopping");
 		stop();
+	}
+
+	if (m_state==STATE_GOING_TO_POS) {
+		if (pos() == m_path.dest()) {
+			LOG_DEBUG("At destination");
+			stop();
+		}
 	}
 
 	if (m_state==STATE_GOING_TO_FOOD) {

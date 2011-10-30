@@ -8,7 +8,7 @@
 //////////////////////////////////////////////////////////////////
 
 class Room;
-class RoomContents;
+class RoomContent;
 
 // Rooms volenteer interest in unassigned cells.
 // This interest is kept track of using this:
@@ -36,16 +36,11 @@ typedef std::set<Interest> InterestSet;
 
 class Room;
 
-class RoomComp {
-public:
-	bool operator()(Room* a, Room *b) const;
-};
-
 typedef std::vector<Room*> RoomList;
-typedef std::set<Room*, RoomComp> RoomSet;
+typedef std::set<Room*, IdComp> RoomSet;
 
 // Only Emil may code here!
-// This class only contains connectivity data. For contents, see 'contents'.
+// This class only contains connectivity data. For content, see 'content'.
 // A room shuld be small enough so that an ant in any part of the room can see
 // any other part. This means that an ant will see 2-3 rooms at once.
 // Implementation in Room.cpp
@@ -62,7 +57,7 @@ public:
 		PosSet cells;
 	};
 
-	RoomContents* contents() { return m_contents; }
+	RoomContent* content() { return m_content; }
 
 	// Give me the number of Pos the room currently contains.
 	int getArea() const { return m_cells.size(); }
@@ -73,10 +68,18 @@ public:
 	   be seen by an ant. */
 	Pos centerPos() const;
 
+	const PosSet& positions() const { return m_cells; }
+
 	const RoomSet& neighborRooms() const;
 
 	// give info about our connection to this room.
 	const NeighborInfo* neighborInfo(Room* room) const;
+
+	/* A room is worthless when it is a dead end (only one neighbors)
+	  and contain nothing.
+	  A worthless room can be ignored by the Path finding algorithms as an optimization.
+	 */
+	bool worthless() const { return m_worthless; }
 
 	///////////////////////////////////////////////
 
@@ -100,9 +103,11 @@ private:
 
 	void makeClean() const; // Lazy-calc everything that is dirty.
 
+	void update();
+
 	///////////////////////////////////////////////
 
-	RoomContents* m_contents;
+	RoomContent* m_content;
 
 	PosSet m_cells; // All positions in this Room.
 	PosSet m_open; // Positions bordering to unassigned cells.
@@ -118,10 +123,11 @@ private:
 	// Derived:
 	BB m_bb;
 	Pos m_center; // Visual center, euclid minimum bounding circle center.
+	bool m_worthless;
 
 	mutable bool m_dirty; // For everything below this:
 
-	typedef std::map<Room*, NeighborInfo> Neighbors;
+	typedef std::map<Room*, NeighborInfo, IdComp> Neighbors;
 
 	mutable RoomSet m_neighbors;
 	mutable Neighbors m_neighborInfos;
@@ -146,6 +152,8 @@ public:
 	void expandWith(const PosSet& pos);
 
 	void resetDynamics();
+
+	void update(); // Updates RoomContent's.
 
 private:
 	RoomList m_rooms;

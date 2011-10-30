@@ -8,7 +8,7 @@
 #include "Assert.hpp"
 #include "Ant.hpp"
 
-class RoomContents;
+class RoomContent;
 
 class Map
 {
@@ -16,14 +16,14 @@ public:
 	Map();
 	void initMap(Vec2 const& dim);
 
+	void addHill(Pos const& pos, int team);
+
 	// Friendly ants
-	void addHill(Pos const& pos);
 	void removeAnt(Ant* ant);
 	void addAnt(Ant* ant);
 	Ant* getAntAt(Pos const& pos);
 
 	// Enemy ants
-	void addEnemyHill(EnemyHill const& hill);
 	void addEnemyAnt(EnemyAnt const& ant);
 
 	// Terrain
@@ -38,21 +38,14 @@ public:
 	void updateVisionInformation(const PosList& myAnts);
 
 
-
-	// Enemy ants
-	void enemyHill(Pos const& pos, int team);
-	void enemyAnt(Pos const& pos, int team);
-	// Not sure if this is up to the Map-class in the end, but probably.
-	void moveAnt(Pos const& from, Pos const& to); // Not used by the AntIdentifyer, just by Bot for testing purposes.
-
 	// Take one (wrapped) step into one of four directions.
 	Pos getLocation(const Pos &loc, int direction);
 
-	PosPath getOptimalPathTo(const Pos &from, const Pos &to);
+	//PosPath getOptimalPathTo(const Pos &from, const Pos &to);
 
 	Square& square(Pos const& pos);
 	Room* roomAt(const Pos& pos);
-	RoomContents* roomContentAt(const Pos& pos);
+	RoomContent* roomContentAt(const Pos& pos);
 
 	bool isOccupied(const Pos& loc);
 

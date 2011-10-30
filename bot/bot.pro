@@ -17,9 +17,10 @@ HEADERS += \
 	Path.hpp \
 	CommInterface.hpp \
     DebugWindow.hpp \
-    RoomContents.hpp \
+    RoomContent.hpp \
     Logger.hpp \
-    Coordinator.hpp
+	Coordinator.hpp \
+    PathFinder.hpp
 
 SOURCES += \
     Ant.cpp \
@@ -33,12 +34,13 @@ SOURCES += \
     AntStar.cpp \
     Assert.cpp \
     Tracker.cpp \
-    RoomContents.cpp \
+    RoomContent.cpp \
     Path.cpp \
     DebugWindow.cpp \
     Logger.cpp \
     Square.cpp \
-    Coordinator.cpp
+    Coordinator.cpp \
+    PathFinder.cpp
 
 # Add annoying warning disables below, e.g. -Wno-cats-allowed
 # QMAKE_CXXFLAGS_WARN_ON = \
@@ -68,6 +70,9 @@ QMAKE_CXXFLAGS += -Wall -pedantic -Wextra -Wno-long-long
 
 CONFIG += qt
 QT += network
+
+
+
 
 
 

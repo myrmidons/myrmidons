@@ -4,9 +4,10 @@
 #include "Logger.hpp"
 #include "Tracker.hpp"
 #include "Room.hpp"
-#include "RoomContents.hpp"
+#include "RoomContent.hpp"
 #include "Util.hpp"
 #include "Coordinator.hpp"
+#include "PathFinder.hpp"
 #include <algorithm>
 #include <iostream>
 #include <limits>
@@ -66,24 +67,23 @@ bool Bot::playOneTurn()
 	return true;
 }
 
-int Bot::closestLocation(const Pos& loc, const vector<Pos>& location) {
-	int result = -1;
-	float minDist = 10000000;
-	for(size_t i = 0; i < location.size(); ++i) {
-		float dist = g_map->euclidDist(location[i], loc);
-		if(dist < minDist) {
-			minDist = dist;
-			result = (int)i;
-		}
+void lookForFood(Ant* ant) {
+	if (ant->state() != Ant::STATE_NONE && ant->state() != Ant::STATE_GOING_TO_ROOM)
+		return; // Dont abort it!
+
+	PathList paths;
+	int maxDist = 30; // FIXME: search radius.
+	if (PathFinder::findPaths(&paths, ant->pos(), FoodGoal(), 1, maxDist)) {
+		Pos dest = paths[0].dest();
+		LOG_DEBUG("Sending " << *ant << " to food at " << dest);
+		// FIXME: reuse path directly.
+		ant->goToFoodAt(dest);
 	}
 
-	return result;
-}
-
-void lookForFood(Ant* ant) {
+	/*
 	// Try find food in room:
 	Vec2 pos = ant->pos();
-	RoomContents* rc = g_map->roomContentAt(pos);
+	RoomContent* rc = g_map->roomContentAt(pos);
 	const PosSet& food = rc->m_food;
 
 	if (!food.empty()) {
@@ -93,7 +93,35 @@ void lookForFood(Ant* ant) {
 		advance(it, rand()%food.size());
 		ant->goToFoodAt(*it);
 	}
+	*/
 }
+
+// Finds an ant that is either idle, or going to a food further away than this food
+class HungryAntFinder : public Goal {
+public:
+	virtual bool findGoalsInRoom(PosList& outPos, Room* room, const Pos& pos, int dist) const {
+		const AntSet& ants = room->content()->ants();
+		ITC(AntSet, ait, ants) {
+			Ant* ant = *ait;
+
+			if (ant->state()==Ant::STATE_NONE || ant->state()==Ant::STATE_GOING_TO_ROOM) {
+				outPos.push_back(ant->pos());
+				continue;
+			}
+
+			if (ant->state()==Ant::STATE_GOING_TO_FOOD) {
+				// Is this food coser?
+				int foodDist = dist + g_map->manhattanDist(pos, ant->pos());
+				if (foodDist < ant->path().distanceLeft()) {
+					outPos.push_back(ant->pos());
+					continue;
+				}
+			}
+		}
+
+		return !outPos.empty();
+	}
+};
 
 //makes the bots moves for the turn
 void Bot::makeMoves()
@@ -105,6 +133,10 @@ void Bot::makeMoves()
 	IT(AntSet, it, ants)
 		(*it)->updateState();
 
+	// Send free ants on food mission
+	ITC(AntSet, it, ants)
+		lookForFood(*it);
+
 	// Distribute food to close ants
 	const PosSet& food = g_tracker->getFood();
 	ITC(PosSet, pit, food) {
@@ -115,6 +147,23 @@ void Bot::makeMoves()
 
 		LOG_DEBUG("Looking for ant close to food...");
 
+		PathList paths;
+		HungryAntFinder goal;
+		int maxDist = 25; // FIXME: Search radius.
+		if (PathFinder::findPaths(&paths, foodPos, goal, 1, maxDist)) {
+			LOG_DEBUG("sending ant to food.");
+			Path path = paths[0];
+			Ant* ant = g_map->getAntAt(path.dest());
+			/*
+			  // TODO: (quicker)
+			path.reverse();
+			ant->goToFood(path);
+			/*/
+			ant->goToFoodAt(foodPos);
+			/**/
+		}
+
+		/*
 		Ant* closest=NULL;
 		int dist = std::numeric_limits<int>::max();
 
@@ -133,13 +182,14 @@ void Bot::makeMoves()
 			LOG_DEBUG("sending ant to food.");
 			closest->goToFoodAt(foodPos);
 		}
+		*/
 	}
 
 
 	// Find crowded rooms, send ants out of them...
 	ITC(RoomList, rit, g_rooms->rooms()) {
 		Room* room = *rit;
-		RoomContents* rc = room->contents();
+		RoomContent* rc = room->content();
 		const AntSet& roomAnts = rc->ants();
 
 		const RoomSet& neighRooms = room->neighborRooms();
@@ -150,7 +200,7 @@ void Bot::makeMoves()
 			 */
 			RoomList cands;
 			ITC(RoomSet, rit, neighRooms) {
-				if ((*rit)->contents()->ants().size() <= roomAnts.size()) {
+				if ((*rit)->content()->ants().size() <= roomAnts.size()) {
 					// less crowded
 					if ((*rit)->getArea() > 4) // Don't bother with small rooms
 						cands.push_back(*rit);
@@ -174,11 +224,35 @@ void Bot::makeMoves()
 		}
 	}
 
+	// Kill enemy hills:
 	ITC(AntSet, it, ants) {
 		Ant* ant = *it;
-		if (ant->state() == Ant::STATE_NONE)
-			lookForFood(ant);
+		RoomContent* rc = g_map->roomContentAt(ant->pos());
+		if (!rc->m_enemyHills.empty()) {
+			// There is an enemy hill in this room - storm it berserk style!
+			LOG_DEBUG("STORMING ANT HILL!");
+			ant->goTo(*rc->m_enemyHills.begin());
+		}
 	}
+
+	////////////////////////////////////////////////////////////
+	// TEST CODE! Push all ants onto one food:
+	/*if (food.size()>0) {
+		LOG_DEBUG("TEST:   SENDING ALL ANTS TO ONE FOOD!!!!");
+		ITC(PosSet, fit, food) {
+			Pos p = *fit;
+			bool anyWin=false;
+			ITC(AntSet, ait, ants) {
+				if ((*ait)->goToFoodAt(p))
+					anyWin = true;
+			}
+			if (anyWin)
+				break;
+		}
+	}
+	*/
+	////////////////////////////////////////////////////////////
+
 
 	g_coordinator->moveAntsAfterDesire(ants); // all ants desires are calculated, so they should all have a plan/goal/mission/objective
 

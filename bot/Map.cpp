@@ -40,15 +40,19 @@ void Map::removeAnt(Ant* ant) {
 	sq.roomContent()->removeAnt(ant);
 }
 
-// Tell the map that an ant has spawned.
 void Map::addAnt(Ant* ant) {
 	LOG_DEBUG("addAnt(" << *ant << ") to pos " << ant->pos());
 
-	Square& sq = square(ant->pos());
-	ASSERT(sq.pAnt == NULL);
-	sq.antTeam = 0;
-	sq.pAnt = ant;
-	sq.roomContent()->addAnt(ant);
+	Square& s = square(ant->pos());
+	ASSERT(s.pAnt == NULL);
+	s.antTeam = 0;
+	s.pAnt = ant;
+	s.roomContent()->addAnt(ant);
+
+	if (s.hillTeam!=NO_TEAM && s.hillTeam!=OUR_TEAM) {
+		LOG_DEBUG("We killed enemy ant hill!");
+		s.hillAlive = false;
+	}
 }
 
 // Get the ant that occupies a specific position.
@@ -81,6 +85,11 @@ void Map::addEnemyAnt(EnemyAnt const& ant) {
 	ASSERT(s.antTeam==NO_TEAM);
 	s.antTeam = ant.team;
 	s.roomContent()->addEnemy(ant.pos, ant.team);
+
+	if (s.hillTeam!=NO_TEAM && s.hillTeam!=ant.team) {
+		LOG_DEBUG("Team " << ant.team << " killed enemy hill at " << ant.pos << " belonging to " << s.hillTeam);
+		s.hillAlive = false;
+	}
 }
 
 //returns the new location from moving in a given direction with the edges wrapped

@@ -20,6 +20,13 @@ bool FoodGoal::findGoalsInRoom(PosList& outPos, Room* room, const Pos& pos, int 
 	return !outPos.empty();
 }
 
+bool AntGoal::findGoalsInRoom(PosList& outPos, Room* room, const Pos& /*pos*/, int /*dist*/) const {
+	const AntSet& ants = room->content()->ants();
+	ITC(AntSet, ait, ants)
+		outPos.push_back((*ait)->pos());
+	return !outPos.empty();
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 
 struct SearchNode {

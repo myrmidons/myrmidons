@@ -23,7 +23,7 @@ sub print_map {
     my $self = shift;
     for (my $i=0; $i<$rows; $i++) {
         for (my $j=0; $j<$cols; $j++) {
-            print $self->getpos($j, $i)." ";
+            print $self->getpos($i, $j)." ";
         }
         print "\n";
     }
@@ -35,18 +35,30 @@ sub getpos {
     return $map[$x][$y];
 }
 
+sub makemove {
+    shift;
+    my ($x, $y, $dir) = @_;
+
+    my $newx = $x;
+    my $newy = $y;
+
+    if ($dir =~ /S/) {
+        $newy++;
+    } elsif ($dir =~ /N/) {
+        $newy--;
+    } elsif ($dir =~ /E/) {
+        $newx++;
+    } elsif ($dir =~ /W/) {
+        $newx--;
+    }
+
+    print "[$x, $y] --> [$newx, $newy]\n";
+
+    $map[$newx][$newy] = $map[$x][$y];
+    $map[$x][$y] = ".";
+}
+
 sub nrows { return $rows; }
 sub ncols { return $cols; }
-
-sub update {
-    shift;
-    my $what = shift;
-    print "Got: ".$what;
-
-    # o 4 2 S
-    if ($what =~ /o (\d+) (\d+) (.)/) {
-
-    }
-}
 
 1;

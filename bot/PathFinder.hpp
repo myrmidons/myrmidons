@@ -64,6 +64,13 @@ private:
 
 // Finds food that no other ant is heading for AND is closer to.
 class FoodGoal : public Goal {
+public:
+	bool findGoalsInRoom(PosList& outPos, Room* room, const Pos& pos, int dist) const;
+};
+
+// Returns all ants in a room
+class AntGoal : public Goal {
+public:
 	bool findGoalsInRoom(PosList& outPos, Room* room, const Pos& pos, int dist) const;
 };
 

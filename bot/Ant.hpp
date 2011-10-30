@@ -10,9 +10,10 @@ class Ant {
 public:
 	enum State {
 		STATE_NONE,
-		STATE_GOING_TO_POS,
-		STATE_GOING_TO_FOOD,
-		STATE_GOING_TO_ROOM
+		STATE_GOING_TO_POS  = 1,
+		STATE_GOING_TO_HILL = (STATE_GOING_TO_POS | 2),
+		STATE_GOING_TO_FOOD = (STATE_GOING_TO_POS | 4),
+		STATE_GOING_TO_ROOM = 8
 	};
 
 	explicit Ant(Pos const& loc = Pos());
@@ -27,6 +28,7 @@ public:
 
 	// Returns false on fail.
 	bool goTo(Pos pos);
+	bool goToHillAt(Pos pos);
 	bool goToFoodAt(Pos pos);
 	bool goToRoom(Room* room);
 	void stop(); // Stop going towards currnet goal.

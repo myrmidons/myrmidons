@@ -100,8 +100,12 @@ QPointF toQPf(Vec2 pos) {
 	return Zoom*QPointF(pos.x()+.5f, pos.y()+.5f);
 }
 
+QPoint toQPi(int x, int y) {
+	return Zoom*QPoint(x, y);
+}
+
 QPoint toQPi(Vec2 pos) {
-	return Zoom*QPoint(pos.x(), pos.y());
+	return toQPi(pos.x(), pos.y());
 }
 
 void drawWrappedLine(QPainter& painter, QPointF a, QPointF b) {
@@ -141,6 +145,18 @@ void drawSquare(QPainter& painter, QPointF pos, float r, QRgb color, bool outlin
 	if (outline) {
 		painter.setPen(Qt::white);
 		painter.drawRect(rect);
+	}
+}
+
+void drawHill(QPainter& painter, Pos pos) {
+	const float antHillRad = 0.4f*Zoom;
+	Square& s = g_map->square(pos);
+	drawSquare(painter, toQPf(pos), antHillRad, s.hillTeam == OUR_TEAM ? FriendColor : EnemyHillColor, false);
+	if (!s.hillAlive) {
+		// Cross out
+		painter.setPen(Qt::black);
+		painter.drawLine(toQPi(pos.x(), pos.y()  ), toQPi(pos.x()+1, pos.y()+1));
+		painter.drawLine(toQPi(pos.x(), pos.y()+1), toQPi(pos.x()+1, pos.y()  ));
 	}
 }
 
@@ -233,7 +249,6 @@ void DebugWindow::redrawImg() {
 		//////////////////////////////////////////////////
 		// Draw ants
 		const float antRad     = 0.35f*Zoom;
-		const float antHillRad = 0.4f*Zoom;
 		const float foodRad    = 0.4f*Zoom;
 
 		const EnemySet& enemies = g_tracker->getEnemies();
@@ -307,12 +322,12 @@ void DebugWindow::redrawImg() {
 		if (!enemyHills.empty()) {
 			LOG_DEBUG("Drawing " << enemyHills.size() << " enemy hills!");
 			ITC(EnemyHillSet, hit, enemyHills) {
-				drawSquare(painter, toQPf(hit->pos), antHillRad, EnemyHillColor, false);
+				drawHill(painter, hit->pos);
 			}
 		}
 		const PosSet& ourHills = g_tracker->ourHills();
 		ITC(PosSet, hit, ourHills) {
-			drawSquare(painter, toQPf(*hit), antHillRad, FriendColor, false);
+			drawHill(painter, *hit);
 		}
 	}
 

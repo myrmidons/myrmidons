@@ -57,6 +57,16 @@ bool Ant::goTo(Pos dest) {
 	}
 }
 
+bool Ant::goToHillAt(Pos dest) {
+	LOG_ANT(this, "goToHillAt " << dest);
+	if (goTo(dest)) {
+		// Win
+		m_state = STATE_GOING_TO_HILL;
+		return true;
+	}
+	return false;
+}
+
 bool Ant::goToFoodAt(Pos dest) {
 	LOG_ANT(this, "goToFoodAt " << dest);
 	if (goTo(dest)) {
@@ -100,12 +110,15 @@ void Ant::updateState() {
 		stop();
 	}
 
-	if (m_state==STATE_GOING_TO_POS) {
+	if (m_state&STATE_GOING_TO_POS) {
 		if (pos() == m_path.dest()) {
 			LOG_DEBUG("At destination");
 			stop();
 		}
 	}
+
+	if (m_state==STATE_GOING_TO_HILL && !g_map->square(m_path.dest()).hillAlive)
+		stop(); // Hill dead.
 
 	if (m_state==STATE_GOING_TO_FOOD) {
 		Square& s = g_map->square(m_path.dest());

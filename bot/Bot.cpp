@@ -225,13 +225,35 @@ void Bot::makeMoves()
 	}
 
 	// Kill enemy hills:
+	const EnemyHillSet& enemyHills = g_tracker->enemyHills();
+	ITC(EnemyHillSet, eit, enemyHills) {
+		if (!g_map->square(eit->pos).hillAlive)
+			continue;
+		LOG_DEBUG("Looking for ants close to enemy hill...");
+		PathList paths;
+		int minAnts = 3; // We ant a few when we storm
+		int maxAnts = 25;
+		int maxDist = 50;
+		PathFinder::findPaths(&paths, eit->pos, AntGoal(), maxAnts, maxDist, PathFinder::FLAGS_NONE);
+		if ((int)paths.size() > minAnts) {
+			LOG_DEBUG("Sending " << paths.size() << " ants to storm enemy hill!");
+			ITC(PathList, pit, paths) {
+				// TODO: use path
+				g_map->getAntAt(pit->dest())->goToHillAt(eit->pos);
+			}
+		}
+	}
+
 	ITC(AntSet, it, ants) {
 		Ant* ant = *it;
 		RoomContent* rc = g_map->roomContentAt(ant->pos());
 		if (!rc->m_enemyHills.empty()) {
 			// There is an enemy hill in this room - storm it berserk style!
-			LOG_DEBUG("STORMING ANT HILL!");
-			ant->goTo(*rc->m_enemyHills.begin());
+			Pos pos = *rc->m_enemyHills.begin();
+			if (g_map->square(pos).hillAlive) {
+				LOG_DEBUG("STORMING ANT HILL!");
+				ant->goToHillAt(pos);
+			}
 		}
 	}
 

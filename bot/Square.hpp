@@ -29,6 +29,7 @@ struct Square
 	int hillTeam; // the hill at this position is team...
 	std::vector<int> deadAnts;
 	Ant* destinyAnt; // Ant heading here (may still be a long way away though).
+	bool hillAlive; // if false, the hill here has been killed.
 
 	Square() : m_lastVisible(-1)
 	{
@@ -37,6 +38,7 @@ struct Square
 		room = NULL;
 		antTeam = hillTeam = NO_TEAM;
 		resetDynamics();
+		hillAlive = true;
 	}
 
 	// reset dynamic information

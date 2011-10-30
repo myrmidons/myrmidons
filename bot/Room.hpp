@@ -75,6 +75,12 @@ public:
 	// give info about our connection to this room.
 	const NeighborInfo* neighborInfo(Room* room) const;
 
+	/* A room is worthless when it is a dead end (only one neighbors)
+	  and contain nothing.
+	  A worthless room can be ignored by the Path finding algorithms as an optimization.
+	 */
+	bool worthless() const { return m_worthless; }
+
 	///////////////////////////////////////////////
 
 	// Helpers:
@@ -97,6 +103,8 @@ private:
 
 	void makeClean() const; // Lazy-calc everything that is dirty.
 
+	void update();
+
 	///////////////////////////////////////////////
 
 	RoomContent* m_content;
@@ -115,6 +123,7 @@ private:
 	// Derived:
 	BB m_bb;
 	Pos m_center; // Visual center, euclid minimum bounding circle center.
+	bool m_worthless;
 
 	mutable bool m_dirty; // For everything below this:
 

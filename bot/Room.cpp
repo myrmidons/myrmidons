@@ -45,7 +45,7 @@ bool operator<(const Interest& a, const Interest& b) {
 
 ///////////////////////////////////////////////////////////////////////
 
-Room::Room(Pos seed) : id(getID<Room>()), m_center(seed), m_dirty(true) {
+Room::Room(Pos seed) : id(getID<Room>()), m_center(seed), m_worthless(false), m_dirty(true) {
 	m_bb.m_min = m_bb.m_max = seed;
 	m_content = new RoomContent(this);
 	add(seed);
@@ -344,6 +344,11 @@ void Room::calcInterests(const PosSet& unassigned) {
 	ROOM_SPAM("Room::calcInterests DONE");
 }
 
+void Room::update() {
+	m_content->update();
+	m_worthless = (m_neighbors.size()<2) && m_content->visible() && m_content->empty();
+}
+
 ///////////////////////////////////////////////////////////////////////
 // Rooms
 
@@ -513,6 +518,6 @@ void Rooms::resetDynamics() {
 
 void Rooms::update() {
 	IT(RoomList, it, m_rooms) {
-		(*it)->content()->update();
+		(*it)->update();
 	}
 }

@@ -62,6 +62,8 @@ Path Path::findPath(Pos start, Pos end)
 			const RoomSet& neighs = p->room->neighborRooms();
 			ITC(RoomSet, rit, neighs) {
 				Room* r = *rit;
+				if (r->worthless()) continue; // Early out
+
 				if (!closedRooms.count(r)) {
 					int dist=0;
 					Pos pos = p->room->closestPosInNeighbor(p->pos, r, &dist);

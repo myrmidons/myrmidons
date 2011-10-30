@@ -3,13 +3,7 @@
 
 #include "Pos.hpp"
 #include "Util.hpp" // IdComp
-
-//*
 #include "Ant.hpp"
-/*/
-class Ant;
-typedef std::set<Ant*, IdComp> AntSet;
-/**/
 
 // This class handles the contents of a room.
 // Everything about a room except its connectivity is put into here.
@@ -26,6 +20,12 @@ public:
 	size_t getNumFallenEnemies(); // Give me the number of enemies that have fallen this turn.
 
 	const AntSet& ants() const { return m_pAnts; }
+
+	// Is the entire room currently visible?
+	bool visible() const { return m_visible; }
+
+	// Nothing in it.
+	bool empty() const { return m_empty; }
 
 	//////////////////////////////////////////////////////////////////////////
 	// Used by g_map to update room contents:

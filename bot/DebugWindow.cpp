@@ -38,7 +38,7 @@ void DebugWindow::redraw() {
 	update();
 }
 
-void DebugWindow::paintEvent(QPaintEvent* event) {
+void DebugWindow::paintEvent(QPaintEvent* /*event*/) {
 	LOG_DEBUG("DebugWindow::paintEvent");
 
 	if (m_dirty)

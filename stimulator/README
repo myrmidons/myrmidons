@@ -1,2 +1,2 @@
 How to run
-./one_move.pl <mapfile> <Bot-binary>
+./stimulate.pl <mapfile> <Bot-binary>

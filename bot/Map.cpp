@@ -79,6 +79,7 @@ void Map::addFood(Pos const& pos) {
 void Map::addEnemyAnt(EnemyAnt const& ant) {
 	Square& s = square(ant.pos);
 	ASSERT(s.antTeam==NO_TEAM);
+	s.antTeam = ant.team;
 	s.roomContent()->addEnemy(ant.pos, ant.team);
 }
 

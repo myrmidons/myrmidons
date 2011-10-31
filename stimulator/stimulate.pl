@@ -18,8 +18,28 @@ my $pid = AntBot->start($bot);
 
 init();
 
+unlink "/tmp/antsock";
+my $server = IO::Socket::UNIX->new(Local => "/tmp/antsock",
+        Type => SOCK_DGRAM,
+        Listen => 5 ) or die $@;
+
+while() {
+    my $text = "";
+    $server->recv($text, 128);
+
+    if ($text =~ /go/) {
+        AntMap->print_map();
+        last;
+    }
+}
+
 foreach(1..3) {
     AntBot->turn();
+
+    unlink "/tmp/antsock";
+    my $server = IO::Socket::UNIX->new(Local => "/tmp/antsock",
+            Type => SOCK_DGRAM,
+            Listen => 5 ) or die $@;
 
     for (my $i=0; $i<AntMap->nrows(); $i++) {
         for (my $j=0; $j<AntMap->ncols(); $j++) {
@@ -36,16 +56,12 @@ foreach(1..3) {
         }
     }
 
-    unlink "/tmp/antsock";
-    my $server = IO::Socket::UNIX->new(Local => "/tmp/antsock",
-            Type => SOCK_DGRAM,
-            Listen => 5 ) or die $@;
-
     AntBot->go();
 
     while() {
         my $text = "";
         $server->recv($text, 128);
+
         if ($text =~ /o (\d+) (\d+) (.)/) {
             AntMap->makemove($1, $2, $3)
         }
@@ -57,6 +73,8 @@ foreach(1..3) {
         }
     }
 }
+
+exit(0);
 
 waitpid($pid, 0);
 
@@ -73,4 +91,3 @@ sub init {
     AntBot->write("player_seed 42");
     AntBot->write("ready");
 }
-

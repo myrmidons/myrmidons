@@ -31,31 +31,32 @@ sub print_map {
 
 sub getpos {
     shift;
-    my ($x, $y) = @_;
-    return $map[$x][$y];
+    my ($r, $c) = @_;
+    return $map[$r][$c];
 }
 
 sub makemove {
     shift;
-    my ($x, $y, $dir) = @_;
+    my ($r, $c, $dir) = @_;
 
-    my $newx = $x;
-    my $newy = $y;
+    my $newr = $r;
+    my $newc = $c;
 
     if ($dir =~ /S/) {
-        $newy++;
+        $newr++;
     } elsif ($dir =~ /N/) {
-        $newy--;
+        $newr--;
     } elsif ($dir =~ /E/) {
-        $newx++;
+        $newc++;
     } elsif ($dir =~ /W/) {
-        $newx--;
+        $newc--;
     }
 
-    print "[$x, $y] --> [$newx, $newy]\n";
+    print "[$r, $c] --> [$newr, $newc]\n";
 
-    $map[$newx][$newy] = $map[$x][$y];
-    $map[$x][$y] = ".";
+    # TODO fix collision detection
+    $map[$newr][$newc] = $map[$r][$c];
+    $map[$r][$c] = ".";
 }
 
 sub nrows { return $rows; }

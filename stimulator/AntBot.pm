@@ -11,8 +11,6 @@ sub start {
     my $bot = shift;
     my $pid = open2(*Reader, *Writer, $bot);
 
-    $self->createsem();
-
     my $fpid = fork();
     if (not defined $fpid) {
         print "resources not avilable.\n";
@@ -32,7 +30,7 @@ sub start {
 sub write {
     shift;
     my $what = shift;
-    print "Put ".$what."\n";
+#    print "Put ".$what."\n";
     say Writer $what;
 }
 
@@ -45,7 +43,7 @@ sub turn {
 
 sub go {
     my $self = shift;
-    print "Put go ------------------------------>\n";
+#    print "Put go ------------------------------>\n";
     say Writer "go";
 }
 

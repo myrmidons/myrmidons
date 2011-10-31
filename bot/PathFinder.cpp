@@ -3,6 +3,7 @@
 #include "Logger.hpp"
 #include "Room.hpp"
 #include "RoomContent.hpp"
+#include <algorithm>
 
 PosGoal::PosGoal(Pos pos) : m_pos(pos), m_room(g_map->roomAt(pos)) {
 }

@@ -2,6 +2,7 @@
 #define PATHFINDER_HPP
 
 #include "Path.hpp"
+#include <limits>
 
 class Goal {
 public:

@@ -1,2 +1,2 @@
 How to run
-./stimulate.pl <mapfile> <Bot-binary>
+./stimulate.pl <mapfile> <Bot-binary> <nr of stimulations>

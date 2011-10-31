@@ -2,10 +2,10 @@
 use warnings;
 use strict;
 use feature ':5.10';
-use FileHandle;
-use IPC::Open2;
 use AntMap;
 use AntBot;
+use IO::Socket::UNIX;
+
 $|++;
 
 my $mapfile = shift;
@@ -36,13 +36,29 @@ foreach(1..3) {
         }
     }
 
+    unlink "/tmp/antsock";
+    my $server = IO::Socket::UNIX->new(Local => "/tmp/antsock",
+            Type => SOCK_DGRAM,
+            Listen => 5 ) or die $@;
+
     AntBot->go();
+
+    while() {
+        my $text = "";
+        $server->recv($text, 128);
+        if ($text =~ /o (\d+) (\d+) (.)/) {
+            AntMap->makemove($1, $2, $3)
+        }
+
+        # Bot is finished with turn
+        if ($text =~ /go/) {
+            AntMap->print_map();
+            last;
+        }
+    }
 }
 
-AntBot->takesem(0);
-AntBot->takesem(1);
-
-waitpid($pid,0);
+waitpid($pid, 0);
 
 sub init {
     AntBot->turn();
@@ -56,6 +72,5 @@ sub init {
     AntBot->write("spawnradius2 1");
     AntBot->write("player_seed 42");
     AntBot->write("ready");
-    AntBot->givesem(1);
 }
 

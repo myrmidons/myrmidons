@@ -53,7 +53,8 @@ sub makemove {
     }
 
     # TODO fix collision detection
-    if ($map[$newr][$newc] == '.') {
+    if ($map[$newr][$newc] == '.' ||
+        $map[$newr][$newc] =~ /\d/) {
         print "[$r, $c] --> [$newr, $newc]\n";
         $map[$newr][$newc] = 'a';
         $map[$r][$c] = '.';

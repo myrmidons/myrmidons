@@ -8,8 +8,13 @@ use IO::Socket::UNIX;
 
 $|++;
 
+if ($#ARGV != 2) {
+    die `cat README`;
+}
+
 my $mapfile = shift;
 my $bot = shift;
+my $ntimes = shift;
 
 AntMap->readfile($mapfile);
 my $pid = AntBot->start($bot);
@@ -33,7 +38,7 @@ while() {
     }
 }
 
-foreach(1..3) {
+foreach(1..$ntimes) {
     AntBot->turn();
 
     unlink "/tmp/antsock";

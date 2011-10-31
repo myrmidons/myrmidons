@@ -52,11 +52,15 @@ sub makemove {
         $newc--;
     }
 
-    print "[$r, $c] --> [$newr, $newc]\n";
-
     # TODO fix collision detection
-    $map[$newr][$newc] = $map[$r][$c];
-    $map[$r][$c] = ".";
+    if ($map[$newr][$newc] == '.') {
+        print "[$r, $c] --> [$newr, $newc]\n";
+        $map[$newr][$newc] = 'a';
+        $map[$r][$c] = '.';
+    } elsif ($map[$newr][$newc] == 'a') {
+        $map[$newr][$newc] = 'a';
+        $map[$r][$c] = 'a';
+    }
 }
 
 sub nrows { return $rows; }

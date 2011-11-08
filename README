@@ -1,0 +1,13 @@
+Myrmidons
+---------
+
+This is the repository for the myrmidons ant bot at http://aichallenge.org/
+
+The main language for the bot is C++ and QtCreator is used as IDE.
+
+Directory structure
+-------------------
+bot - The source code for the bot.
+support - Misc good-to-have utilities.
+stimulator - Simulator for specific scenarios.
+maps - Maps for the simulator.

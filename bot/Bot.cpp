@@ -224,6 +224,33 @@ void Bot::makeMoves()
 		}
 	}
 
+        // Boid
+	const EnemySet& enemies = g_tracker->getEnemies();
+	ITC(EnemySet, eit, enemies) {
+	    LOG_DEBUG("Looking for ant closest to enemy.");
+	    PathList paths;
+	    int maxAnts = 1;
+	    int maxDist = 10;
+	    PathFinder::findPaths(&paths, eit->pos, AntGoal(), maxAnts, maxDist, PathFinder::FLAGS_NONE);
+	    if ((int)paths.size() == maxAnts) { // Found the ant closest to enemy. Now boid.
+		Path sergeant = paths.back();
+		g_map->getAntAt(sergeant.dest())->stop();
+		PathList squad;
+		int minSquad= 5;
+		int maxSquad = 12;
+		int maxDist = 30;
+		PathFinder::findPaths(&squad, sergeant.start(), AntGoal(), maxSquad, maxDist, PathFinder::FLAGS_NONE);
+		if ((int)squad.size() > minSquad) {
+		    LOG_DEBUG("Sending " << squad.size() << " ants to sergeant!");
+		    ITC(PathList, sqit, squad) {
+			if (g_map->getAntAt(sqit->dest()) != g_map->getAntAt(sergeant.start())) {
+			    g_map->getAntAt(sqit->dest())->wantToGoTo(sergeant.start());
+			}
+		    }
+		}
+	    }
+	}
+
 	// Kill enemy hills:
 	const EnemyHillSet& enemyHills = g_tracker->enemyHills();
 	ITC(EnemyHillSet, eit, enemyHills) {

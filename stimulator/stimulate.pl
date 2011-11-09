@@ -77,6 +77,7 @@ foreach(1..$ntimes) {
             last;
         }
     }
+    sleep 1;
 }
 
 exit(0);

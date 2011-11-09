@@ -52,6 +52,9 @@ sub makemove {
         $newc--;
     }
 
+    $newc = ($cols-1) if (-1 == $newc);
+    $newr = ($rows-1) if (-1 == $newr);
+
     # TODO fix collision detection
     if ($map[$newr][$newc] == '.' ||
         $map[$newr][$newc] =~ /\d/) {

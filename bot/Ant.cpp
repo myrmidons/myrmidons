@@ -31,6 +31,10 @@ void Ant::setPos(Pos p) {
 	m_position = p;
 }
 
+void Ant::wantToGoTo(Pos dest) {
+        m_desire = m_path.getNextStep(dest);
+}
+
 bool Ant::goTo(Pos dest) {
 	Path newPath = PathFinder::findPath(this->pos(), dest);
 	if (newPath.isValid()) {

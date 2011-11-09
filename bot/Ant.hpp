@@ -31,6 +31,7 @@ public:
 	bool goToHillAt(Pos pos);
 	bool goToFoodAt(Pos pos);
 	bool goToRoom(Room* room);
+	void wantToGoTo(Pos dest);
 	void stop(); // Stop going towards currnet goal.
 
 	// Ensure our goals are still sound, etc.

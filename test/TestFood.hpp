@@ -9,7 +9,7 @@ class TestFood : public QObject
 
 private slots:
     void initTestCase();
-    void foodBenchmark();
+    void foodConstructor();
     void cleanupTestCase();
 };
 

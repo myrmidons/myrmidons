@@ -5,9 +5,9 @@ void TestAnt::initTestCase()
 {
 }
 
-void TestAnt::antBenchmark()
+void TestAnt::antConstructor()
 {
-    Ant f;
+    Ant a;
 }
 
 void TestAnt::cleanupTestCase()

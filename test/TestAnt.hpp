@@ -9,7 +9,7 @@ class TestAnt : public QObject
 
 private slots:
     void initTestCase();
-    void antBenchmark();
+    void antConstructor();
     void cleanupTestCase();
 };
 

@@ -5,7 +5,7 @@ void TestBot::initTestCase()
 {
 }
 
-void TestBot::botBenchmark()
+void TestBot::botConstructor()
 {
     IODevice* io = NULL;
     Bot b(*io);

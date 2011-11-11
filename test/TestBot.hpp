@@ -9,7 +9,7 @@ class TestBot : public QObject
 
 private slots:
     void initTestCase();
-    void botBenchmark();
+    void botConstructor();
     void cleanupTestCase();
 };
 

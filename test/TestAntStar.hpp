@@ -9,7 +9,7 @@ class TestAntStar : public QObject
 
 private slots:
     void initTestCase();
-    void antstarBenchmark();
+    void antstarConstructor();
     void cleanupTestCase();
 };
 

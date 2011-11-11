@@ -9,7 +9,7 @@ class TestState : public QObject
 
 private slots:
     void initTestCase();
-    void stateBenchmark();
+    void stateConstructor();
     void cleanupTestCase();
 };
 

@@ -5,7 +5,7 @@ void TestState::initTestCase()
 {
 }
 
-void TestState::stateBenchmark()
+void TestState::stateConstructor()
 {
     State s(std::cerr);
 }

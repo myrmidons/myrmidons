@@ -9,7 +9,7 @@ class TestCoordinator : public QObject
 
 private slots:
     void initTestCase();
-    void coordinatorBenchmark();
+    void coordinatorConstructor();
     void cleanupTestCase();
 };
 

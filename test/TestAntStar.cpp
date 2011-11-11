@@ -5,9 +5,9 @@ void TestAntStar::initTestCase()
 {
 }
 
-void TestAntStar::antstarBenchmark()
+void TestAntStar::antstarConstructor()
 {
-    AntStar f;
+    AntStar as;
 }
 
 void TestAntStar::cleanupTestCase()

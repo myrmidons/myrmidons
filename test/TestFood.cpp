@@ -5,7 +5,7 @@ void TestFood::initTestCase()
 {
 }
 
-void TestFood::foodBenchmark()
+void TestFood::foodConstructor()
 {
     Food f;
 }

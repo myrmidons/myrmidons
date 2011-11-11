@@ -5,7 +5,7 @@ void TestCoordinator::initTestCase()
 {
 }
 
-void TestCoordinator::coordinatorBenchmark()
+void TestCoordinator::coordinatorConstructor()
 {
     Coordinator f;
 }

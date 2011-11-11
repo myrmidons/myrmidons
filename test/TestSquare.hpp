@@ -1,7 +1,7 @@
 #ifndef TESTSQUARE_H
 #define TESTSQUARE_H
 
-#include "AutoTest.h"
+#include "AutoTest.hpp"
 
 class TestSquare : public QObject
 {

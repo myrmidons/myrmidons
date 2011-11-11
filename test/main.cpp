@@ -1,4 +1,4 @@
-#include "AutoTest.h"
+#include "AutoTest.hpp"
 #include <QDebug>
 
 #if 1

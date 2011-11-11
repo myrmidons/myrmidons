@@ -30,7 +30,8 @@ SOURCES += main.cpp \
     TestState.cpp \
     TestAnt.cpp \
     TestAntStar.cpp \
-    TestBot.cpp
+    TestBot.cpp \
+    TestCoordinator.cpp
 HEADERS += \
     testFood.h \
     ../bot/Food.hpp \
@@ -61,4 +62,5 @@ HEADERS += \
     TestState.hpp \
     TestAnt.hpp \
     TestAntStar.hpp \
-    TestBot.hpp
+    TestBot.hpp \
+    TestCoordinator.hpp

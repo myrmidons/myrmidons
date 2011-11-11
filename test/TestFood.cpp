@@ -1,4 +1,4 @@
-#include "TestFood.h"
+#include "TestFood.hpp"
 #include "../bot/Food.hpp"
 
 void TestFood::initTestCase()
@@ -7,9 +7,7 @@ void TestFood::initTestCase()
 
 void TestFood::foodBenchmark()
 {
-    QBENCHMARK {
-        Food f;
-    }
+    Food f;
 }
 
 void TestFood::cleanupTestCase()

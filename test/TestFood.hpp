@@ -1,7 +1,7 @@
 #ifndef TESTFOOD_H
 #define TESTFOOD_H
 
-#include "AutoTest.h"
+#include "AutoTest.hpp"
 
 class TestFood : public QObject
 {
@@ -15,4 +15,4 @@ private slots:
 
 DECLARE_TEST(TestFood)
 
-#endif // TEST1_H
+#endif // TESTFOOD_H

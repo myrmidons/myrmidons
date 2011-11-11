@@ -105,7 +105,9 @@ int main(int argc, char *argv[])
 
 	LOG_DEBUG("Reached the end of main().");
 
+#ifdef DEBUG
 	Logger::free();
+#endif
 
     return 0;
 }

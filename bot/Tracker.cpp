@@ -20,7 +20,9 @@ Tracker::Tracker() {
 
 void Tracker::beginTurnInput(int n) {
 	m_turn = n;
+#ifdef DEBUG
 	Logger::instance()->newTurn(n); // Start new logfile
+#endif
 	LOG_DEBUG("turn " << n << ":" << std::endl << "----------------");
 
 	// Reset dynamic content (ants, food) so we can fill it in from scratch

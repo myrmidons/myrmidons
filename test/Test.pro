@@ -31,7 +31,10 @@ SOURCES += main.cpp \
     TestAnt.cpp \
     TestAntStar.cpp \
     TestBot.cpp \
-    TestCoordinator.cpp
+    TestCoordinator.cpp \
+    TestTracker.cpp \
+    TestPos.cpp \
+    TestPath.cpp
 HEADERS += \
     testFood.h \
     ../bot/Food.hpp \
@@ -63,4 +66,7 @@ HEADERS += \
     TestAnt.hpp \
     TestAntStar.hpp \
     TestBot.hpp \
-    TestCoordinator.hpp
+    TestCoordinator.hpp \
+    TestTracker.hpp \
+    TestPos.hpp \
+    TestPath.hpp

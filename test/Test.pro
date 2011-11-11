@@ -28,7 +28,8 @@ SOURCES += main.cpp \
     ../bot/AntStar.cpp \
     ../bot/Ant.cpp \
     TestState.cpp \
-    TestAnt.cpp
+    TestAnt.cpp \
+    TestAntStar.cpp
 HEADERS += \
     testFood.h \
     ../bot/Food.hpp \
@@ -57,4 +58,5 @@ HEADERS += \
     AutoTest.hpp \
     TestFood.hpp \
     TestState.hpp \
-    TestAnt.hpp
+    TestAnt.hpp \
+    TestAntStar.hpp

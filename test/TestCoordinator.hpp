@@ -10,6 +10,8 @@ class TestCoordinator : public QObject
 private slots:
     void initTestCase();
     void coordinatorConstructor();
+    void moveAntsAfterDesire();
+    //void moveAntsAfterDesireSim();
     void cleanupTestCase();
 };
 
